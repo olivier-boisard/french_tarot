@@ -51,9 +51,6 @@ RUN pip install dill==0.2.9 pytest==4.6.3
 # Install pytorch
 RUN conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
 
-# Install gym
-RUN pip install gym==0.12.5
-
 # Install NVIDIA Apex
 WORKDIR /tmp
 RUN git clone https://github.com/NVIDIA/apex.git
