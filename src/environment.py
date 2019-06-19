@@ -91,7 +91,8 @@ class GamePhase(Enum):
 
 
 class Bid(IntEnum):
-    NONE = 0
+    NONE = -1
+    PASS = 0
     PETITE = 1
     GARDE = 2
     GARDE_SANS = 3
@@ -121,16 +122,21 @@ class FrenchTarotEnvironment:
                 shuffled_deck[2 * n_cards_per_player:3 * n_cards_per_player],
                 shuffled_deck[3 * n_cards_per_player:4 * n_cards_per_player],
             ],
-            "card_played_in_turn": [],
-            "card_played_per_player_in_episode": [],
-            "who_took": None,
-            "is_dog_revealed": False,
             "dog": shuffled_deck[-n_cards_in_dog:],
             "game_phase": GamePhase.BID,
             "bid_per_player": [Bid.NONE, Bid.NONE, Bid.NONE, Bid.NONE],
-            "announcements": []
+            "announcements": [],
+            "current_player": 0
         }
-        return self._state
+        return self._get_observation_for_current_player()
+
+    def _get_observation_for_current_player(self):
+        rval = {
+            "hand": self._state["hand_per_player"][self._state["current_player"]],
+            "bid_per_player": self._state["bid_per_player"],
+            "game_phase": GamePhase.BID
+        }
+        return rval
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
