@@ -89,17 +89,18 @@ class FrenchTarotEnvironment:
 
     def __init__(self):
         self._random_state = np.random.RandomState(1988)
+        self._state = None
 
     def step(self, action):
         raise NotImplementedError()
 
     def reset(self):
-        shuffled_deck = np.random.permutation(list(Card))
+        shuffled_deck = self._random_state.permutation(list(Card))
         n_cards_in_dog = 6
         n_players = 4
         n_cards_per_player = int((len(shuffled_deck) - n_cards_in_dog) / n_players)
 
-        rval = {
+        self._state = {
             "hand_per_player": [
                 shuffled_deck[:n_cards_per_player],
                 shuffled_deck[n_cards_per_player:2 * n_cards_per_player],
@@ -115,7 +116,7 @@ class FrenchTarotEnvironment:
             "bid": None,
             "announcements": []
         }
-        return rval
+        return self._state
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
