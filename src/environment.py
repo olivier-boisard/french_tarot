@@ -91,7 +91,6 @@ class GamePhase(Enum):
 
 
 class Bid(IntEnum):
-    NONE = -1
     PASS = 0
     PETITE = 1
     GARDE = 2
@@ -104,10 +103,14 @@ class FrenchTarotEnvironment:
 
     def __init__(self):
         self._random_state = np.random.RandomState(1988)
-        self._state = None
+        self._hand_per_player = None
+        self._dog = None
+        self._game_phase = None
+        self._bids = None
+        self._current_player = None
 
     def step(self, action):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def reset(self):
         shuffled_deck = self._random_state.permutation(list(Card))
@@ -115,25 +118,23 @@ class FrenchTarotEnvironment:
         n_players = 4
         n_cards_per_player = int((len(shuffled_deck) - n_cards_in_dog) / n_players)
 
-        self._state = {
-            "hand_per_player": [
-                shuffled_deck[:n_cards_per_player],
-                shuffled_deck[n_cards_per_player:2 * n_cards_per_player],
-                shuffled_deck[2 * n_cards_per_player:3 * n_cards_per_player],
-                shuffled_deck[3 * n_cards_per_player:4 * n_cards_per_player],
-            ],
-            "dog": shuffled_deck[-n_cards_in_dog:],
-            "game_phase": GamePhase.BID,
-            "bid_per_player": [Bid.NONE, Bid.NONE, Bid.NONE, Bid.NONE],
-            "announcements": [],
-            "current_player": 0
-        }
+        self._hand_per_player = [
+            shuffled_deck[:n_cards_per_player],
+            shuffled_deck[n_cards_per_player:2 * n_cards_per_player],
+            shuffled_deck[2 * n_cards_per_player:3 * n_cards_per_player],
+            shuffled_deck[3 * n_cards_per_player:4 * n_cards_per_player],
+        ]
+        self._dog = shuffled_deck[-n_cards_in_dog:]
+        self._game_phase = GamePhase.BID
+        self._bid_per_player = []
+        self._current_player = 0
+
         return self._get_observation_for_current_player()
 
     def _get_observation_for_current_player(self):
         rval = {
-            "hand": self._state["hand_per_player"][self._state["current_player"]],
-            "bid_per_player": self._state["bid_per_player"],
+            "hand": self._hand_per_player[self._current_player],
+            "bid_per_player": self._bid_per_player,
             "game_phase": GamePhase.BID
         }
         return rval

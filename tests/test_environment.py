@@ -15,13 +15,12 @@ def test_n_cards():
 def test_reset_environment(environment):
     observation = environment.reset()
     assert len(observation["hand"]) == 18
-    assert len(observation["bid_per_player"]) == 4
     for bid in observation["bid_per_player"]:
         assert bid == Bid.NONE
     assert observation["game_phase"] == GamePhase.BID
 
 
-def test_bid_none(environment):
+def test_bid_pass(environment):
     observation = environment.reset()
     environment.step(Bid.NONE)
 
