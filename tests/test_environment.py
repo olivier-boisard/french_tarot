@@ -22,6 +22,6 @@ def test_reset_environment(environment):
     assert len(observation["card_played_per_player_in_episode"]) == 0
     assert observation["who_took"] is None
     assert not observation["is_dog_revealed"]
-    assert observation["bid"] is None
+    assert len(observation["bid_per_player"]) == 4
     assert len(observation["announcements"]) == 0
     assert not observation["is_game_started"]
