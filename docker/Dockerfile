@@ -8,7 +8,7 @@ ARG USERNAME
 # Set environment variables
 ENV CONDA_DIR /opt/conda
 ENV CONDA_VERSION 2019.03
-ENV PYCHARM_VERSION 2019.1.2
+ENV PYCHARM_VERSION 2019.1.3
 
 # Setup prerequisites
 RUN apt-get -y update
