@@ -107,10 +107,13 @@ class FrenchTarotEnvironment:
         self._dog = None
         self._game_phase = None
         self._bid_per_player = None
-        self._current_player = None
 
     def step(self, action):
-        raise NotImplementedError
+        if len(self._bid_per_player) > 0:
+            if action != Bid.PASS and action <= np.max(self._bid_per_player):
+                raise ValueError("Action is not pass and is lower than highest bid")
+
+        self._bid_per_player.append(action)
 
     def reset(self):
         shuffled_deck = self._random_state.permutation(list(Card))
@@ -127,13 +130,12 @@ class FrenchTarotEnvironment:
         self._dog = shuffled_deck[-n_cards_in_dog:]
         self._game_phase = GamePhase.BID
         self._bid_per_player = []
-        self._current_player = 0
 
         return self._get_observation_for_current_player()
 
     def _get_observation_for_current_player(self):
         rval = {
-            "hand": self._hand_per_player[self._current_player],
+            "hand": self._hand_per_player[len(self._bid_per_player)],
             "bid_per_player": self._bid_per_player,
             "game_phase": GamePhase.BID
         }
