@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 import numpy as np
 
@@ -88,6 +88,14 @@ class GamePhase(Enum):
     BID = "bid"
     DOG = "dog"
     CARD = "card"
+
+
+class Bid(IntEnum):
+    NONE = 0
+    PETITE = 1
+    GARDE = 2
+    GARDE_SANS = 3
+    GARDE_CONTRE = 4
 
 
 class FrenchTarotEnvironment:
