@@ -108,10 +108,11 @@ class FrenchTarotEnvironment:
             ],
             "card_played_in_turn": [],
             "card_played_per_player_in_episode": [],
-            "who_took": [],
+            "who_took": None,
             "is_dog_revealed": False,
-            "dog": [],
-            "bid": "garde",
+            "dog": shuffled_deck[-n_cards_in_dog:],
+            "is_game_started": False,
+            "bid": None,
             "announcements": []
         }
         return rval
