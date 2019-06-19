@@ -21,29 +21,33 @@ def test_reset_environment(environment):
 
 
 def test_bid_pass(environment):
-    observation = environment.reset()
+    environment.reset()
     environment.step(Bid.PASS)
 
 
 def test_bid_petite(environment):
-    observation = environment.reset()
+    environment.reset()
     environment.step(Bid.PETITE)
 
 
 def test_bid_after_petite(environment):
-    observation = environment.reset()
+    environment.reset()
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
 
 
 def test_bid_petite_after_pass(environment):
-    observation = environment.reset()
+    environment.reset()
     environment.step(Bid.PASS)
     environment.step(Bid.PETITE)
 
 
 def test_bid_petite_after_garde(environment):
-    observation = environment.reset()
+    environment.reset()
     environment.step(Bid.GARDE)
     with pytest.raises(ValueError):
         environment.step(Bid.PETITE)
+
+
+def test_announce_poignee(environment):
+    assert False
