@@ -106,7 +106,7 @@ class FrenchTarotEnvironment:
         self._hand_per_player = None
         self._dog = None
         self._game_phase = None
-        self._bids = None
+        self._bid_per_player = None
         self._current_player = None
 
     def step(self, action):
