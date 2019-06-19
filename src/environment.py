@@ -84,6 +84,12 @@ class Card(Enum):
     EXCUSE = "excuse"
 
 
+class GamePhase(Enum):
+    BID = "bid"
+    DOG = "dog"
+    CARD = "card"
+
+
 class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
@@ -112,7 +118,7 @@ class FrenchTarotEnvironment:
             "who_took": None,
             "is_dog_revealed": False,
             "dog": shuffled_deck[-n_cards_in_dog:],
-            "is_game_started": False,
+            "game_phase": GamePhase.BID,
             "bid_per_player": [None, None, None, None],
             "announcements": []
         }
