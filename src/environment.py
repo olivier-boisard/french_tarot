@@ -127,7 +127,7 @@ class FrenchTarotEnvironment:
             "is_dog_revealed": False,
             "dog": shuffled_deck[-n_cards_in_dog:],
             "game_phase": GamePhase.BID,
-            "bid_per_player": [None, None, None, None],
+            "bid_per_player": [Bid.NONE, Bid.NONE, Bid.NONE, Bid.NONE],
             "announcements": []
         }
         return self._state

@@ -1,6 +1,6 @@
 import pytest
 
-from environment import Card, FrenchTarotEnvironment, GamePhase
+from environment import Card, FrenchTarotEnvironment, GamePhase, Bid
 
 
 @pytest.fixture(scope="module")
@@ -23,5 +23,7 @@ def test_reset_environment(environment):
     assert observation["who_took"] is None
     assert not observation["is_dog_revealed"]
     assert len(observation["bid_per_player"]) == 4
+    for bid in observation["bid_per_player"]:
+        assert bid == Bid.NONE
     assert len(observation["announcements"]) == 0
     assert observation["game_phase"] == GamePhase.BID
