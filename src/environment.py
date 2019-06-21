@@ -112,12 +112,17 @@ class FrenchTarotEnvironment:
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
-            done, info, reward = self._bid(action)
+            reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
-            raise NotImplementedError()
+            reward, done, info = self._make_dog(action)
         else:
             RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
+
+    def _make_dog(self, action: np.array):
+        if type(action) != np.array:
+            raise ValueError("Wrong type for 'action'")
+        return None, None, None
 
     def _bid(self, action: Bid):
         if type(action) != Bid:
@@ -134,7 +139,7 @@ class FrenchTarotEnvironment:
         else:
             done = False
         info = None
-        return done, info, reward
+        return reward, done, info
 
     def reset(self):
         shuffled_deck = self._random_state.permutation(list(Card))
