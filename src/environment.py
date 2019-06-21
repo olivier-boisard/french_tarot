@@ -122,7 +122,11 @@ class FrenchTarotEnvironment:
     def _make_dog(self, action: list):
         if type(action) != list:
             raise ValueError("Wrong type for 'action'")
-        return None, None, None
+        
+        reward = 0
+        done = False
+        info = None
+        return reward, done, info
 
     def _bid(self, action: Bid):
         if type(action) != Bid:
