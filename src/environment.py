@@ -122,7 +122,7 @@ class FrenchTarotEnvironment:
     def _make_dog(self, action: list):
         if type(action) != list:
             raise ValueError("Wrong type for 'action'")
-        
+
         reward = 0
         done = False
         info = None
@@ -139,7 +139,13 @@ class FrenchTarotEnvironment:
         reward = 0
         if len(self._bid_per_player) == self._n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
-            self._game_phase = GamePhase.DOG
+            if not done:
+                if np.max(self._bid_per_player) <= Bid.GARDE:
+                    self._game_phase = GamePhase.DOG
+                else:
+                    self._game_phase = GamePhase.ANNOUNCEMENTS
+            else:
+                pass  # Nothing to do
         else:
             done = False
         info = None
@@ -168,7 +174,7 @@ class FrenchTarotEnvironment:
         rval = {
             "hand": self._hand_per_player[len(self._bid_per_player) - 1],
             "bid_per_player": self._bid_per_player,
-            "game_phase": GamePhase.BID
+            "game_phase": self._game_phase
         }
         return rval
 

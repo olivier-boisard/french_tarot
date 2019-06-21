@@ -82,6 +82,15 @@ def test_wrong_action_in_bid(environment):
         environment.step(Card.SPADES_1)
 
 
+def test_bid_greater_than_garde(environment):
+    environment.reset()
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    observation, _, _, _ = environment.step(Bid.GARDE_SANS)
+    assert observation["game_phase"] == GamePhase.ANNOUNCEMENTS
+
+
 def test_five_bids(environment):
     environment.reset()
     environment.step(Bid.PASS)
