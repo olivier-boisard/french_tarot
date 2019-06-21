@@ -119,8 +119,8 @@ class FrenchTarotEnvironment:
             RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
 
-    def _make_dog(self, action: np.array):
-        if type(action) != np.array:
+    def _make_dog(self, action: list):
+        if type(action) != list:
             raise ValueError("Wrong type for 'action'")
         return None, None, None
 
