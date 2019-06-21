@@ -58,6 +58,15 @@ def test_done_if_all_pass(environment):
     assert done
 
 
+def test_reward_zero(environment):
+    environment.reset()
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    _, reward, _, _ = environment.step(Bid.PASS)
+    assert reward == 0
+
+
 def test_not_done_if_not_all_pass(environment):
     environment.reset()
     environment.step(Bid.PASS)
