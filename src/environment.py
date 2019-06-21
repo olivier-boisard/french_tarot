@@ -139,13 +139,10 @@ class FrenchTarotEnvironment:
         reward = 0
         if len(self._bid_per_player) == self._n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
-            if not done:
-                if np.max(self._bid_per_player) <= Bid.GARDE:
-                    self._game_phase = GamePhase.DOG
-                else:
-                    self._game_phase = GamePhase.ANNOUNCEMENTS
+            if np.max(self._bid_per_player) <= Bid.GARDE:
+                self._game_phase = GamePhase.DOG
             else:
-                pass  # Nothing to do
+                self._game_phase = GamePhase.ANNOUNCEMENTS
         else:
             done = False
         info = None
