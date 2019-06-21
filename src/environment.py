@@ -149,23 +149,25 @@ class FrenchTarotEnvironment:
         return reward, done, info
 
     def reset(self):
-        shuffled_deck = self._random_state.permutation(list(Card))
-        n_cards_in_dog = 6
-        n_players = 4
-        n_cards_per_player = int((len(shuffled_deck) - n_cards_in_dog) / n_players)
-
-        self._hand_per_player = [
-            shuffled_deck[:n_cards_per_player],
-            shuffled_deck[n_cards_per_player:2 * n_cards_per_player],
-            shuffled_deck[2 * n_cards_per_player:3 * n_cards_per_player],
-            shuffled_deck[3 * n_cards_per_player:4 * n_cards_per_player],
-        ]
-        self._dog = shuffled_deck[-n_cards_in_dog:]
+        deck = self._random_state.permutation(list(Card))
+        self._deal(deck)
         self._game_phase = GamePhase.BID
         self._bid_per_player = []
         self._n_players = 4
 
         return self._get_observation_for_current_player()
+
+    def _deal(self, deck):
+        n_cards_in_dog = 6
+        n_players = 4
+        n_cards_per_player = int((len(deck) - n_cards_in_dog) / n_players)
+        self._hand_per_player = [
+            deck[:n_cards_per_player],
+            deck[n_cards_per_player:2 * n_cards_per_player],
+            deck[2 * n_cards_per_player:3 * n_cards_per_player],
+            deck[3 * n_cards_per_player:4 * n_cards_per_player],
+        ]
+        self._dog = deck[-n_cards_in_dog:]
 
     def _get_observation_for_current_player(self):
         rval = {
