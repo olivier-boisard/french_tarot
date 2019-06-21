@@ -9,7 +9,7 @@ def environment():
 
 
 def test_n_cards():
-    assert len(list(Card))
+    assert len(list(Card)) == 78
 
 
 def test_reset_environment(environment):
