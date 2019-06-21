@@ -49,5 +49,23 @@ def test_bid_petite_after_garde(environment):
         environment.step(Bid.PETITE)
 
 
+def test_done_if_all_pass(environment):
+    environment.reset()
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    _, _, done, _ = environment.step(Bid.PASS)
+    assert done
+
+
+def test_not_done_if_not_all_pass(environment):
+    environment.reset()
+    environment.step(Bid.PASS)
+    environment.step(Bid.PETITE)
+    environment.step(Bid.PASS)
+    _, _, done, _ = environment.step(Bid.PASS)
+    assert not done
+
+
 def test_announce_poignee(environment):
     assert False

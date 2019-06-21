@@ -87,6 +87,7 @@ class Card(Enum):
 class GamePhase(Enum):
     BID = "bid"
     DOG = "dog"
+    ANNOUNCEMENTS = "announcements"
     CARD = "card"
 
 
@@ -107,6 +108,7 @@ class FrenchTarotEnvironment:
         self._dog = None
         self._game_phase = None
         self._bid_per_player = None
+        self._n_players = None
 
     def step(self, action):
         if len(self._bid_per_player) > 0:
@@ -114,6 +116,14 @@ class FrenchTarotEnvironment:
                 raise ValueError("Action is not pass and is lower than highest bid")
 
         self._bid_per_player.append(action)
+        reward = 0
+        if len(self._bid_per_player) == self._n_players:
+            done = np.all(np.array(self._bid_per_player) == Bid.PASS)
+            self._game_phase = GamePhase.DOG
+        else:
+            done = False
+        info = None
+        return self._get_observation_for_current_player(), reward, done, info
 
     def reset(self):
         shuffled_deck = self._random_state.permutation(list(Card))
@@ -130,12 +140,13 @@ class FrenchTarotEnvironment:
         self._dog = shuffled_deck[-n_cards_in_dog:]
         self._game_phase = GamePhase.BID
         self._bid_per_player = []
+        self._n_players = 4
 
         return self._get_observation_for_current_player()
 
     def _get_observation_for_current_player(self):
         rval = {
-            "hand": self._hand_per_player[len(self._bid_per_player)],
+            "hand": self._hand_per_player[len(self._bid_per_player) - 1],
             "bid_per_player": self._bid_per_player,
             "game_phase": GamePhase.BID
         }
