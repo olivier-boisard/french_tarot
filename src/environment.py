@@ -104,11 +104,16 @@ class FrenchTarotEnvironment:
 
     def __init__(self):
         self._random_state = np.random.RandomState(1988)
+        self._n_cards_in_dog = 6
         self._hand_per_player = None
         self._dog = None
         self._game_phase = None
         self._bid_per_player = None
         self._n_players = None
+        self._taking_player = None
+        n_players = 4
+        self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / n_players)
+        self._revealed_cards_in_dog = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -119,9 +124,36 @@ class FrenchTarotEnvironment:
             RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
 
-    def _make_dog(self, action: list):
-        if type(action) != list:
+    @staticmethod
+    def _is_oudler(card):
+        return card == Card.TRUMP_1 or card == Card.TRUMP_21 or card == Card.EXCUSE
+
+    def _make_dog(self, dog: list):
+        if type(dog) != list:
             raise ValueError("Wrong type for 'action'")
+        if len(set(dog)) != len(dog):
+            raise ValueError("Duplicated cards in dog")
+        if np.any(["king" in card.value for card in dog]):
+            raise ValueError("There should be no king in dog")
+        if np.any([self._is_oudler(card) for card in dog]):
+            raise ValueError("There should be no oudler in dog")
+
+        print(dog)
+        n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
+        if n_trumps_in_dog > 0:
+            taking_player_hand = self._hand_per_player[self._taking_player]
+            card_is_trump = np.array(["trump" in card.value for card in taking_player_hand])
+            n_trumps_in_taking_player_hand = np.sum(card_is_trump)
+            n_kings_in_taking_player_hand = np.sum(["king" in card.value for card in taking_player_hand])
+            allowed_trumps_in_dog = self._n_cards_in_dog - (
+                    self._n_cards_per_player - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
+            if n_trumps_in_dog != allowed_trumps_in_dog:
+                raise ValueError("There should be no more oudler in dog than needed")
+            self._revealed_cards_in_dog = list(np.array(dog)[card_is_trump])
+        else:
+            pass  # Nothing to do
+
+        self._game_phase = GamePhase.ANNOUNCEMENTS
 
         reward = 0
         done = False
@@ -139,6 +171,7 @@ class FrenchTarotEnvironment:
         reward = 0
         if len(self._bid_per_player) == self._n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
+            self._taking_player = np.argmax(self._bid_per_player)
             if np.max(self._bid_per_player) <= Bid.GARDE:
                 self._game_phase = GamePhase.DOG
             else:
@@ -158,21 +191,21 @@ class FrenchTarotEnvironment:
         return self._get_observation_for_current_player()
 
     def _deal(self, deck):
-        n_cards_in_dog = 6
-        n_players = 4
-        n_cards_per_player = int((len(deck) - n_cards_in_dog) / n_players)
+        if len(deck) != len(list(Card)):
+            raise ValueError("Deck has wrong number of cards")
         self._hand_per_player = [
-            deck[:n_cards_per_player],
-            deck[n_cards_per_player:2 * n_cards_per_player],
-            deck[2 * n_cards_per_player:3 * n_cards_per_player],
-            deck[3 * n_cards_per_player:4 * n_cards_per_player],
+            deck[:self._n_cards_per_player],
+            deck[self._n_cards_per_player:2 * self._n_cards_per_player],
+            deck[2 * self._n_cards_per_player:3 * self._n_cards_per_player],
+            deck[3 * self._n_cards_per_player:4 * self._n_cards_per_player],
         ]
-        self._dog = deck[-n_cards_in_dog:]
+        self._dog = deck[-self._n_cards_in_dog:]
 
     def _get_observation_for_current_player(self):
         rval = {
             "hand": self._hand_per_player[len(self._bid_per_player) - 1],
             "bid_per_player": self._bid_per_player,
+            "revealed_cards_in_dog": self._revealed_cards_in_dog,
             "game_phase": self._game_phase
         }
         return rval
