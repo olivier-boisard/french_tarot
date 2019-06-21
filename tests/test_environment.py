@@ -67,5 +67,17 @@ def test_not_done_if_not_all_pass(environment):
     assert not done
 
 
-def test_announce_poignee(environment):
-    assert False
+def test_wrong_action_in_bid(environment):
+    environment.reset()
+    with pytest.raises(ValueError):
+        environment.step(Card.SPADES_1)
+
+
+def test_five_bids(environment):
+    environment.reset()
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    with pytest.raises(ValueError):
+        environment.step(Bid.PASS)

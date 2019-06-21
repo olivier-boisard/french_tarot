@@ -111,10 +111,21 @@ class FrenchTarotEnvironment:
         self._n_players = None
 
     def step(self, action):
+        if self._game_phase == GamePhase.BID:
+            done, info, reward = self._bid(action)
+        elif self._game_phase == GamePhase.DOG:
+            raise NotImplementedError()
+        else:
+            RuntimeError("Unknown game phase")
+        return self._get_observation_for_current_player(), reward, done, info
+
+    def _bid(self, action: Bid):
+        if type(action) != Bid:
+            raise ValueError("Wrong type for 'action'")
+
         if len(self._bid_per_player) > 0:
             if action != Bid.PASS and action <= np.max(self._bid_per_player):
                 raise ValueError("Action is not pass and is lower than highest bid")
-
         self._bid_per_player.append(action)
         reward = 0
         if len(self._bid_per_player) == self._n_players:
@@ -123,7 +134,7 @@ class FrenchTarotEnvironment:
         else:
             done = False
         info = None
-        return self._get_observation_for_current_player(), reward, done, info
+        return done, info, reward
 
     def reset(self):
         shuffled_deck = self._random_state.permutation(list(Card))
