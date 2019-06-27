@@ -78,6 +78,19 @@ def test_make_dog_with_trump_valid():
                                                     Card.TRUMP_6]
 
 
+def test_make_dog_without_trump():
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.PETITE)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    dog = list(environment._hand_per_player[environment._taking_player][:6])
+    observation, reward, done, _ = environment.step(dog)
+    assert len(observation["revealed_cards_in_dog"]) == 0
+
+
 def test_dog_with_card_not_in_players_hand():
     environment = prepare_environment_sorted_deck()
     dog = list(environment._hand_per_player[0][:6])
