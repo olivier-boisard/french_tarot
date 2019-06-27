@@ -149,7 +149,9 @@ class FrenchTarotEnvironment:
                     self._n_cards_per_player - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
             if n_trumps_in_dog != allowed_trumps_in_dog:
                 raise ValueError("There should be no more oudler in dog than needed")
-            self._revealed_cards_in_dog = list(np.array(dog)[card_is_trump])
+
+            card_in_dog_is_trump = np.array(["trump" in card.value for card in dog])
+            self._revealed_cards_in_dog = list(np.array(dog)[card_in_dog_is_trump])
         else:
             pass  # Nothing to do
 
