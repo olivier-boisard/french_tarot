@@ -114,6 +114,7 @@ class FrenchTarotEnvironment:
         n_players = 4
         self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / n_players)
         self._revealed_cards_in_dog = None
+        self._won_cards_per_team = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -146,13 +147,13 @@ class FrenchTarotEnvironment:
         print(dog)
         n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
         if n_trumps_in_dog > 0:
-            card_is_trump = np.array(["trump" in card.value for card in taking_player_hand])
+            card_is_trump = np.array(["trump" in card.value or card.value == "excuse" for card in taking_player_hand])
             n_trumps_in_taking_player_hand = np.sum(card_is_trump)
             n_kings_in_taking_player_hand = np.sum(["king" in card.value for card in taking_player_hand])
             allowed_trumps_in_dog = self._n_cards_in_dog - (
-                    self._n_cards_per_player - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
+                    len(taking_player_hand) - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
             if n_trumps_in_dog != allowed_trumps_in_dog:
-                raise ValueError("There should be no more oudler in dog than needed")
+                raise ValueError("There should be no more trumps in dog than needed")
 
             card_in_dog_is_trump = np.array(["trump" in card.value for card in dog])
             self._revealed_cards_in_dog = list(np.array(dog)[card_in_dog_is_trump])
@@ -160,6 +161,9 @@ class FrenchTarotEnvironment:
             self._revealed_cards_in_dog = []
 
         self._game_phase = GamePhase.ANNOUNCEMENTS
+        index_to_keep_in_hand = [card not in dog for card in taking_player_hand]
+        self._hand_per_player[self._taking_player] = taking_player_hand[index_to_keep_in_hand]
+        self._won_cards_per_team["taker"].extend(dog)
 
         reward = 0
         done = False
@@ -179,6 +183,8 @@ class FrenchTarotEnvironment:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
             self._taking_player = np.argmax(self._bid_per_player)
             if np.max(self._bid_per_player) <= Bid.GARDE:
+                self._hand_per_player[self._taking_player] = np.concatenate((self._hand_per_player[self._taking_player],
+                                                                             self._dog))
                 self._game_phase = GamePhase.DOG
             else:
                 self._game_phase = GamePhase.ANNOUNCEMENTS
@@ -193,6 +199,7 @@ class FrenchTarotEnvironment:
         self._game_phase = GamePhase.BID
         self._bid_per_player = []
         self._n_players = 4
+        self._won_cards_per_team = {"taker": [], "opponents": []}
 
         return self._get_observation_for_current_player()
 

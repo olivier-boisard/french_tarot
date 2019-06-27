@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from environment import FrenchTarotEnvironment, Bid, Card, GamePhase
@@ -31,7 +32,6 @@ def test_make_dog():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    return environment
     dog = list(environment._hand_per_player[environment._taking_player][2:8])
     observation, reward, done, _ = environment.step(dog)
     assert not done
@@ -40,6 +40,8 @@ def test_make_dog():
     taking_players_hand = environment._hand_per_player[environment._taking_player]
     assert np.all([card not in taking_players_hand for card in dog])
     assert len(taking_players_hand) == environment._n_cards_per_player
+    assert np.all([card in environment._won_cards_per_team["taker"] for card in dog])
+    assert len(environment._won_cards_per_team["taker"]) == environment._n_cards_in_dog
 
 
 def test_make_dog_with_duplicated_card():
@@ -112,3 +114,6 @@ def test_dog_has_wrong_number_of_cards():
     dog = list(environment._hand_per_player[environment._taking_player][:5])
     with pytest.raises(ValueError):
         environment.step(dog)
+
+
+test_make_dog_with_trump_valid()
