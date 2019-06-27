@@ -37,6 +37,9 @@ def test_make_dog():
     assert not done
     assert reward == 0
     assert observation["game_phase"] == GamePhase.ANNOUNCEMENTS
+    taking_players_hand = environment._hand_per_player[environment._taking_player]
+    assert np.all([card not in taking_players_hand for card in dog])
+    assert len(taking_players_hand) == environment._n_cards_per_player
 
 
 def test_make_dog_with_duplicated_card():
