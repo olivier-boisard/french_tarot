@@ -140,6 +140,8 @@ class FrenchTarotEnvironment:
             raise ValueError("There should be no oudler in dog")
         if np.any([card not in taking_player_hand for card in dog]):
             raise ValueError("Card in dog not in taking player's hand")
+        if len(dog) != self._n_cards_in_dog:
+            raise ValueError("Wrong number of cards in dog")
 
         print(dog)
         n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])

@@ -80,10 +80,19 @@ def test_make_dog_with_trump_valid():
 
 def test_dog_with_card_not_in_players_hand():
     environment = prepare_environment_sorted_deck()
-    dog = environment._hand_per_player[0][:6]
+    dog = list(environment._hand_per_player[0][:6])
     with pytest.raises(ValueError):
         environment.step(dog)
 
 
 def test_dog_has_wrong_number_of_cards():
-    raise NotImplementedError()
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.PASS)
+    environment.step(Bid.PETITE)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    dog = list(environment._hand_per_player[environment._taking_player][:5])
+    with pytest.raises(ValueError):
+        environment.step(dog)
