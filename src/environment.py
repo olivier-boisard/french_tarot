@@ -129,6 +129,7 @@ class FrenchTarotEnvironment:
         return card == Card.TRUMP_1 or card == Card.TRUMP_21 or card == Card.EXCUSE
 
     def _make_dog(self, dog: list):
+        taking_player_hand = self._hand_per_player[self._taking_player]
         if type(dog) != list:
             raise ValueError("Wrong type for 'action'")
         if len(set(dog)) != len(dog):
@@ -137,11 +138,12 @@ class FrenchTarotEnvironment:
             raise ValueError("There should be no king in dog")
         if np.any([self._is_oudler(card) for card in dog]):
             raise ValueError("There should be no oudler in dog")
+        if np.any([card not in taking_player_hand for card in dog]):
+            raise ValueError("Card in dog not in taking player's hand")
 
         print(dog)
         n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
         if n_trumps_in_dog > 0:
-            taking_player_hand = self._hand_per_player[self._taking_player]
             card_is_trump = np.array(["trump" in card.value for card in taking_player_hand])
             n_trumps_in_taking_player_hand = np.sum(card_is_trump)
             n_kings_in_taking_player_hand = np.sum(["king" in card.value for card in taking_player_hand])
