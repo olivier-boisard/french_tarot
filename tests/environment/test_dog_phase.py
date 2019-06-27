@@ -35,7 +35,7 @@ def test_make_dog():
     dog = list(environment._hand_per_player[environment._taking_player][2:8])
     observation, reward, done, _ = environment.step(dog)
     assert not done
-    assert reward == 0
+    assert reward > 0
     assert observation["game_phase"] == GamePhase.ANNOUNCEMENTS
     taking_players_hand = environment._hand_per_player[environment._taking_player]
     assert np.all([card not in taking_players_hand for card in dog])
