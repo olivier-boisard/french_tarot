@@ -99,6 +99,15 @@ class Bid(IntEnum):
     GARDE_CONTRE = 4
 
 
+class Poignee(IntEnum):
+    SIMPLE = 1
+    DOUBLE = 2
+    TRIPLE = 3
+
+
+CHELEM = "chelem"
+
+
 class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
@@ -115,15 +124,28 @@ class FrenchTarotEnvironment:
         self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / n_players)
         self._revealed_cards_in_dog = None
         self._won_cards_per_team = None
+        self._announcements = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
             reward, done, info = self._make_dog(action)
+        elif self._game_phase == GamePhase.ANNOUNCEMENTS:
+            reward, done, info = self._announce(action)
         else:
             RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
+
+    def _announce(self, action: list):
+        if not isinstance(action, list):
+            raise ValueError("Input should be list")
+        if np.any([announcement != CHELEM and not isinstance(announcement, Poignee) for announcement in action]):
+            raise ValueError("Wrong announcement type")
+        if np.sum([isinstance(announcement, Poignee) for announcement in action]) > 1:
+            raise ValueError("Player tried to announcement more than 1 poignees")
+
+        self._announcements.append(action)
 
     def _make_dog(self, dog: list):
         taking_player_hand = self._hand_per_player[self._taking_player]
@@ -196,6 +218,7 @@ class FrenchTarotEnvironment:
         self._bid_per_player = []
         self._n_players = 4
         self._won_cards_per_team = {"taker": [], "opponents": []}
+        self._announcements = []
 
         return self._get_observation_for_current_player()
 
@@ -217,6 +240,16 @@ class FrenchTarotEnvironment:
             "revealed_cards_in_dog": self._revealed_cards_in_dog,
             "game_phase": self._game_phase
         }
+        if self._game_phase == GamePhase.BID:
+            pass
+        elif self._game_phase == GamePhase.DOG:
+            rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
+        elif self._game_phase == GamePhase.ANNOUNCEMENTS:
+            rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
+            rval["announcements"] = self._announcements
+        else:
+            raise RuntimeError("Unhandled game phase")
+
         return rval
 
     def render(self, mode="human", close=False):
