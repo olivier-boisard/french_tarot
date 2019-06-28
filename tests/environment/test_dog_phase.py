@@ -77,7 +77,7 @@ def test_make_dog_with_trump_valid():
     dog = [Card.DIAMOND_QUEEN, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6]
     observation, reward, done, _ = environment.step(dog)
     assert not done
-    assert reward == 0
+    assert reward > 0
     assert observation["game_phase"] == GamePhase.ANNOUNCEMENTS
     assert observation["revealed_cards_in_dog"] == [Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5,
                                                     Card.TRUMP_6]

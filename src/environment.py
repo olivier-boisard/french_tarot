@@ -161,7 +161,7 @@ class FrenchTarotEnvironment:
         self._hand_per_player[self._taking_player] = taking_player_hand[index_to_keep_in_hand]
         self._won_cards_per_team["taker"].extend(dog)
 
-        reward = 0
+        reward = get_card_set_point(dog)
         done = False
         info = None
         return reward, done, info
