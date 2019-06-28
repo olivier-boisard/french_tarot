@@ -125,10 +125,6 @@ class FrenchTarotEnvironment:
             RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
 
-    @staticmethod
-    def _is_oudler(card):
-        return card == Card.TRUMP_1 or card == Card.TRUMP_21 or card == Card.EXCUSE
-
     def _make_dog(self, dog: list):
         taking_player_hand = self._hand_per_player[self._taking_player]
         if type(dog) != list:
@@ -137,7 +133,7 @@ class FrenchTarotEnvironment:
             raise ValueError("Duplicated cards in dog")
         if np.any(["king" in card.value for card in dog]):
             raise ValueError("There should be no king in dog")
-        if np.any([self._is_oudler(card) for card in dog]):
+        if np.any([_is_oudler(card) for card in dog]):
             raise ValueError("There should be no oudler in dog")
         if np.any([card not in taking_player_hand for card in dog]):
             raise ValueError("Card in dog not in taking player's hand")
@@ -225,3 +221,25 @@ class FrenchTarotEnvironment:
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
+
+
+def _is_oudler(card):
+    return card == Card.TRUMP_1 or card == Card.TRUMP_21 or card == Card.EXCUSE
+
+
+def get_card_point(card: Card):
+    if _is_oudler(card) or "king" in card.value:
+        rval = 4.5
+    elif "queen" in card.value:
+        rval = 3.5
+    elif "rider" in card.value:
+        rval = 2.5
+    elif "jack" in card.value:
+        rval = 1.5
+    else:
+        rval = 0.5
+    return rval
+
+
+def get_card_set_point(card_list: list):
+    return np.sum([get_card_point(card) for card in card_list])
