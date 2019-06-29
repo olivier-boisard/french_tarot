@@ -144,7 +144,25 @@ class FrenchTarotEnvironment:
         if np.sum([isinstance(announcement, Poignee) for announcement in action]) > 1:
             raise ValueError("Player tried to announcement more than 1 poignees")
 
+        player_hand = self._hand_per_player[len(self._announcements)]
+        n_trumps = np.sum(["trump" in card.value or card.value == "excuse" for card in player_hand])
+        if n_trumps < 10 and Poignee.SIMPLE in action:
+            raise ValueError("Not enough card for 'poignee simple'")
+        if n_trumps < 13 and Poignee.DOUBLE in action:
+            raise ValueError("Not enough card for 'poignee double'")
+        if n_trumps < 15 and Poignee.TRIPLE in action:
+            raise ValueError("Not enough card for 'poignee triple'")
+
         self._announcements.append(action)
+        if len(self._announcements) == 4:
+            self._game_phase = GamePhase.CARD
+        else:
+            pass  # Nothing to do
+
+        reward = 0
+        done = False
+        info = None
+        return reward, done, info
 
     def _make_dog(self, dog: list):
         taking_player_hand = self._hand_per_player[self._taking_player]

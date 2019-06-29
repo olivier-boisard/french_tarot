@@ -39,13 +39,21 @@ def test_no_announcements():
     assert not done
 
 
+def test_complete_announcement_phase():
+    environment = setup_environment()
+    environment.step([])
+    environment.step([])
+    environment.step([])
+    observation = environment.step([])[0]
+    assert observation["game_phase"] == GamePhase.CARD
+
+
 def test_announce_chelem():
     environment = setup_environment()
     environment.step([])
     observation, reward, done, _ = environment.step([CHELEM])
     assert observation["announcements"][0] == []
     assert observation["announcements"][1] == [CHELEM]
-    assert observation["game_phase"] == GamePhase.CARD
     assert reward == 0
     assert not done
 
