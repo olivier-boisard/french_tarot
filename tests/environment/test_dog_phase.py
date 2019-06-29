@@ -40,8 +40,6 @@ def test_make_dog():
     taking_players_hand = environment._hand_per_player[environment._taking_player]
     assert np.all([card not in taking_players_hand for card in dog])
     assert len(taking_players_hand) == environment._n_cards_per_player
-    assert np.all([card in environment._won_cards_per_team["taker"] for card in dog])
-    assert len(environment._won_cards_per_team["taker"]) == environment._n_cards_in_dog
 
 
 def test_make_dog_with_duplicated_card():

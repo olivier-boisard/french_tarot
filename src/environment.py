@@ -84,11 +84,11 @@ class Card(Enum):
     EXCUSE = "excuse"
 
 
-class GamePhase(Enum):
-    BID = "bid"
-    DOG = "dog"
-    ANNOUNCEMENTS = "announcements"
-    CARD = "card"
+class GamePhase(IntEnum):
+    BID = 0
+    DOG = 1
+    ANNOUNCEMENTS = 2
+    CARD = 3
 
 
 class Bid(IntEnum):
@@ -115,7 +115,7 @@ class FrenchTarotEnvironment:
         self._random_state = np.random.RandomState(1988)
         self._n_cards_in_dog = 6
         self._hand_per_player = None
-        self._dog = None
+        self._original_dog = None
         self._game_phase = None
         self._bid_per_player = None
         self._n_players = None
@@ -123,7 +123,6 @@ class FrenchTarotEnvironment:
         n_players = 4
         self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / n_players)
         self._revealed_cards_in_dog = None
-        self._won_cards_per_team = None
         self._announcements = None
 
     def step(self, action):
@@ -181,7 +180,6 @@ class FrenchTarotEnvironment:
         self._game_phase = GamePhase.ANNOUNCEMENTS
         index_to_keep_in_hand = [card not in dog for card in taking_player_hand]
         self._hand_per_player[self._taking_player] = taking_player_hand[index_to_keep_in_hand]
-        self._won_cards_per_team["taker"].extend(dog)
 
         reward = get_card_set_point(dog)
         done = False
@@ -202,7 +200,7 @@ class FrenchTarotEnvironment:
             self._taking_player = np.argmax(self._bid_per_player)
             if np.max(self._bid_per_player) <= Bid.GARDE:
                 self._hand_per_player[self._taking_player] = np.concatenate((self._hand_per_player[self._taking_player],
-                                                                             self._dog))
+                                                                             self._original_dog))
                 self._game_phase = GamePhase.DOG
             else:
                 self._game_phase = GamePhase.ANNOUNCEMENTS
@@ -217,7 +215,6 @@ class FrenchTarotEnvironment:
         self._game_phase = GamePhase.BID
         self._bid_per_player = []
         self._n_players = 4
-        self._won_cards_per_team = {"taker": [], "opponents": []}
         self._announcements = []
 
         return self._get_observation_for_current_player()
@@ -231,24 +228,19 @@ class FrenchTarotEnvironment:
             deck[2 * self._n_cards_per_player:3 * self._n_cards_per_player],
             deck[3 * self._n_cards_per_player:4 * self._n_cards_per_player],
         ]
-        self._dog = deck[-self._n_cards_in_dog:]
+        self._original_dog = deck[-self._n_cards_in_dog:]
 
     def _get_observation_for_current_player(self):
         rval = {
             "hand": self._hand_per_player[len(self._bid_per_player) - 1],
             "bid_per_player": self._bid_per_player,
-            "revealed_cards_in_dog": self._revealed_cards_in_dog,
             "game_phase": self._game_phase
         }
-        if self._game_phase == GamePhase.BID:
-            pass
-        elif self._game_phase == GamePhase.DOG:
-            rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
-        elif self._game_phase == GamePhase.ANNOUNCEMENTS:
+        if self._game_phase >= GamePhase.DOG:
+            rval["original_dog"] = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
+        if self._game_phase >= GamePhase.ANNOUNCEMENTS:
             rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
             rval["announcements"] = self._announcements
-        else:
-            raise RuntimeError("Unhandled game phase")
 
         return rval
 
