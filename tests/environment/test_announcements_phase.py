@@ -27,8 +27,15 @@ def test_invalid_action_list():
 
 def test_invalid_two_poignees():
     environment = setup_environment()
+    cards_list = get_card_list()[:10]
     with pytest.raises(ValueError):
-        environment.step([Poignee.SIMPLE, Poignee.DOUBLE])
+        environment.step([Poignee(cards_list)])
+
+
+def get_card_list():
+    return [Card.TRUMP_1, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_7,
+            Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_10, Card.TRUMP_11, Card.TRUMP_12, Card.TRUMP_13, Card.TRUMP_14,
+            Card.TRUMP_15]
 
 
 def test_no_announcements():
@@ -70,37 +77,83 @@ def test_announce_simple_poignee_valid():
     environment.step([])
     environment.step([])
     environment.step([])
-    observation, reward, done, _ = environment.step([Poignee.SIMPLE])
-    assert observation["announcements"][3] == [Poignee.SIMPLE]
+    observation, reward, done, _ = environment.step([Poignee(environment._hand_per_player[-1][-10:])])
+    assert isinstance(observation["announcements"][3], Poignee)
     assert reward == 0
     assert not done
 
 
-def test_announce_simple_poignee_invalid():
+def test_announce_simple_poignee_excuse_refused():
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.GARDE_SANS)
+
+    environment.step([])
+    environment.step([])
+    environment.step([])
+    with pytest.raises(ValueError):
+        environment.step([Poignee(environment._hand_per_player[-1][-10:])])
+
+
+def test_announce_simple_poignee_excuse_accepted():
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.GARDE_SANS)
+
+    environment.step([])
+    environment.step([])
+    environment.step([])
+    observation = environment.step([Poignee(environment._hand_per_player[-1][-10:])])[0]
+    assert isinstance(observation["announcements"][3], Poignee)
+
+
+def test_announce_simple_poignee_no_trump():
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.GARDE_SANS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+
+    environment.step([])
+    environment.step([])
+    environment.step([])
+    with pytest.raises(ValueError):
+        environment.step([Poignee(environment._hand_per_player[-1][-10:])])
+
+
+def test_announce_simple_poignee_no_such_cards_in_hand():
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.GARDE_SANS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+
+    environment.step([])
+    environment.step([])
+    environment.step([])
+    with pytest.raises(ValueError):
+        environment.step([Poignee(
+            [Card.TRUMP_1, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_7,
+             Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_10])])
+
+
+def test_announce_poignee_invalid():
     environment = setup_environment()
 
     environment.step([])
     environment.step([])
     environment.step([])
     with pytest.raises(ValueError):
-        environment.step([Poignee.SIMPLE])
-
-
-def test_announce_double_poignee_invalid():
-    environment = setup_environment()
-
-    environment.step([])
-    environment.step([])
-    environment.step([])
-    with pytest.raises(ValueError):
-        environment.step([Poignee.DOUBLE])
-
-
-def test_announce_triple_poignee_invalid():
-    environment = setup_environment()
-
-    environment.step([])
-    environment.step([])
-    environment.step([])
-    with pytest.raises(ValueError):
-        environment.step([Poignee.TRIPLE])
+        environment.step([Poignee(get_card_list()[:9])])
