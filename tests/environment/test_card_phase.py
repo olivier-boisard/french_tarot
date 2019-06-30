@@ -10,6 +10,10 @@ def setup_envionment():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
+    environment.step([])
+    environment.step([])
+    environment.step([])
+    environment.step([])
     return environment
 
 
@@ -80,11 +84,36 @@ def test_play_complete_round_valid_last_player_team_loses():
 
 
 def test_play_excuse_in_round():
-    raise NotImplementedError()
+    environment = setup_envionment()
+    environment._current_player = 2
+    environment.step(Card.HEART_4)
+    environment.step(Card.HEART_2)
+    environment.step(Card.EXCUSE)
+    observation, reward, done, _ = environment.step(Card.HEART_KING)
+
+    assert observation["won_cards_per_team"]["taker"] == []  # TODO
+    expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2]
+    assert observation["won_cards_per_team"]["opponents"] == expected_values
+    assert observation["plis"] == [Card.HEART_4, Card.HEART_2, Card.EXCUSE, Card.HEART_KING]
+    assert environment._current_player == 1
+    assert reward == get_card_set_point(expected_values)  # last player's team won this round
+    assert not done
 
 
 def test_play_excuse_first():
-    raise NotImplementedError()
+    environment = setup_envionment()
+    environment.step(Card.EXCUSE)
+    environment.step(Card.HEART_KING)
+    environment.step(Card.HEART_4)
+    observation, reward, done, _ = environment.step(Card.HEART_2)
+
+    assert observation["won_cards_per_team"]["taker"] == []  # TODO
+    expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2]
+    assert observation["won_cards_per_team"]["opponents"] == expected_values
+    assert observation["plis"] == [Card.EXCUSE, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
+    assert environment._current_player == 1
+    assert reward == get_card_set_point(expected_values)  # last player's team won this round
+    assert not done
 
 
 def test_play_trump_valid():
@@ -120,4 +149,4 @@ def test_play_card_not_in_hand():
 
 
 def test_play_last_cards():
-    raise NotImplementedError()
+    raise NotImplementedError()  # TODO make sure score is a rounded number
