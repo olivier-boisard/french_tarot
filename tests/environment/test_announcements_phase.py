@@ -83,6 +83,34 @@ def test_announce_simple_poignee_valid():
     assert not done
 
 
+def test_announce_chelem():
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.GARDE_SANS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+
+    observation, reward, done = environment.step([CHELEM])[0]
+    assert observation["announcements"][0] == CHELEM
+    assert reward == 0
+    assert not done
+
+
+def test_announce_chelem_wrong_string():
+    environment = FrenchTarotEnvironment()
+    environment.reset()
+    environment._deal(list(Card))
+    environment.step(Bid.GARDE_SANS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+
+    with pytest.raises(ValueError):
+        environment.step(["test"])
+
+
 def test_announce_simple_poignee_excuse_refused():
     environment = FrenchTarotEnvironment()
     environment.reset()
