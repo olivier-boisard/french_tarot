@@ -112,6 +112,3 @@ def test_dog_has_wrong_number_of_cards():
     dog = list(environment._hand_per_player[environment._taking_player][:5])
     with pytest.raises(ValueError):
         environment.step(dog)
-
-
-test_make_dog_with_trump_valid()

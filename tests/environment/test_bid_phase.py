@@ -78,7 +78,7 @@ def test_bid_completed(environment):
     environment.step(Bid.PASS)
     _, _, done, _ = environment.step(Bid.PASS)
     assert not done
-    assert np.all(environment._hand_per_player[0] == original_hands[1])
+    assert np.all(environment._hand_per_player[0] == np.hstack((original_hands[1], environment._original_dog)))
     assert np.all(environment._hand_per_player[1] == original_hands[2])
     assert np.all(environment._hand_per_player[2] == original_hands[3])
     assert np.all(environment._hand_per_player[3] == original_hands[0])
