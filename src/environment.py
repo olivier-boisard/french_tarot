@@ -237,7 +237,12 @@ class FrenchTarotEnvironment:
 
     def reset(self):
         deck = self._random_state.permutation(list(Card))
-        self._deal(deck)
+        while True:
+            try:
+                self._deal(deck)
+                break
+            except RuntimeError as e:
+                print(e)
         self._game_phase = GamePhase.BID
         self._bid_per_player = []
         self._n_players = 4
@@ -255,6 +260,9 @@ class FrenchTarotEnvironment:
             deck[3 * self._n_cards_per_player:4 * self._n_cards_per_player],
         ]
         self._original_dog = deck[-self._n_cards_in_dog:]
+        for hand in self._hand_per_player:
+            if Card.TRUMP_1 in hand and FrenchTarotEnvironment._count_trumps_and_excuse(hand) == 1:
+                raise RuntimeError("'Petit sec'. Deal again.")
 
     def _get_observation_for_current_player(self):
         rval = {
