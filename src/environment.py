@@ -1,3 +1,4 @@
+import copy
 from enum import Enum, IntEnum
 
 import numpy as np
@@ -284,7 +285,7 @@ class FrenchTarotEnvironment:
             rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
             rval["announcements"] = self._announcements
 
-        return rval
+        return copy.deepcopy(rval)
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
