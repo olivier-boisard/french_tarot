@@ -121,6 +121,7 @@ class FrenchTarotEnvironment:
         self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / n_players)
         self._revealed_cards_in_dog = None
         self._announcements = None
+        self._chelem_announced = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -150,6 +151,12 @@ class FrenchTarotEnvironment:
                     raise ValueError("Revealed cards should be only trumps or excuse")
                 elif np.any([card not in current_player_hand for card in announcement]):
                     raise ValueError("Revealed card not owned by player")
+            if announcement == CHELEM:
+                if self._chelem_announced:
+                    raise ValueError("Two players cannot announce chelems")
+                else:
+                    self._chelem_announced = True
+                    self._current_player = len(self._announcements)
 
         if np.any([not isinstance(e, str) and not isinstance(e, list) for e in action]):
             raise ValueError("Wrong announcement type")
@@ -247,6 +254,7 @@ class FrenchTarotEnvironment:
         self._bid_per_player = []
         self._n_players = 4
         self._announcements = []
+        self._chelem_announced = False
 
         return self._get_observation_for_current_player()
 

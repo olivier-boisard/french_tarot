@@ -55,14 +55,23 @@ def test_complete_announcement_phase():
     assert observation["game_phase"] == GamePhase.CARD
 
 
-def test_announce_chelem():
+def test_announce_chelem_player1():
     environment = setup_environment()
     environment.step([])
     observation, reward, done, _ = environment.step([CHELEM])
+    assert environment._current_player == 1
     assert observation["announcements"][0] == []
     assert observation["announcements"][1] == [CHELEM]
     assert reward == 0
     assert not done
+
+
+def test_announce_two_chelems():
+    environment = setup_environment()
+    environment.step([])
+    environment.step([CHELEM])
+    with pytest.raises(ValueError):
+        environment.step([CHELEM])
 
 
 def test_announce_simple_poignee_valid():
@@ -83,7 +92,7 @@ def test_announce_simple_poignee_valid():
     assert not done
 
 
-def test_announce_chelem():
+def test_announce_chelem_player0():
     environment = FrenchTarotEnvironment()
     environment.reset()
     environment._deal(list(Card))
@@ -203,6 +212,3 @@ def test_announce_poignee_invalid():
         environment.step([get_card_list()[:14]])
     with pytest.raises(ValueError):
         environment.step([get_card_list()[:16]])
-
-
-test_announce_simple_poignee_excuse_accepted()
