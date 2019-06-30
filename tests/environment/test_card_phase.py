@@ -45,6 +45,7 @@ def test_play_complete_round_valid_last_player_team_wins():
     assert observation["won_cards_per_team"]["opponents"] == expected_values
     assert observation["plis"] == [expected_values]
     assert environment._current_player == 1
+    # TODO how to handle rewards?
     assert reward == get_card_set_point(expected_values)  # last player's team won this round
     assert not done
 
