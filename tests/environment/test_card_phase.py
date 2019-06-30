@@ -22,7 +22,7 @@ def test_start_valid_card():
     played_card = environment._hand_per_player[0][0]
     observation, reward, done, _ = environment.step(played_card)
     assert observation["played_cards"] == [played_card]
-    assert reward == 0
+    assert reward is None
     assert not done
 
 
@@ -40,13 +40,13 @@ def test_play_complete_round_valid_last_player_team_wins():
     environment.step(Card.HEART_4)
     observation, reward, done, _ = environment.step(Card.HEART_2)
 
-    assert observation["won_cards_per_team"]["taker"] == []
     expected_values = [Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation["won_cards_per_team"]["opponents"] == expected_values
     assert observation["plis"] == [expected_values]
     assert environment._current_player == 1
-    # TODO how to handle rewards?
-    assert reward == get_card_set_point(expected_values)  # last player's team won this round
+    assert reward[0] == 0
+    assert reward[1] == get_card_set_point(expected_values)
+    assert reward[2] == get_card_set_point(expected_values)
+    assert reward[3] == get_card_set_point(expected_values)
     assert not done
 
 
@@ -58,9 +58,7 @@ def test_play_complete_round_valid_last_player_team_loses():
     environment.step(Card.HEART_2)
     observation, reward, done, _ = environment.step(Card.HEART_1)
 
-    assert observation["won_cards_per_team"]["taker"] == []
     expected_values = [Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation["won_cards_per_team"]["opponents"] == expected_values
     assert observation["plis"] == [expected_values]
     assert environment._current_player == 1
     assert reward == 0  # last player's team lost this round
@@ -75,9 +73,7 @@ def test_play_complete_round_valid_last_player_team_loses():
     environment.step(Card.HEART_2)
     observation, reward, done, _ = environment.step(Card.HEART_1)
 
-    assert observation["won_cards_per_team"]["taker"] == []
     expected_values = [Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation["won_cards_per_team"]["opponents"] == expected_values
     assert observation["plis"] == [expected_values]
     assert environment._current_player == 1
     assert reward == 0  # last player's team lost this round
@@ -87,15 +83,18 @@ def test_play_complete_round_valid_last_player_team_loses():
 def test_play_excuse_in_round():
     environment = setup_environment()
     environment._current_player = 2
-    environment.step(Card.HEART_4)
-    environment.step(Card.HEART_2)
-    environment.step(Card.EXCUSE)
-    observation, reward, done, _ = environment.step(Card.HEART_KING)
+    observation_0 = environment.step(Card.HEART_4)[0]
+    observation_1 = environment.step(Card.HEART_2)[0]
+    observation_2 = environment.step(Card.EXCUSE)[0]
+    observation_3, reward, done, _ = environment.step(Card.HEART_KING)
 
-    assert observation["won_cards_per_team"]["taker"] == []  # TODO
+    assert observation_0["played_card"] == []
+    assert observation_1["played_card"] == [Card.HEART_4]
+    assert observation_2["played_card"] == [Card.HEART_4, Card.HEART_2]
+    assert observation_3["played_card"] == [Card.HEART_4, Card.HEART_2, Card.EXCUSE]
+
     expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation["won_cards_per_team"]["opponents"] == expected_values
-    assert observation["plis"] == [Card.HEART_4, Card.HEART_2, Card.EXCUSE, Card.HEART_KING]
+    assert observation_3["plis"] == [[Card.HEART_4, Card.HEART_2, Card.EXCUSE, Card.HEART_KING]]
     assert environment._current_player == 1
     assert reward == get_card_set_point(expected_values)  # last player's team won this round
     assert not done
@@ -108,9 +107,7 @@ def test_play_excuse_first():
     environment.step(Card.HEART_4)
     observation, reward, done, _ = environment.step(Card.HEART_2)
 
-    assert observation["won_cards_per_team"]["taker"] == []  # TODO
     expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation["won_cards_per_team"]["opponents"] == expected_values
     assert observation["plis"] == [Card.EXCUSE, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
     assert environment._current_player == 1
     assert reward == get_card_set_point(expected_values)  # last player's team won this round
