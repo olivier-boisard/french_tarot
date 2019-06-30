@@ -32,12 +32,12 @@ def test_make_dog():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    dog = list(environment._hand_per_player[environment._taking_player][2:8])
+    dog = list(environment._hand_per_player[0][2:8])  # player 0 is always the taking player
     observation, reward, done, _ = environment.step(dog)
     assert not done
     assert reward > 0
     assert observation["game_phase"] == GamePhase.ANNOUNCEMENTS
-    taking_players_hand = environment._hand_per_player[environment._taking_player]
+    taking_players_hand = environment._hand_per_player[0]
     assert np.all([card not in taking_players_hand for card in dog])
     assert len(taking_players_hand) == environment._n_cards_per_player
 
@@ -89,7 +89,7 @@ def test_make_dog_without_trump():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    dog = list(environment._hand_per_player[environment._taking_player][:6])
+    dog = list(environment._hand_per_player[0][:6])  # taking player is always player 0
     observation, reward, done, _ = environment.step(dog)
     assert len(observation["revealed_cards_in_dog"]) == 0
 
@@ -109,6 +109,6 @@ def test_dog_has_wrong_number_of_cards():
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    dog = list(environment._hand_per_player[environment._taking_player][:5])
+    dog = list(environment._hand_per_player[0][:5])  # taking player is always player 0
     with pytest.raises(ValueError):
         environment.step(dog)
