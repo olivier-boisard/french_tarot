@@ -146,13 +146,6 @@ def test_play_card_not_in_hand():
         environment.step(Card.HEART_4)
 
 
-def test_play_last_cards():
+def test_play_complete_game():
     environment = setup_environment()
-    environment._hand_per_player = [[Card.SPADES_1], [Card.SPADES_2], [Card.HEART_4], [Card.SPADES_3]]
-    environment.step(Card.SPADES_1)
-    environment.step(Card.SPADES_2)
-    environment.step(Card.HEART_4)
-    observation, reward, done, _ = environment.step(Card.SPADES_3)
-    # TODO observation
-    # TODO reward
-    assert done
+    raise NotImplementedError()
