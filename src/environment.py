@@ -99,12 +99,6 @@ class Bid(IntEnum):
     GARDE_CONTRE = 4
 
 
-class Poignee:
-
-    def __init__(self, input_list):
-        self._revealed_cards = input_list
-
-
 CHELEM = "chelem"
 
 
@@ -139,9 +133,9 @@ class FrenchTarotEnvironment:
     def _announce(self, action: list):
         if not isinstance(action, list):
             raise ValueError("Input should be list")
-        if np.any([announcement != CHELEM and not isinstance(announcement, Poignee) for announcement in action]):
+        if np.any([announcement != CHELEM and not isinstance(announcement, list) for announcement in action]):
             raise ValueError("Wrong announcement type")
-        if np.sum([isinstance(announcement, Poignee) for announcement in action]) > 1:
+        if np.sum([isinstance(announcement, list) for announcement in action]) > 1:
             raise ValueError("Player tried to announcement more than 1 poignees")
 
         self._announcements.append(action)
