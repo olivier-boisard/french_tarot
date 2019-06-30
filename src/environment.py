@@ -131,7 +131,7 @@ class FrenchTarotEnvironment:
         elif self._game_phase == GamePhase.ANNOUNCEMENTS:
             reward, done, info = self._announce(action)
         else:
-            RuntimeError("Unknown game phase")
+            raise RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
 
     def _announce(self, action: list):
