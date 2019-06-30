@@ -149,16 +149,12 @@ def test_announce_simple_poignee_excuse_accepted():
     environment.step(Bid.PASS)
     environment.step(Bid.GARDE_SANS)
 
-    environment.step([])
-    environment.step([])
-    environment.step([])
-
     card_list = [Card.TRUMP_1, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_7,
                  Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_10, Card.TRUMP_11, Card.TRUMP_12, Card.TRUMP_13, Card.EXCUSE,
                  Card.TRUMP_16]
     observation = environment.step([card_list])[0]
-    assert isinstance(observation["announcements"][3], list)
-    assert observation["announcements"][3][0] == card_list
+    assert isinstance(observation["announcements"][0], list)
+    assert observation["announcements"][0][0] == card_list
 
 
 def test_announce_simple_poignee_no_trump():
