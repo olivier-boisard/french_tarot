@@ -83,11 +83,8 @@ def test_announce_simple_poignee_valid():
     environment.step(Bid.PASS)
     environment.step(Bid.GARDE_SANS)
 
-    environment.step([])
-    environment.step([])
-    environment.step([])
-    observation, reward, done, _ = environment.step([environment._hand_per_player[-1][-10:]])
-    assert isinstance(observation["announcements"][3], list)
+    observation, reward, done, _ = environment.step([environment._hand_per_player[0][-10:]])
+    assert isinstance(observation["announcements"][0], list)
     assert reward == 0
     assert not done
 
