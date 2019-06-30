@@ -133,6 +133,11 @@ class FrenchTarotEnvironment:
     def _announce(self, action: list):
         if not isinstance(action, list):
             raise ValueError("Input should be list")
+        for announcement in action:
+            if not isinstance(announcement, str) and not isinstance(announcement, list):
+                raise ValueError("Wrong announcement type")
+            elif isinstance(announcement, str) and announcement != CHELEM:
+                raise ValueError("Wrong string value")
         if np.any([not isinstance(e, str) and not isinstance(e, list) for e in action]):
             raise ValueError("Wrong announcement type")
         if np.sum([isinstance(announcement, list) for announcement in action]) > 1:

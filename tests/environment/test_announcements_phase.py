@@ -92,8 +92,8 @@ def test_announce_chelem():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
 
-    observation, reward, done = environment.step([CHELEM])[0]
-    assert observation["announcements"][0] == CHELEM
+    observation, reward, done, _ = environment.step([CHELEM])
+    assert observation["announcements"][0] == [CHELEM]
     assert reward == 0
     assert not done
 
