@@ -67,14 +67,15 @@ def test_play_complete_round_valid_last_player_team_loses():
 
 def test_play_complete_round_valid_last_player_team_loses():
     environment = setup_environment()
-    environment._current_player = 1
+    starting_player = 1
+    environment._current_player = starting_player
     environment.step(Card.HEART_KING)
     environment.step(Card.HEART_4)
     environment.step(Card.HEART_2)
     observation, reward, done, _ = environment.step(Card.HEART_1)
 
     expected_values = [Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation["plis"] == [expected_values]
+    assert observation["plis"] == [{"played_cards": expected_values, "starting_player": starting_player}]
     assert environment._current_player == 1
     assert reward == 0  # last player's team lost this round
     assert not done
