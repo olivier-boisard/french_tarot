@@ -1,3 +1,6 @@
+import copy
+
+import numpy as np
 import pytest
 
 from environment import Card, FrenchTarotEnvironment, GamePhase, Bid
@@ -67,13 +70,19 @@ def test_reward_zero(environment):
     assert reward == 0
 
 
-def test_not_done_if_not_all_pass(environment):
+def test_bid_completed(environment):
     environment.reset()
+    original_hands = copy.deepcopy(environment._hand_per_player)
     environment.step(Bid.PASS)
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
     _, _, done, _ = environment.step(Bid.PASS)
     assert not done
+    assert np.all(environment._hand_per_player[0] == original_hands[1])
+    assert np.all(environment._hand_per_player[1] == original_hands[2])
+    assert np.all(environment._hand_per_player[2] == original_hands[3])
+    assert np.all(environment._hand_per_player[3] == original_hands[0])
+    assert environment._current_player == 3
 
 
 def test_wrong_action_in_bid(environment):
