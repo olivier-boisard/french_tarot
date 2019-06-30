@@ -1,4 +1,5 @@
 import copy
+from collections import deque
 from enum import Enum, IntEnum
 
 import numpy as np
@@ -106,6 +107,12 @@ DOUBLE_POIGNEE_SIZE = 13
 TRIPLE_POIGNEE_SIZE = 15
 
 
+def rotate_list(input_list, n):
+    hand_per_player_deque = deque(input_list)
+    hand_per_player_deque.rotate(n)
+    return list(hand_per_player_deque)
+
+
 class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
@@ -117,12 +124,12 @@ class FrenchTarotEnvironment:
         self._game_phase = None
         self._bid_per_player = None
         self._n_players = None
-        self._taking_player = None
         n_players = 4
         self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / n_players)
         self._revealed_cards_in_dog = None
         self._announcements = None
         self._chelem_announced = None
+        self._current_player = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -176,7 +183,7 @@ class FrenchTarotEnvironment:
         return reward, done, info
 
     def _make_dog(self, dog: list):
-        taking_player_hand = self._hand_per_player[self._taking_player]
+        taking_player_hand = self._hand_per_player[0]  # At this point, taking player is always player 0
         if type(dog) != list:
             raise ValueError("Wrong type for 'action'")
         if len(set(dog)) != len(dog):
@@ -207,7 +214,7 @@ class FrenchTarotEnvironment:
 
         self._game_phase = GamePhase.ANNOUNCEMENTS
         index_to_keep_in_hand = [card not in dog for card in taking_player_hand]
-        self._hand_per_player[self._taking_player] = taking_player_hand[index_to_keep_in_hand]
+        self._hand_per_player[0] = taking_player_hand[index_to_keep_in_hand]
 
         reward = get_card_set_point(dog)
         done = False
@@ -231,10 +238,11 @@ class FrenchTarotEnvironment:
         reward = 0
         if len(self._bid_per_player) == self._n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
-            self._taking_player = np.argmax(self._bid_per_player)
+            taking_player = np.argmax(self._bid_per_player)
+            self._hand_per_player = rotate_list(self._hand_per_player, -taking_player)
+            self._current_player = -taking_player % self._n_players
             if np.max(self._bid_per_player) <= Bid.GARDE:
-                self._hand_per_player[self._taking_player] = np.concatenate((self._hand_per_player[self._taking_player],
-                                                                             self._original_dog))
+                self._hand_per_player[0] = np.concatenate((self._hand_per_player[0], self._original_dog))
                 self._game_phase = GamePhase.DOG
             else:
                 self._game_phase = GamePhase.ANNOUNCEMENTS
@@ -256,6 +264,7 @@ class FrenchTarotEnvironment:
         self._n_players = 4
         self._announcements = []
         self._chelem_announced = False
+        self._current_player = 0
 
         return self._get_observation_for_current_player()
 
