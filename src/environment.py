@@ -130,6 +130,8 @@ class FrenchTarotEnvironment:
         self._announcements = None
         self._chelem_announced = None
         self._current_player = None
+        self._played_cards = None
+        self._plis = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -138,9 +140,65 @@ class FrenchTarotEnvironment:
             reward, done, info = self._make_dog(action)
         elif self._game_phase == GamePhase.ANNOUNCEMENTS:
             reward, done, info = self._announce(action)
+        elif self._game_phase == GamePhase.CARD:
+            reward, done, info = self._play_card(action)
         else:
             raise RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
+
+    def _play_card(self, action):
+        if not isinstance(action, Card):
+            raise ValueError("Action must be card")
+        if action not in self._hand_per_player[self._current_player]:
+            raise ValueError("Card not in current player's hand")
+
+        self._played_cards.append(action)
+        rewards = None
+        self._current_player = (self._current_player + 1) % self._n_players
+        if len(self._played_cards) == self._n_players:
+            winning_card_index = self._get_winning_card_index(self._played_cards)
+            play_order = np.arange(self._current_player, self._current_player + self._n_players)
+            winner = play_order[winning_card_index]
+            reward_for_winner = get_card_set_point(self._played_cards)
+            rewards = []
+            if winner == 0:  # if winner is taking player
+                rewards.append(reward_for_winner)
+                rewards.extend([0] * (self._n_players - 1))
+            else:
+                rewards.append(0)
+                rewards.extend([reward_for_winner] * (self._n_players - 1))
+            self._plis.append({"played_cards": self._played_cards, "starting_player": self._current_player})
+            self._current_player = winner
+            self._played_cards = []
+        elif len(self._played_cards) < self._n_players:
+            pass  # Nothing to do
+        else:
+            raise RuntimeError("Wrong number of played cards")
+
+        done = False
+        info = None
+        return rewards, done, info
+
+    def _get_winning_card_index(self, played_cards):
+        if played_cards[0] != Card.EXCUSE:
+            asked_color = played_cards[0].value.split("_")[0]
+        else:
+            asked_color = played_cards[1].value.split("_")[0]
+        card_strengths = []
+        for card in played_cards:
+            if asked_color not in card.value:
+                card_strengths.append(0)
+            elif "jack" in card.value:
+                card_strengths.append(11)
+            elif "rider" in card.value:
+                card_strengths.append(12)
+            elif "queen" in card.value:
+                card_strengths.append(13)
+            elif "king" in card.value:
+                card_strengths.append(14)
+            else:
+                card_strengths.append(int(card.value.split("_")[1]))
+        return np.argmax(card_strengths)
 
     def _announce(self, action: list):
         if not isinstance(action, list):
@@ -265,6 +323,8 @@ class FrenchTarotEnvironment:
         self._announcements = []
         self._chelem_announced = False
         self._current_player = 0
+        self._played_cards = []
+        self._plis = []
 
         return self._get_observation_for_current_player()
 
@@ -293,6 +353,9 @@ class FrenchTarotEnvironment:
         if self._game_phase >= GamePhase.ANNOUNCEMENTS:
             rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
             rval["announcements"] = self._announcements
+        if self._game_phase >= GamePhase.CARD:
+            rval["played_cards"] = self._played_cards
+            rval["plis"] = self._plis
 
         return copy.deepcopy(rval)
 
