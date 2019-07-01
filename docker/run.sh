@@ -3,7 +3,8 @@
 dir=$(dirname $0)
 source ${dir}/config.sh
 
-nvidia-docker run \
+docker run \
+    --runtime=nvidia \
     -d \
     --rm \
     --net=host \
