@@ -115,6 +115,7 @@ def test_play_excuse_in_round():
     assert observation_3["played_cards"] == [Card.HEART_4, Card.HEART_2, Card.EXCUSE]
 
     assert observation_4["plis"][0]["played_cards"] == [Card.HEART_4, Card.HEART_2, Card.EXCUSE, Card.HEART_KING]
+    assert observation_4["played_cards"] == []
     assert environment._current_player == 1
     expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2, Card.EXCUSE]
     assert reward[-1] == get_card_set_point(expected_values)  # last player's team won this round
@@ -167,10 +168,6 @@ def test_play_card_not_in_hand():
     environment._hand_per_player = [[Card.SPADES_1], [Card.SPADES_7], [Card.SPADES_3], [Card.SPADES_2]]
     with pytest.raises(ValueError):
         environment.step(Card.HEART_4)
-
-
-def test_play_two_rounds():
-    raise NotImplementedError()
 
 
 def test_play_complete_game():
