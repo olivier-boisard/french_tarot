@@ -170,6 +170,18 @@ def test_play_card_not_in_hand():
         environment.step(Card.HEART_4)
 
 
+def test_play_twice_same_card():
+    environment = setup_environment()[0]
+    environment._hand_per_player = [[Card.SPADES_10, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
+                                    [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    environment.step(Card.SPADES_10)
+    environment.step(Card.SPADES_3)
+    environment.step(Card.SPADES_4)
+    environment.step(Card.SPADES_7)
+    with pytest.raises(ValueError):
+        environment.step(Card.SPADES_10)
+
+
 def test_play_complete_game():
     environment = setup_environment()[0]
     raise NotImplementedError()

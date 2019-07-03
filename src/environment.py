@@ -160,7 +160,7 @@ class FrenchTarotEnvironment:
 
         self._played_cards.append(card)
         rewards = None
-        self._current_player = (self._current_player + 1) % self._n_players
+
         if len(self._played_cards) == self._n_players:
             winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
             play_order = np.arange(self._current_player, self._current_player + self._n_players) % self._n_players
@@ -181,6 +181,9 @@ class FrenchTarotEnvironment:
         else:
             raise RuntimeError("Wrong number of played cards")
 
+        current_hand = self._hand_per_player[self._current_player]
+        self._hand_per_player[self._current_player] = current_hand[current_hand != card]
+        self._current_player = (self._current_player + 1) % self._n_players
         done = False
         info = None
         return rewards, done, info
