@@ -146,18 +146,24 @@ class FrenchTarotEnvironment:
             raise RuntimeError("Unknown game phase")
         return self._get_observation_for_current_player(), reward, done, info
 
-    def _play_card(self, action):
-        if not isinstance(action, Card):
+    def _play_card(self, card):
+        if not isinstance(card, Card):
             raise ValueError("Action must be card")
-        if action not in self._hand_per_player[self._current_player]:
+        if card not in self._hand_per_player[self._current_player]:
             raise ValueError("Card not in current player's hand")
+        card_color = card.value.split("_")[0]
+        asked_color = FrenchTarotEnvironment._retrieve_asked_color(self._played_cards)
+        if card_color != asked_color and card != Card.EXCUSE:
+            self._check_trump_or_pee_is_allowed()
+        if card_color == "trump":
+            self._check_trump_value_is_allowed(card)
 
-        self._played_cards.append(action)
+        self._played_cards.append(card)
         rewards = None
         self._current_player = (self._current_player + 1) % self._n_players
         if len(self._played_cards) == self._n_players:
-            winning_card_index = self._get_winning_card_index(self._played_cards)
-            play_order = np.arange(self._current_player, self._current_player + self._n_players)
+            winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
+            play_order = np.arange(self._current_player, self._current_player + self._n_players) % self._n_players
             winner = play_order[winning_card_index]
             reward_for_winner = get_card_set_point(self._played_cards)
             rewards = []
@@ -179,11 +185,26 @@ class FrenchTarotEnvironment:
         info = None
         return rewards, done, info
 
-    def _get_winning_card_index(self, played_cards):
-        if played_cards[0] != Card.EXCUSE:
-            asked_color = played_cards[0].value.split("_")[0]
-        else:
-            asked_color = played_cards[1].value.split("_")[0]
+    def _check_trump_value_is_allowed(self, card):
+        current_player_hand = self._hand_per_player[self._current_player]
+        trumps_in_hand = [int(card.value.split("_")[1]) for card in current_player_hand if "trump" in card.value]
+        max_trump_in_hand = np.max(trumps_in_hand) if len(trumps_in_hand) > 0 else 0
+        played_trump = [int(card.value.split("_")[1]) for card in self._played_cards if "trump" in card.value]
+        max_played_trump = np.max(played_trump) if len(played_trump) > 0 else 0
+        card_strength = int(card.value.split("_")[1])
+        if max_trump_in_hand > max_played_trump > card_strength:
+            raise ValueError("Higher trump value must be played when possible")
+
+    def _check_trump_or_pee_is_allowed(self):
+        asked_color = FrenchTarotEnvironment._retrieve_asked_color(self._played_cards)
+        if asked_color is not None:
+            for card in self._hand_per_player[self._current_player]:
+                if asked_color in card.value:
+                    raise ValueError("Trump unallowed")
+
+    @staticmethod
+    def _get_winning_card_index(played_cards):
+        asked_color = FrenchTarotEnvironment._retrieve_asked_color(played_cards)
         card_strengths = []
         for card in played_cards:
             if asked_color not in card.value:
@@ -199,6 +220,21 @@ class FrenchTarotEnvironment:
             else:
                 card_strengths.append(int(card.value.split("_")[1]))
         return np.argmax(card_strengths)
+
+    @staticmethod
+    def _retrieve_asked_color(played_cards):
+        asked_color = None
+        if len(played_cards) > 0:
+            if played_cards[0] != Card.EXCUSE:
+                asked_color = played_cards[0].value.split("_")[0]
+            elif len(played_cards) > 1:
+                asked_color = played_cards[1].value.split("_")[0]
+            else:
+                pass  # Nothing to do
+        else:
+            pass  # Nothing to do
+
+        return asked_color
 
     def _announce(self, action: list):
         if not isinstance(action, list):
