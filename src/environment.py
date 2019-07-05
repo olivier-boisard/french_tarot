@@ -153,7 +153,7 @@ class FrenchTarotEnvironment:
             raise ValueError("Card not in current player's hand")
         card_color = card.value.split("_")[0]
         asked_color = FrenchTarotEnvironment._retrieve_asked_color(self._played_cards)
-        if card_color != asked_color and card != Card.EXCUSE:
+        if card_color != asked_color and card != Card.EXCUSE and len(self._played_cards) > 0:
             self._check_trump_or_pee_is_allowed()
         if card_color == "trump":
             self._check_trump_value_is_allowed(card)
@@ -161,9 +161,14 @@ class FrenchTarotEnvironment:
         self._played_cards.append(card)
         rewards = None
 
+        current_hand = self._hand_per_player[self._current_player]
+        current_hand = current_hand[current_hand != card]
+        self._hand_per_player[self._current_player] = current_hand if isinstance(current_hand, list) else [current_hand]
+
         if len(self._played_cards) == self._n_players:
             winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
-            play_order = np.arange(self._current_player, self._current_player + self._n_players) % self._n_players
+            starting_player = (self._current_player + 1) % self._n_players
+            play_order = np.arange(starting_player, starting_player + self._n_players) % self._n_players
             winner = play_order[winning_card_index]
             reward_for_winner = get_card_set_point(self._played_cards)
             rewards = []
@@ -173,17 +178,14 @@ class FrenchTarotEnvironment:
             else:
                 rewards.append(0)
                 rewards.extend([reward_for_winner] * (self._n_players - 1))
-            self._plis.append({"played_cards": self._played_cards, "starting_player": self._current_player})
+            self._plis.append({"played_cards": self._played_cards, "starting_player": starting_player})
             self._current_player = winner
             self._played_cards = []
         elif len(self._played_cards) < self._n_players:
-            pass  # Nothing to do
+            self._current_player = (self._current_player + 1) % self._n_players
         else:
             raise RuntimeError("Wrong number of played cards")
 
-        current_hand = self._hand_per_player[self._current_player]
-        self._hand_per_player[self._current_player] = current_hand[current_hand != card]
-        self._current_player = (self._current_player + 1) % self._n_players
         done = False
         info = None
         return rewards, done, info
