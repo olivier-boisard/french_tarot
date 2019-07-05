@@ -163,7 +163,10 @@ class FrenchTarotEnvironment:
 
         current_hand = self._hand_per_player[self._current_player]
         current_hand = current_hand[current_hand != card]
-        self._hand_per_player[self._current_player] = current_hand if isinstance(current_hand, list) else [current_hand]
+        if isinstance(current_hand, Card):
+            self._hand_per_player[self._current_player] = np.array([current_hand])
+        else:
+            self._hand_per_player[self._current_player] = current_hand
 
         if len(self._played_cards) == self._n_players:
             winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
@@ -205,14 +208,16 @@ class FrenchTarotEnvironment:
         if asked_color is not None:
             for card in self._hand_per_player[self._current_player]:
                 if asked_color in card.value:
-                    raise ValueError("Trump unallowed")
+                    raise ValueError("Trump or pee unallowed")
 
     @staticmethod
     def _get_winning_card_index(played_cards):
         asked_color = FrenchTarotEnvironment._retrieve_asked_color(played_cards)
         card_strengths = []
         for card in played_cards:
-            if asked_color not in card.value:
+            if "trump" in card.value:
+                card_strengths.append(100 + int(card.value.split("_")[1]))
+            elif asked_color not in card.value:
                 card_strengths.append(0)
             elif "jack" in card.value:
                 card_strengths.append(11)

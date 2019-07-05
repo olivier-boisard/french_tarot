@@ -182,6 +182,17 @@ def test_play_twice_same_card():
         environment.step(Card.SPADES_10)
 
 
+def test_play_trump_win():
+    environment = setup_environment()[0]
+    environment._hand_per_player = [[Card.SPADES_10, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
+                                    [Card.TRUMP_1, Card.HEART_5], [Card.SPADES_6, Card.SPADES_7]]
+    environment.step(Card.SPADES_10)
+    environment.step(Card.SPADES_3)
+    environment.step(Card.TRUMP_1)
+    environment.step(Card.SPADES_7)
+    assert environment._current_player == 2
+
+
 def test_play_complete_game():
     environment = setup_environment()[0]
     environment.step(Card.HEART_1)
@@ -257,4 +268,5 @@ def test_play_complete_game():
     environment.step(Card.TRUMP_8)
     observation, reward, done, _ = environment.step(Card.SPADES_1)
     assert done
-    assert reward[0] + reward[1] == 91
+    # TODO assert who made it and how many points are lost/won by each player
+    raise NotImplementedError()
