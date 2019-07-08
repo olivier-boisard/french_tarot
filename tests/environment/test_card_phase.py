@@ -270,3 +270,15 @@ def test_play_complete_game():
     assert done
     # TODO assert who made it and how many points are lost/won by each player
     raise NotImplementedError()
+
+
+def test_petit_au_bout():
+    raise NotImplementedError()
+
+
+def test_poignee():
+    raise NotImplementedError()
+
+
+def test_chelem():
+    raise NotImplementedError()
