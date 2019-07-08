@@ -132,6 +132,9 @@ class FrenchTarotEnvironment:
         self._current_player = None
         self._played_cards = None
         self._plis = None
+        self._won_cards_per_teams = None
+        self._bonus_points_per_teams = None
+        self._made_dog = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -159,39 +162,104 @@ class FrenchTarotEnvironment:
             self._check_trump_value_is_allowed(card)
 
         self._played_cards.append(card)
-        rewards = None
 
         current_hand = self._hand_per_player[self._current_player]
         current_hand = current_hand[current_hand != card]
+        rewards = None
+        done = False
         if isinstance(current_hand, Card):
             self._hand_per_player[self._current_player] = np.array([current_hand])
         else:
             self._hand_per_player[self._current_player] = current_hand
 
         if len(self._played_cards) == self._n_players:
-            winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
-            starting_player = (self._current_player + 1) % self._n_players
-            play_order = np.arange(starting_player, starting_player + self._n_players) % self._n_players
-            winner = play_order[winning_card_index]
-            reward_for_winner = get_card_set_point(self._played_cards)
-            rewards = []
-            if winner == 0:  # if winner is taking player
-                rewards.append(reward_for_winner)
-                rewards.extend([0] * (self._n_players - 1))
+            rewards = self._solve_round()
+            if len(self._hand_per_player[0]) == 0:
+                rewards = self._compute_win_loss()
+                done = True
             else:
-                rewards.append(0)
-                rewards.extend([reward_for_winner] * (self._n_players - 1))
-            self._plis.append({"played_cards": self._played_cards, "starting_player": starting_player})
-            self._current_player = winner
-            self._played_cards = []
+                pass  # Nothing to do
+
         elif len(self._played_cards) < self._n_players:
             self._current_player = (self._current_player + 1) % self._n_players
         else:
             raise RuntimeError("Wrong number of played cards")
 
-        done = False
         info = None
         return rewards, done, info
+
+    def _compute_win_loss(self):
+        dog = self._made_dog if self._made_dog is not None else self._original_dog
+        taker_points = get_card_set_point(self._won_cards_per_teams["taker"] + list(dog))
+        opponents_points = get_card_set_point(self._won_cards_per_teams["opponents"])
+        if taker_points + opponents_points != 91:
+            raise RuntimeError("Invalid score")
+        n_oudlers_taker = np.sum([_is_oudler(card) for card in self._won_cards_per_teams["taker"]])
+        if n_oudlers_taker == 3:
+            victory_threshold = 36
+        elif n_oudlers_taker == 2:
+            victory_threshold = 41
+        elif n_oudlers_taker == 1:
+            victory_threshold = 51
+        elif n_oudlers_taker == 0:
+            victory_threshold = 56
+        else:
+            RuntimeError("Invalid number of oudlers")
+        diff = abs(victory_threshold - taker_points)
+        contract_value = 25 + diff
+        if self._bid_per_player[0] == Bid.PETITE:
+            multiplier = 1
+        elif self._bid_per_player[0] == Bid.GARDE:
+            multiplier = 2
+        elif self._bid_per_player[0] == Bid.GARDE_SANS:
+            multiplier = 4
+        elif self._bid_per_player[0] == Bid.GARDE_CONTRE:
+            multiplier = 6
+        else:
+            raise RuntimeError("Invalid contract value")
+        contract_value *= multiplier
+        if taker_points >= victory_threshold:
+            contract_value *= -1
+        else:
+            pass  # Nothing to do
+        rewards = [3 * contract_value, -contract_value, -contract_value, -contract_value]
+        return rewards
+
+    def _solve_round(self):
+        starting_player = (self._current_player + 1) % self._n_players
+        winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
+        play_order = np.arange(starting_player, starting_player + self._n_players) % self._n_players
+        winner = play_order[winning_card_index]
+        reward_for_winner = get_card_set_point(self._played_cards)
+        rewards = []
+        if winner == 0:  # if winner is taking player
+            rewards.append(reward_for_winner)
+            rewards.extend([0] * (self._n_players - 1))
+        else:
+            rewards.append(0)
+            rewards.extend([reward_for_winner] * (self._n_players - 1))
+        self._plis.append({"played_cards": self._played_cards, "starting_player": starting_player})
+
+        won_cards = self._played_cards.copy()
+        if Card.EXCUSE in self._played_cards:
+            excuse_owner = play_order[self._played_cards.index(Card.EXCUSE)]
+            won_cards.remove(Card.EXCUSE)
+            if excuse_owner == 0:
+                self._won_cards_per_teams["taker"].append(Card.EXCUSE)
+                self._bonus_points_per_teams["opponents"] += 0.5
+                self._bonus_points_per_teams["taker"] -= 0.5
+            else:
+                self._won_cards_per_teams["opponents"].append(Card.EXCUSE)
+                if winner == 0:
+                    self._bonus_points_per_teams["opponents"] -= 0.5
+                    self._bonus_points_per_teams["taker"] += 0.5
+        if winner == 0:
+            self._won_cards_per_teams["taker"] += won_cards
+        else:
+            self._won_cards_per_teams["opponents"] += won_cards
+        self._current_player = winner
+        self._played_cards = []
+        return rewards
 
     def _check_trump_value_is_allowed(self, card):
         current_player_hand = self._hand_per_player[self._current_player]
@@ -321,6 +389,7 @@ class FrenchTarotEnvironment:
         self._hand_per_player[0] = taking_player_hand[index_to_keep_in_hand]
 
         reward = get_card_set_point(dog)
+        self._made_dog = dog
         done = False
         info = None
         return reward, done, info
@@ -371,6 +440,9 @@ class FrenchTarotEnvironment:
         self._current_player = 0
         self._played_cards = []
         self._plis = []
+        self._won_cards_per_teams = {"taker": [], "opponents": []}
+        self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
+        self._made_dog = None
 
         return self._get_observation_for_current_player()
 
