@@ -268,8 +268,10 @@ def test_play_complete_game():
     environment.step(Card.TRUMP_8)
     observation, reward, done, _ = environment.step(Card.SPADES_1)
     assert done
-    # TODO assert who made it and how many points are lost/won by each player
-    raise NotImplementedError()
+    assert reward[0] == -540
+    assert reward[1] == 180
+    assert reward[2] == 180
+    assert reward[3] == 180
 
 
 def test_petit_au_bout():

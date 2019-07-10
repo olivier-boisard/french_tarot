@@ -191,9 +191,13 @@ class FrenchTarotEnvironment:
     def _compute_win_loss(self):
         dog = self._made_dog if self._made_dog is not None else self._original_dog
         taker_points = get_card_set_point(self._won_cards_per_teams["taker"] + list(dog))
+        taker_points += self._bonus_points_per_teams["taker"]
         opponents_points = get_card_set_point(self._won_cards_per_teams["opponents"])
+        opponents_points += self._bonus_points_per_teams["opponents"]
         if taker_points + opponents_points != 91:
             raise RuntimeError("Invalid score")
+        if taker_points != round(taker_points):
+            raise RuntimeError("Score should be integer")
         n_oudlers_taker = np.sum([_is_oudler(card) for card in self._won_cards_per_teams["taker"]])
         if n_oudlers_taker == 3:
             victory_threshold = 36
@@ -217,8 +221,8 @@ class FrenchTarotEnvironment:
             multiplier = 6
         else:
             raise RuntimeError("Invalid contract value")
-        contract_value *= multiplier
-        if taker_points >= victory_threshold:
+        contract_value = int(contract_value * multiplier)
+        if taker_points < victory_threshold:
             contract_value *= -1
         else:
             pass  # Nothing to do
