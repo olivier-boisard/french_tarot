@@ -135,6 +135,7 @@ class FrenchTarotEnvironment:
         self._won_cards_per_teams = None
         self._bonus_points_per_teams = None
         self._made_dog = None
+        self._winners = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -226,6 +227,12 @@ class FrenchTarotEnvironment:
             contract_value *= -1
         else:
             pass  # Nothing to do
+
+        if len(self._won_cards_per_teams["opponents"]) == 0:  # if chelem managed by taker
+            contract_value += 400 if self._chelem_announced else 200
+        else:
+            pass  # Nothing to do
+
         rewards = [3 * contract_value, -contract_value, -contract_value, -contract_value]
         return rewards
 
@@ -340,7 +347,7 @@ class FrenchTarotEnvironment:
                     raise ValueError("Two players cannot announce chelems")
                 else:
                     self._chelem_announced = True
-                    self._current_player = len(self._announcements)
+                    self._current_player = 0
 
         if np.any([not isinstance(e, str) and not isinstance(e, list) for e in action]):
             raise ValueError("Wrong announcement type")
@@ -416,6 +423,8 @@ class FrenchTarotEnvironment:
         if len(self._bid_per_player) == self._n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
             taking_player = np.argmax(self._bid_per_player)
+            self._bid_per_player = rotate_list(self._bid_per_player, -taking_player)
+            assert np.argmax(self._bid_per_player) == 0
             self._hand_per_player = rotate_list(self._hand_per_player, -taking_player)
             self._current_player = -taking_player % self._n_players
             if np.max(self._bid_per_player) <= Bid.GARDE:
@@ -447,6 +456,7 @@ class FrenchTarotEnvironment:
         self._won_cards_per_teams = {"taker": [], "opponents": []}
         self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
         self._made_dog = None
+        self._winners = []
 
         return self._get_observation_for_current_player()
 
