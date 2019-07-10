@@ -66,10 +66,9 @@ def test_announce_chelem_player1():
     assert not done
 
 
-def test_announce_two_chelems():
+def test_announce_chelem_by_non_taking_player():
     environment = setup_environment()
     environment.step([])
-    environment.step([CHELEM])
     with pytest.raises(ValueError):
         environment.step([CHELEM])
 
