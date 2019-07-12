@@ -117,6 +117,7 @@ class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
     def __init__(self):
+        self._winners_per_round = None
         self._random_state = np.random.RandomState(1988)
         self._n_cards_in_dog = 6
         self._hand_per_player = None
@@ -135,7 +136,6 @@ class FrenchTarotEnvironment:
         self._won_cards_per_teams = None
         self._bonus_points_per_teams = None
         self._made_dog = None
-        self._winners = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -174,9 +174,13 @@ class FrenchTarotEnvironment:
             self._hand_per_player[self._current_player] = current_hand
 
         if len(self._played_cards) == self._n_players:
+            is_petit_played_in_round = Card.TRUMP_1 in self._played_cards
+            is_excuse_played_in_round = Card.EXCUSE in self._played_cards
             rewards = self._solve_round()
+            is_taker_win_round = rewards[0] > 0
             if len(self._hand_per_player[0]) == 0:
-                rewards = self._compute_win_loss()
+                rewards = self._compute_win_loss(is_petit_played_in_round, is_excuse_played_in_round,
+                                                 is_taker_win_round)
                 done = True
             else:
                 pass  # Nothing to do
@@ -189,7 +193,7 @@ class FrenchTarotEnvironment:
         info = None
         return rewards, done, info
 
-    def _compute_win_loss(self):
+    def _compute_win_loss(self, is_petit_played_in_round, is_excuse_played_in_round, is_taker_win_round):
         dog = self._made_dog if self._made_dog is not None else self._original_dog
         taker_points = get_card_set_point(self._won_cards_per_teams["taker"] + list(dog))
         taker_points += self._bonus_points_per_teams["taker"]
@@ -199,7 +203,7 @@ class FrenchTarotEnvironment:
             raise RuntimeError("Invalid score")
         if taker_points != round(taker_points):
             raise RuntimeError("Score should be integer")
-        n_oudlers_taker = np.sum([_is_oudler(card) for card in self._won_cards_per_teams["taker"]])
+        n_oudlers_taker = np.sum([_is_oudler(card) for card in list(self._won_cards_per_teams["taker"]) + list(dog)])
         if n_oudlers_taker == 3:
             victory_threshold = 36
         elif n_oudlers_taker == 2:
@@ -228,11 +232,22 @@ class FrenchTarotEnvironment:
         else:
             pass  # Nothing to do
 
-        if len(self._won_cards_per_teams["opponents"]) == 0:  # if chelem managed by taker
+        winners_per_round = np.array(self._winners_per_round)
+        if np.all(winners_per_round == "taker") or (
+                np.all(winners_per_round[:-1] == "taker") and is_excuse_played_in_round):
             contract_value += 400 if self._chelem_announced else 200
         else:
             pass  # Nothing to do
 
+        if is_petit_played_in_round:
+            to_add = (10 if not is_taker_win_round else -10) * multiplier
+            if taker_points > victory_threshold:
+                to_add *= -1
+            else:
+                pass  # Nothing to do
+            contract_value += to_add
+        else:
+            pass  # Nothing to do
         rewards = [3 * contract_value, -contract_value, -contract_value, -contract_value]
         return rewards
 
@@ -246,9 +261,11 @@ class FrenchTarotEnvironment:
         if winner == 0:  # if winner is taking player
             rewards.append(reward_for_winner)
             rewards.extend([0] * (self._n_players - 1))
+            self._winners_per_round.append("taker")
         else:
             rewards.append(0)
             rewards.extend([reward_for_winner] * (self._n_players - 1))
+            self._winners_per_round.append("opponents")
         self._plis.append({"played_cards": self._played_cards, "starting_player": starting_player})
 
         won_cards = self._played_cards.copy()
@@ -343,11 +360,10 @@ class FrenchTarotEnvironment:
                 elif np.any([card not in current_player_hand for card in announcement]):
                     raise ValueError("Revealed card not owned by player")
             if announcement == CHELEM:
-                if self._chelem_announced:
-                    raise ValueError("Two players cannot announce chelems")
-                else:
-                    self._chelem_announced = True
-                    self._current_player = 0
+                if len(self._announcements) > 0:
+                    raise ValueError("Only taker can announce chelem")
+                self._chelem_announced = True
+                self._current_player = 0
 
         if np.any([not isinstance(e, str) and not isinstance(e, list) for e in action]):
             raise ValueError("Wrong announcement type")
@@ -456,7 +472,7 @@ class FrenchTarotEnvironment:
         self._won_cards_per_teams = {"taker": [], "opponents": []}
         self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
         self._made_dog = None
-        self._winners = []
+        self._winners_per_round = []
 
         return self._get_observation_for_current_player()
 

@@ -282,8 +282,84 @@ def test_play_complete_game():
     assert reward[3] == 180
 
 
-def test_petit_au_bout():
-    raise NotImplementedError()
+def test_petit_au_bout_taker():
+    environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
+    environment.step(Card.TRUMP_2)
+    environment.step(Card.SPADES_1)
+    environment.step(Card.CLOVER_5)
+    environment.step(Card.HEART_9)
+    environment.step(Card.TRUMP_3)
+    environment.step(Card.SPADES_2)
+    environment.step(Card.CLOVER_6)
+    environment.step(Card.HEART_10)
+    environment.step(Card.TRUMP_4)
+    environment.step(Card.SPADES_3)
+    environment.step(Card.CLOVER_7)
+    environment.step(Card.HEART_JACK)
+    environment.step(Card.TRUMP_5)
+    environment.step(Card.SPADES_4)
+    environment.step(Card.CLOVER_8)
+    environment.step(Card.HEART_RIDER)
+    environment.step(Card.TRUMP_6)
+    environment.step(Card.SPADES_5)
+    environment.step(Card.CLOVER_9)
+    environment.step(Card.HEART_QUEEN)
+    environment.step(Card.TRUMP_7)
+    environment.step(Card.SPADES_6)
+    environment.step(Card.CLOVER_10)
+    environment.step(Card.HEART_KING)
+    environment.step(Card.TRUMP_8)
+    environment.step(Card.SPADES_7)
+    environment.step(Card.CLOVER_JACK)
+    environment.step(Card.DIAMOND_1)
+    environment.step(Card.DIAMOND_QUEEN)
+    environment.step(Card.SPADES_8)
+    environment.step(Card.CLOVER_RIDER)
+    environment.step(Card.DIAMOND_2)
+    environment.step(Card.DIAMOND_KING)
+    environment.step(Card.SPADES_9)
+    environment.step(Card.CLOVER_QUEEN)
+    environment.step(Card.DIAMOND_3)
+    environment.step(Card.TRUMP_9)
+    environment.step(Card.SPADES_10)
+    environment.step(Card.CLOVER_KING)
+    environment.step(Card.DIAMOND_4)
+    environment.step(Card.TRUMP_10)
+    environment.step(Card.SPADES_JACK)
+    environment.step(Card.HEART_1)
+    environment.step(Card.DIAMOND_5)
+    environment.step(Card.TRUMP_11)
+    environment.step(Card.SPADES_RIDER)
+    environment.step(Card.HEART_2)
+    environment.step(Card.DIAMOND_6)
+    environment.step(Card.TRUMP_12)
+    environment.step(Card.SPADES_QUEEN)
+    environment.step(Card.HEART_3)
+    environment.step(Card.DIAMOND_7)
+    environment.step(Card.TRUMP_13)
+    environment.step(Card.SPADES_KING)
+    environment.step(Card.HEART_4)
+    environment.step(Card.DIAMOND_8)
+    environment.step(Card.TRUMP_14)
+    environment.step(Card.CLOVER_1)
+    environment.step(Card.HEART_5)
+    environment.step(Card.DIAMOND_9)
+    environment.step(Card.TRUMP_15)
+    environment.step(Card.CLOVER_2)
+    environment.step(Card.HEART_6)
+    environment.step(Card.DIAMOND_10)
+    environment.step(Card.TRUMP_16)
+    environment.step(Card.CLOVER_3)
+    environment.step(Card.HEART_7)
+    environment.step(Card.DIAMOND_JACK)
+    environment.step(Card.TRUMP_1)
+    environment.step(Card.CLOVER_4)
+    environment.step(Card.HEART_8)
+    reward = environment.step(Card.DIAMOND_RIDER)[1]
+    assert reward[0] == 2280
+    assert reward[1] == -760
+    assert reward[2] == -760
+    assert reward[3] == -760
 
 
 def test_poignee():
@@ -364,10 +440,10 @@ def test_chelem_unannounced():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 1380
-    assert reward[1] == -460
-    assert reward[2] == -460
-    assert reward[3] == -460
+    assert reward[0] == 1560
+    assert reward[1] == -520
+    assert reward[2] == -520
+    assert reward[3] == -520
 
 
 def test_chelem_announced():
@@ -444,25 +520,171 @@ def test_chelem_announced():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 1980
-    assert reward[1] == -660
-    assert reward[2] == -660
-    assert reward[3] == -660
+    assert reward[0] == 2160
+    assert reward[1] == -720
+    assert reward[2] == -720
+    assert reward[3] == -720
 
 
 def test_chelem_announced_with_excuse():
-    raise NotImplementedError()
-
-
-def test_chelem_unannounced_with_excuse():
-    raise NotImplementedError()
+    environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
+    environment._original_dog[-1] = Card.TRUMP_1
+    environment._hand_per_player[0][2] = Card.EXCUSE
+    environment.step(Card.TRUMP_2)
+    environment.step(Card.SPADES_1)
+    environment.step(Card.CLOVER_5)
+    environment.step(Card.HEART_9)
+    environment.step(Card.TRUMP_3)
+    environment.step(Card.SPADES_2)
+    environment.step(Card.CLOVER_6)
+    environment.step(Card.HEART_10)
+    environment.step(Card.TRUMP_4)
+    environment.step(Card.SPADES_3)
+    environment.step(Card.CLOVER_7)
+    environment.step(Card.HEART_JACK)
+    environment.step(Card.TRUMP_5)
+    environment.step(Card.SPADES_4)
+    environment.step(Card.CLOVER_8)
+    environment.step(Card.HEART_RIDER)
+    environment.step(Card.TRUMP_6)
+    environment.step(Card.SPADES_5)
+    environment.step(Card.CLOVER_9)
+    environment.step(Card.HEART_QUEEN)
+    environment.step(Card.TRUMP_7)
+    environment.step(Card.SPADES_6)
+    environment.step(Card.CLOVER_10)
+    environment.step(Card.HEART_KING)
+    environment.step(Card.TRUMP_8)
+    environment.step(Card.SPADES_7)
+    environment.step(Card.CLOVER_JACK)
+    environment.step(Card.DIAMOND_1)
+    environment.step(Card.DIAMOND_QUEEN)
+    environment.step(Card.SPADES_8)
+    environment.step(Card.CLOVER_RIDER)
+    environment.step(Card.DIAMOND_2)
+    environment.step(Card.DIAMOND_KING)
+    environment.step(Card.SPADES_9)
+    environment.step(Card.CLOVER_QUEEN)
+    environment.step(Card.DIAMOND_3)
+    environment.step(Card.TRUMP_9)
+    environment.step(Card.SPADES_10)
+    environment.step(Card.CLOVER_KING)
+    environment.step(Card.DIAMOND_4)
+    environment.step(Card.TRUMP_10)
+    environment.step(Card.SPADES_JACK)
+    environment.step(Card.HEART_1)
+    environment.step(Card.DIAMOND_5)
+    environment.step(Card.TRUMP_11)
+    environment.step(Card.SPADES_RIDER)
+    environment.step(Card.HEART_2)
+    environment.step(Card.DIAMOND_6)
+    environment.step(Card.TRUMP_12)
+    environment.step(Card.SPADES_QUEEN)
+    environment.step(Card.HEART_3)
+    environment.step(Card.DIAMOND_7)
+    environment.step(Card.TRUMP_13)
+    environment.step(Card.SPADES_KING)
+    environment.step(Card.HEART_4)
+    environment.step(Card.DIAMOND_8)
+    environment.step(Card.TRUMP_14)
+    environment.step(Card.CLOVER_1)
+    environment.step(Card.HEART_5)
+    environment.step(Card.DIAMOND_9)
+    environment.step(Card.TRUMP_15)
+    environment.step(Card.CLOVER_2)
+    environment.step(Card.HEART_6)
+    environment.step(Card.DIAMOND_10)
+    environment.step(Card.TRUMP_16)
+    environment.step(Card.CLOVER_3)
+    environment.step(Card.HEART_7)
+    environment.step(Card.DIAMOND_JACK)
+    environment.step(Card.EXCUSE)
+    environment.step(Card.CLOVER_4)
+    environment.step(Card.HEART_8)
+    reward = environment.step(Card.DIAMOND_RIDER)[1]
+    assert reward[0] == 2112
+    assert reward[1] == -704
+    assert reward[2] == -704
+    assert reward[3] == -704
 
 
 def test_chelem_announced_and_failed():
-    raise NotImplementedError()
-
-
-def test_chelem_announced_and_achieved_by_other_team():
+    environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
+    tmp = environment._hand_per_player[0][16]
+    environment._hand_per_player[0][16] = environment._hand_per_player[1][0]
+    environment._hand_per_player[1][0] = tmp
+    environment.step(Card.TRUMP_2)
+    environment.step(Card.TRUMP_15)
+    environment.step(Card.CLOVER_5)
+    environment.step(Card.HEART_9)
+    environment.step(Card.SPADES_2)
+    environment.step(Card.CLOVER_6)
+    environment.step(Card.HEART_10)
+    environment.step(Card.TRUMP_3)
+    environment.step(Card.TRUMP_4)
+    environment.step(Card.SPADES_3)
+    environment.step(Card.CLOVER_7)
+    environment.step(Card.HEART_JACK)
+    environment.step(Card.TRUMP_5)
+    environment.step(Card.SPADES_4)
+    environment.step(Card.CLOVER_8)
+    environment.step(Card.HEART_RIDER)
+    environment.step(Card.TRUMP_6)
+    environment.step(Card.SPADES_5)
+    environment.step(Card.CLOVER_9)
+    environment.step(Card.HEART_QUEEN)
+    environment.step(Card.TRUMP_7)
+    environment.step(Card.SPADES_6)
+    environment.step(Card.CLOVER_10)
+    environment.step(Card.HEART_KING)
+    environment.step(Card.TRUMP_8)
+    environment.step(Card.SPADES_7)
+    environment.step(Card.CLOVER_JACK)
+    environment.step(Card.DIAMOND_1)
+    environment.step(Card.DIAMOND_QUEEN)
+    environment.step(Card.SPADES_8)
+    environment.step(Card.CLOVER_RIDER)
+    environment.step(Card.DIAMOND_2)
+    environment.step(Card.DIAMOND_KING)
+    environment.step(Card.SPADES_9)
+    environment.step(Card.CLOVER_QUEEN)
+    environment.step(Card.DIAMOND_3)
+    environment.step(Card.TRUMP_9)
+    environment.step(Card.SPADES_10)
+    environment.step(Card.CLOVER_KING)
+    environment.step(Card.DIAMOND_4)
+    environment.step(Card.TRUMP_10)
+    environment.step(Card.SPADES_JACK)
+    environment.step(Card.HEART_1)
+    environment.step(Card.DIAMOND_5)
+    environment.step(Card.TRUMP_11)
+    environment.step(Card.SPADES_RIDER)
+    environment.step(Card.HEART_2)
+    environment.step(Card.DIAMOND_6)
+    environment.step(Card.TRUMP_12)
+    environment.step(Card.SPADES_QUEEN)
+    environment.step(Card.HEART_3)
+    environment.step(Card.DIAMOND_7)
+    environment.step(Card.TRUMP_13)
+    environment.step(Card.SPADES_KING)
+    environment.step(Card.HEART_4)
+    environment.step(Card.DIAMOND_8)
+    environment.step(Card.TRUMP_14)
+    environment.step(Card.CLOVER_1)
+    environment.step(Card.HEART_5)
+    environment.step(Card.DIAMOND_9)
+    environment.step(Card.TRUMP_15)
+    environment.step(Card.CLOVER_2)
+    environment.step(Card.HEART_6)
+    environment.step(Card.DIAMOND_10)
+    environment.step(Card.TRUMP_16)
+    environment.step(Card.CLOVER_3)
+    environment.step(Card.HEART_7)
+    environment.step(Card.DIAMOND_JACK)
+    environment.step(Card.EXCUSE)
+    environment.step(Card.CLOVER_4)
+    environment.step(Card.HEART_8)
+    reward = environment.step(Card.DIAMOND_RIDER)[1]
     raise NotImplementedError()
 
 

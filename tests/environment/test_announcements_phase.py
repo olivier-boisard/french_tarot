@@ -55,17 +55,6 @@ def test_complete_announcement_phase():
     assert observation["game_phase"] == GamePhase.CARD
 
 
-def test_announce_chelem_player1():
-    environment = setup_environment()
-    environment.step([])
-    observation, reward, done, _ = environment.step([CHELEM])
-    assert environment._current_player == 1
-    assert observation["announcements"][0] == []
-    assert observation["announcements"][1] == [CHELEM]
-    assert reward == 0
-    assert not done
-
-
 def test_announce_chelem_by_non_taking_player():
     environment = setup_environment()
     environment.step([])
