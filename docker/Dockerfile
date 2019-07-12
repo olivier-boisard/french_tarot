@@ -46,7 +46,7 @@ ENV PATH $CONDA_DIR/bin:$PATH
 RUN pip install --upgrade pip
 
 # Install python tool
-RUN pip install dill==0.2.9 pytest==4.6.3
+RUN pip install dill==0.2.9 pytest==4.6.3 pytest-mock==1.10.4
 
 # Install pytorch
 RUN conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
