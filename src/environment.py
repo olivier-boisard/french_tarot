@@ -257,6 +257,43 @@ class FrenchTarotEnvironment:
             pass  # Nothing to do
 
         rewards = [3 * contract_value, -contract_value, -contract_value, -contract_value]
+        rewards = self._update_rewards_with_poignee(rewards)
+
+        assert np.sum(rewards) == 0
+        return rewards
+
+    def _update_rewards_with_poignee(self, rewards):
+        rewards = copy.copy(rewards)
+        for player, announcements_for_player in enumerate(self._announcements):
+            for announcement in announcements_for_player:
+                if isinstance(announcement, list):  # if announcement is poignee
+                    poignee_size_to_bonus = {SIMPLE_POIGNEE_SIZE: 20, DOUBLE_POIGNEE_SIZE: 30, TRIPLE_POIGNEE_SIZE: 40}
+                    bonus = poignee_size_to_bonus[len(announcement)]
+                    is_player_won = rewards[player] > 0
+                    if player == 0:
+                        if is_player_won:
+                            rewards[0] += 3 * bonus
+                            rewards[1] -= bonus
+                            rewards[2] -= bonus
+                            rewards[3] -= bonus
+                        else:
+                            rewards[0] -= 3 * bonus
+                            rewards[1] += bonus
+                            rewards[2] += bonus
+                            rewards[3] += bonus
+                    else:
+                        is_taker_won = rewards[0] > 0
+                        if is_taker_won:
+                            for i in range(1, len(rewards)):
+                                if i == player:
+                                    rewards[i] += 2 * bonus
+                                else:
+                                    rewards[i] -= bonus
+                        else:
+                            rewards[0] -= 3 * bonus
+                            rewards[1] += bonus
+                            rewards[2] += bonus
+                            rewards[3] += bonus
         return rewards
 
     def _solve_round(self):
