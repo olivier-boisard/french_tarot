@@ -233,8 +233,10 @@ class FrenchTarotEnvironment:
             pass  # Nothing to do
 
         winners_per_round = np.array(self._winners_per_round)
-        if np.all(winners_per_round == "taker") or (
-                np.all(winners_per_round[:-1] == "taker") and is_excuse_played_in_round):
+        is_taker_won_all = np.all(winners_per_round == "taker")
+        is_taker_won_all_but_last = np.all(winners_per_round[:-1] == "taker")
+        is_chelem_achieved = is_taker_won_all or (is_taker_won_all_but_last and is_excuse_played_in_round)
+        if is_chelem_achieved:
             contract_value += 400 if self._chelem_announced else 200
         else:
             pass  # Nothing to do
@@ -248,6 +250,12 @@ class FrenchTarotEnvironment:
             contract_value += to_add
         else:
             pass  # Nothing to do
+
+        if not is_chelem_achieved and self._chelem_announced:
+            contract_value -= 200
+        else:
+            pass  # Nothing to do
+
         rewards = [3 * contract_value, -contract_value, -contract_value, -contract_value]
         return rewards
 

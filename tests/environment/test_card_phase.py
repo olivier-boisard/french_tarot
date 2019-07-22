@@ -620,11 +620,11 @@ def test_chelem_announced_and_failed():
     environment.step(Card.SPADES_2)
     environment.step(Card.CLOVER_6)
     environment.step(Card.HEART_10)
-    environment.step(Card.TRUMP_3)
-    environment.step(Card.TRUMP_4)
+    environment.step(Card.SPADES_1)
     environment.step(Card.SPADES_3)
     environment.step(Card.CLOVER_7)
     environment.step(Card.HEART_JACK)
+    environment.step(Card.TRUMP_4)
     environment.step(Card.TRUMP_5)
     environment.step(Card.SPADES_4)
     environment.step(Card.CLOVER_8)
@@ -673,19 +673,22 @@ def test_chelem_announced_and_failed():
     environment.step(Card.CLOVER_1)
     environment.step(Card.HEART_5)
     environment.step(Card.DIAMOND_9)
-    environment.step(Card.TRUMP_15)
+    environment.step(Card.TRUMP_16)
     environment.step(Card.CLOVER_2)
     environment.step(Card.HEART_6)
     environment.step(Card.DIAMOND_10)
-    environment.step(Card.TRUMP_16)
+    environment.step(Card.TRUMP_1)
     environment.step(Card.CLOVER_3)
     environment.step(Card.HEART_7)
     environment.step(Card.DIAMOND_JACK)
-    environment.step(Card.EXCUSE)
+    environment.step(Card.TRUMP_3)
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    raise NotImplementedError()
+    assert reward[0] == 312
+    assert reward[1] == -104
+    assert reward[2] == -104
+    assert reward[3] == -104
 
 
 def test_chelem_unannounced_and_achieved_by_other_team():
