@@ -289,6 +289,8 @@ class FrenchTarotEnvironment:
                 if winner == 0:
                     self._bonus_points_per_teams["opponents"] -= 0.5
                     self._bonus_points_per_teams["taker"] += 0.5
+        else:
+            pass  # Nothing to do
         if winner == 0:
             self._won_cards_per_teams["taker"] += won_cards
         else:
