@@ -4,7 +4,7 @@ import pytest
 from environment import FrenchTarotEnvironment, Bid, Card, get_card_set_point, CHELEM
 
 
-def setup_environment(taker=0, sorted_deck=False, chelem=False):
+def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     environment = FrenchTarotEnvironment()
     environment.reset()
     if sorted_deck:
@@ -20,10 +20,17 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False):
             environment.step(Bid.PASS)
     if not good:
         raise ValueError("No taking player")
+
+    announcements = []
     if chelem:
-        environment.step([CHELEM])
+        announcements.append(CHELEM)
     else:
-        environment.step([])
+        pass
+    if poignee:
+        announcements.append(list(environment._hand_per_player[0][-11:-1]))
+    else:
+        pass
+    environment.step(announcements)
     environment.step([])
     environment.step([])
     observation = environment.step([])[0]
@@ -363,7 +370,83 @@ def test_petit_au_bout_taker():
 
 
 def test_poignee():
-    raise NotImplementedError()
+    environment = setup_environment(taker=3, sorted_deck=True, poignee=True)[0]
+    environment.step(Card.SPADES_1)
+    environment.step(Card.CLOVER_5)
+    environment.step(Card.HEART_9)
+    environment.step(Card.TRUMP_2)
+    environment.step(Card.TRUMP_3)
+    environment.step(Card.SPADES_2)
+    environment.step(Card.CLOVER_6)
+    environment.step(Card.HEART_10)
+    environment.step(Card.TRUMP_4)
+    environment.step(Card.SPADES_3)
+    environment.step(Card.CLOVER_7)
+    environment.step(Card.HEART_JACK)
+    environment.step(Card.TRUMP_5)
+    environment.step(Card.SPADES_4)
+    environment.step(Card.CLOVER_8)
+    environment.step(Card.HEART_RIDER)
+    environment.step(Card.TRUMP_6)
+    environment.step(Card.SPADES_5)
+    environment.step(Card.CLOVER_9)
+    environment.step(Card.HEART_QUEEN)
+    environment.step(Card.TRUMP_7)
+    environment.step(Card.SPADES_6)
+    environment.step(Card.CLOVER_10)
+    environment.step(Card.HEART_KING)
+    environment.step(Card.TRUMP_8)
+    environment.step(Card.SPADES_7)
+    environment.step(Card.CLOVER_JACK)
+    environment.step(Card.DIAMOND_1)
+    environment.step(Card.DIAMOND_QUEEN)
+    environment.step(Card.SPADES_8)
+    environment.step(Card.CLOVER_RIDER)
+    environment.step(Card.DIAMOND_2)
+    environment.step(Card.DIAMOND_KING)
+    environment.step(Card.SPADES_9)
+    environment.step(Card.CLOVER_QUEEN)
+    environment.step(Card.DIAMOND_3)
+    environment.step(Card.TRUMP_9)
+    environment.step(Card.SPADES_10)
+    environment.step(Card.CLOVER_KING)
+    environment.step(Card.DIAMOND_4)
+    environment.step(Card.TRUMP_10)
+    environment.step(Card.SPADES_JACK)
+    environment.step(Card.HEART_1)
+    environment.step(Card.DIAMOND_5)
+    environment.step(Card.TRUMP_11)
+    environment.step(Card.SPADES_RIDER)
+    environment.step(Card.HEART_2)
+    environment.step(Card.DIAMOND_6)
+    environment.step(Card.TRUMP_12)
+    environment.step(Card.SPADES_QUEEN)
+    environment.step(Card.HEART_3)
+    environment.step(Card.DIAMOND_7)
+    environment.step(Card.TRUMP_13)
+    environment.step(Card.SPADES_KING)
+    environment.step(Card.HEART_4)
+    environment.step(Card.DIAMOND_8)
+    environment.step(Card.TRUMP_14)
+    environment.step(Card.CLOVER_1)
+    environment.step(Card.HEART_5)
+    environment.step(Card.DIAMOND_9)
+    environment.step(Card.TRUMP_15)
+    environment.step(Card.CLOVER_2)
+    environment.step(Card.HEART_6)
+    environment.step(Card.DIAMOND_10)
+    environment.step(Card.TRUMP_1)
+    environment.step(Card.CLOVER_3)
+    environment.step(Card.HEART_7)
+    environment.step(Card.DIAMOND_JACK)
+    environment.step(Card.TRUMP_16)
+    environment.step(Card.CLOVER_4)
+    environment.step(Card.HEART_8)
+    reward = environment.step(Card.DIAMOND_RIDER)[1]
+    assert reward[0] == 1620
+    assert reward[1] == -540
+    assert reward[2] == -540
+    assert reward[3] == -540
 
 
 def test_chelem_unannounced():
