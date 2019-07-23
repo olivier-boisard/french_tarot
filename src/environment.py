@@ -238,6 +238,8 @@ class FrenchTarotEnvironment:
             contract_value += 400 if self._chelem_announced else 200
         elif self.has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, "opponents"):
             contract_value -= 200
+        elif not taker_achieved_chelem and self._chelem_announced:
+            contract_value -= 200
         else:
             pass  # Nothing to do
 
@@ -248,11 +250,6 @@ class FrenchTarotEnvironment:
             else:
                 pass  # Nothing to do
             contract_value += to_add
-        else:
-            pass  # Nothing to do
-
-        if not taker_achieved_chelem and self._chelem_announced:
-            contract_value -= 200
         else:
             pass  # Nothing to do
 
