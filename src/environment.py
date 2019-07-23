@@ -233,11 +233,11 @@ class FrenchTarotEnvironment:
             pass  # Nothing to do
 
         winners_per_round = np.array(self._winners_per_round)
-        is_taker_won_all = np.all(winners_per_round == "taker")
-        is_taker_won_all_but_last = np.all(winners_per_round[:-1] == "taker")
-        is_chelem_achieved = is_taker_won_all or (is_taker_won_all_but_last and is_excuse_played_in_round)
-        if is_chelem_achieved:
+        taker_achieved_chelem = self.has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, "taker")
+        if taker_achieved_chelem:
             contract_value += 400 if self._chelem_announced else 200
+        elif self.has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, "opponents"):
+            contract_value -= 200
         else:
             pass  # Nothing to do
 
@@ -251,7 +251,7 @@ class FrenchTarotEnvironment:
         else:
             pass  # Nothing to do
 
-        if not is_chelem_achieved and self._chelem_announced:
+        if not taker_achieved_chelem and self._chelem_announced:
             contract_value -= 200
         else:
             pass  # Nothing to do
@@ -261,6 +261,13 @@ class FrenchTarotEnvironment:
 
         assert np.sum(rewards) == 0
         return rewards
+
+    @staticmethod
+    def has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, team):
+        is_taker_won_all = np.all(winners_per_round == team)
+        is_taker_won_all_but_last = np.all(winners_per_round[:-1] == team)
+        is_chelem_achieved = is_taker_won_all or (is_taker_won_all_but_last and is_excuse_played_in_round)
+        return is_chelem_achieved
 
     def _update_rewards_with_poignee(self, rewards):
         rewards = copy.copy(rewards)
