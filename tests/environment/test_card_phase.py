@@ -691,6 +691,15 @@ def test_chelem_announced_with_excuse():
     assert reward[3] == -704
 
 
+def test_pee_unallowed():
+    environment = setup_environment(taker=0, sorted_deck=True)[0]
+    environment.step(Card.SPADES_1)
+    environment.step(Card.CLOVER_5)
+    environment.step(Card.HEART_9)
+    with pytest.raises(ValueError):
+        environment.step(Card.DIAMOND_QUEEN)
+
+
 def test_chelem_announced_and_failed():
     environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
     tmp = environment._hand_per_player[0][16]

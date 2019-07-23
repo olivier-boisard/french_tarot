@@ -158,7 +158,7 @@ class FrenchTarotEnvironment:
         card_color = card.value.split("_")[0]
         asked_color = FrenchTarotEnvironment._retrieve_asked_color(self._played_cards)
         if card_color != asked_color and card != Card.EXCUSE and len(self._played_cards) > 0:
-            self._check_trump_or_pee_is_allowed()
+            self._check_trump_or_pee_is_allowed(card)
         if card_color == "trump":
             self._check_trump_value_is_allowed(card)
 
@@ -346,11 +346,11 @@ class FrenchTarotEnvironment:
         if max_trump_in_hand > max_played_trump > card_strength:
             raise ValueError("Higher trump value must be played when possible")
 
-    def _check_trump_or_pee_is_allowed(self):
+    def _check_trump_or_pee_is_allowed(self, played_card):
         asked_color = FrenchTarotEnvironment._retrieve_asked_color(self._played_cards)
         if asked_color is not None:
             for card in self._hand_per_player[self._current_player]:
-                if asked_color in card.value:
+                if asked_color in card.value or ("trump" in card.value and "trump" not in played_card.value):
                     raise ValueError("Trump or pee unallowed")
 
     @staticmethod
