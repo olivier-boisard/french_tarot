@@ -447,7 +447,6 @@ class FrenchTarotEnvironment:
         if len(dog) != self._n_cards_in_dog:
             raise ValueError("Wrong number of cards in dog")
 
-        print(dog)
         n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
         if n_trumps_in_dog > 0:
             n_trumps_in_taking_player_hand = FrenchTarotEnvironment._count_trumps_and_excuse(taking_player_hand)
