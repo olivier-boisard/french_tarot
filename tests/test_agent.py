@@ -26,13 +26,20 @@ def random_agent():
     return RandomPlayer()
 
 
+@pytest.fixture(scope="module")
+def environment():
+    return FrenchTarotEnvironment()
+
+
 @pytest.mark.repeat(10)
-def test_bid_phase(random_agent):
-    environment = FrenchTarotEnvironment()
+def test_play_game(random_agent, environment):
     observation = environment.reset()
-    observation = environment.step(random_agent.get_action(observation))[0]
-    observation = environment.step(random_agent.get_action(observation))[0]
-    observation = environment.step(random_agent.get_action(observation))[0]
-    environment.step(random_agent.get_action(observation))
-    # No assertion needed here, we just need to make sure agent always provided valid actions, meaning there will
-    # be no exceptions raised.
+    done = False
+    cnt = 0
+    while not done:
+        observation, _, done, _ = environment.step(random_agent.get_action(observation))
+        cnt += 1
+        if cnt >= 1000:
+            raise RuntimeError("Infinite loop")
+
+    # No assert needed here, the code just needs to run without raising exceptions

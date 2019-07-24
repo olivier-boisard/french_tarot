@@ -407,10 +407,10 @@ class FrenchTarotEnvironment:
                 raise ValueError("Wrong string value")
             elif isinstance(announcement, list):
                 current_player_hand = self._hand_per_player[len(self._announcements)]
-                n_trumps_in_hand = FrenchTarotEnvironment._count_trumps_and_excuse(current_player_hand)
+                n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
                 if Card.EXCUSE in announcement and n_trumps_in_hand != len(announcement):
                     raise ValueError("Excuse can be revealed only if player does not have any other trumps")
-                elif FrenchTarotEnvironment._count_trumps_and_excuse(announcement) != len(announcement):
+                elif count_trumps_and_excuse(announcement) != len(announcement):
                     raise ValueError("Revealed cards should be only trumps or excuse")
                 elif np.any([card not in current_player_hand for card in announcement]):
                     raise ValueError("Revealed card not owned by player")
@@ -453,7 +453,7 @@ class FrenchTarotEnvironment:
 
         n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
         if n_trumps_in_dog > 0:
-            n_trumps_in_taking_player_hand = FrenchTarotEnvironment._count_trumps_and_excuse(taking_player_hand)
+            n_trumps_in_taking_player_hand = count_trumps_and_excuse(taking_player_hand)
             n_kings_in_taking_player_hand = np.sum(["king" in card.value for card in taking_player_hand])
             allowed_trumps_in_dog = self._n_cards_in_dog - (
                     len(taking_player_hand) - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
@@ -474,12 +474,6 @@ class FrenchTarotEnvironment:
         done = False
         info = None
         return reward, done, info
-
-    @staticmethod
-    def _count_trumps_and_excuse(cards):
-        card_is_trump = np.array(["trump" in card.value or card.value == "excuse" for card in cards])
-        n_trumps_in_taking_player_hand = np.sum(card_is_trump)
-        return n_trumps_in_taking_player_hand
 
     def _bid(self, action: Bid):
         if type(action) != Bid:
@@ -541,7 +535,7 @@ class FrenchTarotEnvironment:
         ]
         self._original_dog = deck[-self._n_cards_in_dog:]
         for hand in self._hand_per_player:
-            if Card.TRUMP_1 in hand and FrenchTarotEnvironment._count_trumps_and_excuse(hand) == 1:
+            if Card.TRUMP_1 in hand and count_trumps_and_excuse(hand) == 1:
                 raise RuntimeError("'Petit sec'. Deal again.")
 
     def _get_observation_for_current_player(self):
@@ -563,6 +557,22 @@ class FrenchTarotEnvironment:
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
+
+
+def count_trumps_and_excuse(cards):
+    trumps_and_excuse = get_trumps_and_excuse(cards)
+    return len(trumps_and_excuse)
+
+
+def get_trumps_and_excuse(cards):
+    output_as_list = isinstance(cards, list)
+    cards = np.array(cards)
+    rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
+    if output_as_list:
+        rval = list(rval)
+    else:
+        pass  # Nothing to do
+    return rval
 
 
 def _is_oudler(card):
