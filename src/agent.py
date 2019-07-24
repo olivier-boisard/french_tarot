@@ -9,4 +9,4 @@ class RandomPlayer:
         self._random_state = np.random.RandomState(1988)
 
     def get_action(self, state):
-        return self._random_state.choice(list(Bid))
+        return Bid(self._random_state.choice(list(Bid)))

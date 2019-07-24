@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from agent import RandomPlayer
-from environment import FrenchTarotEnvironment
+from environment import FrenchTarotEnvironment, Bid
 
 
 def test_instantiate_random_player():
@@ -10,7 +10,7 @@ def test_instantiate_random_player():
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
     action = random_agent.get_action(observation)
-    assert isinstance(action, np.int64)  # Bids are encoded as int here
+    assert isinstance(action, Bid)
 
 
 def test_randomness_when_bidding():
