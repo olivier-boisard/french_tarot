@@ -113,6 +113,10 @@ def rotate_list(input_list, n):
     return list(hand_per_player_deque)
 
 
+def get_minimum_allowed_bid(bid_per_player):
+    return Bid.PETITE if len(bid_per_player) == 0 else np.max(bid_per_player) + 1
+
+
 class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
@@ -481,9 +485,9 @@ class FrenchTarotEnvironment:
         if type(action) != Bid:
             raise ValueError("Wrong type for 'action'")
 
-        if len(self._bid_per_player) > 0:
-            if action != Bid.PASS and action <= np.max(self._bid_per_player):
-                raise ValueError("Action is not pass and is lower than highest bid")
+        if action != Bid.PASS and action < get_minimum_allowed_bid(self._bid_per_player):
+            raise ValueError("Action is not pass and is lower than highest bid")
+
         self._bid_per_player.append(action)
         reward = 0
         if len(self._bid_per_player) == self._n_players:
