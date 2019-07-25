@@ -1,7 +1,7 @@
 import numpy as np
 
 from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_POIGNEE_SIZE, \
-    get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE
+    get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed
 
 
 def sort_trump_and_excuse(trumps_and_excuse):
@@ -40,7 +40,16 @@ class RandomPlayer:
 
             rval = announcements
         elif observation["game_phase"] == GamePhase.CARD:
-
+            card_list = np.array(Card)
+            allowed_cards = []
+            for card in card_list:
+                try:
+                    check_card_is_allowed(card, observation["played_cards"], observation["hand"])
+                    allowed_cards.append(True)
+                except ValueError:
+                    allowed_cards.append(False)
+            assert 1 <= np.sum(allowed_cards) <= len(observation["hand"])
+            rval = self._random_state.choice(card_list[allowed_cards])
         else:
             raise ValueError("Unhandled game phase")
         return rval

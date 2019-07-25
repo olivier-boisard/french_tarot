@@ -117,6 +117,36 @@ def get_minimum_allowed_bid(bid_per_player):
     return Bid.PETITE if len(bid_per_player) == 0 else np.max(bid_per_player) + 1
 
 
+def check_trump_or_pee_is_allowed(played_card, played_cards_before,
+                                  player_hand):
+    asked_color = _retrieve_asked_color(played_cards_before)
+    if asked_color is not None:
+        for card in player_hand:
+            if asked_color in card.value or ("trump" in card.value and "trump" not in played_card.value):
+                raise ValueError("Trump or pee unallowed")
+
+
+def check_trump_value_is_allowed(card, played_card_before, current_player_hand):
+    trumps_in_hand = [int(card.value.split("_")[1]) for card in current_player_hand if "trump" in card.value]
+    max_trump_in_hand = np.max(trumps_in_hand) if len(trumps_in_hand) > 0 else 0
+    played_trump = [int(card.value.split("_")[1]) for card in played_card_before if "trump" in card.value]
+    max_played_trump = np.max(played_trump) if len(played_trump) > 0 else 0
+    card_strength = int(card.value.split("_")[1])
+    if max_trump_in_hand > max_played_trump > card_strength:
+        raise ValueError("Higher trump value must be played when possible")
+
+
+def check_card_is_allowed(card, played_cards, player_hand):
+    if card not in player_hand:
+        raise ValueError("Card not in current player's hand")
+    card_color = card.value.split("_")[0]
+    asked_color = _retrieve_asked_color(played_cards)
+    if card_color != asked_color and card != Card.EXCUSE and len(played_cards) > 0:
+        check_trump_or_pee_is_allowed(card, played_cards, player_hand)
+    if card_color == "trump":
+        check_trump_value_is_allowed(card, played_cards, player_hand)
+
+
 class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
@@ -157,15 +187,7 @@ class FrenchTarotEnvironment:
     def _play_card(self, card):
         if not isinstance(card, Card):
             raise ValueError("Action must be card")
-        if card not in self._hand_per_player[self._current_player]:
-            raise ValueError("Card not in current player's hand")
-        card_color = card.value.split("_")[0]
-        asked_color = FrenchTarotEnvironment._retrieve_asked_color(self._played_cards)
-        if card_color != asked_color and card != Card.EXCUSE and len(self._played_cards) > 0:
-            self._check_trump_or_pee_is_allowed(card)
-        if card_color == "trump":
-            self._check_trump_value_is_allowed(card)
-
+        check_card_is_allowed(card, self._played_cards, self._hand_per_player[self._current_player])
         self._played_cards.append(card)
 
         current_hand = self._hand_per_player[self._current_player]
@@ -344,26 +366,9 @@ class FrenchTarotEnvironment:
         self._played_cards = []
         return rewards
 
-    def _check_trump_value_is_allowed(self, card):
-        current_player_hand = self._hand_per_player[self._current_player]
-        trumps_in_hand = [int(card.value.split("_")[1]) for card in current_player_hand if "trump" in card.value]
-        max_trump_in_hand = np.max(trumps_in_hand) if len(trumps_in_hand) > 0 else 0
-        played_trump = [int(card.value.split("_")[1]) for card in self._played_cards if "trump" in card.value]
-        max_played_trump = np.max(played_trump) if len(played_trump) > 0 else 0
-        card_strength = int(card.value.split("_")[1])
-        if max_trump_in_hand > max_played_trump > card_strength:
-            raise ValueError("Higher trump value must be played when possible")
-
-    def _check_trump_or_pee_is_allowed(self, played_card):
-        asked_color = FrenchTarotEnvironment._retrieve_asked_color(self._played_cards)
-        if asked_color is not None:
-            for card in self._hand_per_player[self._current_player]:
-                if asked_color in card.value or ("trump" in card.value and "trump" not in played_card.value):
-                    raise ValueError("Trump or pee unallowed")
-
     @staticmethod
     def _get_winning_card_index(played_cards):
-        asked_color = FrenchTarotEnvironment._retrieve_asked_color(played_cards)
+        asked_color = _retrieve_asked_color(played_cards)
         card_strengths = []
         for card in played_cards:
             if "trump" in card.value:
@@ -381,21 +386,6 @@ class FrenchTarotEnvironment:
             else:
                 card_strengths.append(int(card.value.split("_")[1]))
         return np.argmax(card_strengths)
-
-    @staticmethod
-    def _retrieve_asked_color(played_cards):
-        asked_color = None
-        if len(played_cards) > 0:
-            if played_cards[0] != Card.EXCUSE:
-                asked_color = played_cards[0].value.split("_")[0]
-            elif len(played_cards) > 1:
-                asked_color = played_cards[1].value.split("_")[0]
-            else:
-                pass  # Nothing to do
-        else:
-            pass  # Nothing to do
-
-        return asked_color
 
     def _announce(self, action: list):
         if not isinstance(action, list):
@@ -557,6 +547,21 @@ class FrenchTarotEnvironment:
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
+
+
+def _retrieve_asked_color(played_cards):
+    asked_color = None
+    if len(played_cards) > 0:
+        if played_cards[0] != Card.EXCUSE:
+            asked_color = played_cards[0].value.split("_")[0]
+        elif len(played_cards) > 1:
+            asked_color = played_cards[1].value.split("_")[0]
+        else:
+            pass  # Nothing to do
+    else:
+        pass  # Nothing to do
+
+    return asked_color
 
 
 def count_trumps_and_excuse(cards):
