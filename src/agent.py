@@ -16,7 +16,6 @@ class RandomPlayer:
         self._random_state = np.random.RandomState(1988)
 
     def get_action(self, observation):
-        rval = None
         if observation["game_phase"] == GamePhase.BID:
             allowed_bids = list(range(get_minimum_allowed_bid(observation["bid_per_player"]), np.max(list(Bid)) + 1))
             rval = Bid(self._random_state.choice(allowed_bids + [0]))
@@ -24,20 +23,24 @@ class RandomPlayer:
             raise ValueError()
         elif observation["game_phase"] == GamePhase.ANNOUNCEMENTS:
             announcements = []
-            if self._random_state.rand() < 0.1:
+            if len(observation["announcements"]) == 0 and self._random_state.rand() < 0.1:
                 announcements.append(CHELEM)
             else:
                 pass  # Nothing to do
 
             trumps_and_excuse = sort_trump_and_excuse(get_trumps_and_excuse(observation["hand"]))
-            if trumps_and_excuse >= TRIPLE_POIGNEE_SIZE:
-                raise NotImplementedError()
-            elif trumps_and_excuse >= DOUBLE_POIGNEE_SIZE:
-                raise NotImplementedError()
-            elif trumps_and_excuse >= SIMPLE_POIGNEE_SIZE:
-                raise NotImplementedError()
+            if len(trumps_and_excuse) >= TRIPLE_POIGNEE_SIZE:
+                announcements.append(trumps_and_excuse[:TRIPLE_POIGNEE_SIZE])
+            elif len(trumps_and_excuse) >= DOUBLE_POIGNEE_SIZE:
+                announcements.append(trumps_and_excuse[:DOUBLE_POIGNEE_SIZE])
+            elif len(trumps_and_excuse) >= SIMPLE_POIGNEE_SIZE:
+                announcements.append(trumps_and_excuse[:SIMPLE_POIGNEE_SIZE])
             else:
                 pass  # Nothing to do
+
+            rval = announcements
+        elif observation["game_phase"] == GamePhase.CARD:
+
         else:
             raise ValueError("Unhandled game phase")
         return rval
