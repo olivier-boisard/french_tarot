@@ -13,4 +13,4 @@ docker run \
     -v /mnt:/mnt:ro \
     -w=$HOME \
     ${docker_image_name} \
-    /opt/pycharm-community-2019.1.3/bin/pycharm.sh
+    /opt/pycharm-community-2019.2/bin/pycharm.sh
