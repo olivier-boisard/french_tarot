@@ -534,15 +534,18 @@ class FrenchTarotEnvironment:
             "bid_per_player": self._bid_per_player,
             "game_phase": self._game_phase
         }
+        current_hand = self._hand_per_player[self._current_player]
+        if self._game_phase == GamePhase.BID:
+            rval["hand"] = current_hand
         if self._game_phase >= GamePhase.DOG:
             rval["original_dog"] = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
             rval["hand"] = self._hand_per_player[0]
         if self._game_phase >= GamePhase.ANNOUNCEMENTS:
-            rval["hand"] = self._hand_per_player[self._current_player]
+            rval["hand"] = current_hand
             rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
             rval["announcements"] = self._announcements
         if self._game_phase >= GamePhase.CARD:
-            rval["hand"] = self._hand_per_player[self._current_player]
+            rval["hand"] = current_hand
             rval["played_cards"] = self._played_cards
             rval["plis"] = self._plis
 
