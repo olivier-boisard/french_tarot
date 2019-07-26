@@ -1,7 +1,7 @@
 import numpy as np
 
 from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_POIGNEE_SIZE, \
-    get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed
+    get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed, _is_oudler
 
 
 def sort_trump_and_excuse(trumps_and_excuse):
@@ -20,7 +20,19 @@ class RandomPlayer:
             allowed_bids = list(range(get_minimum_allowed_bid(observation["bid_per_player"]), np.max(list(Bid)) + 1))
             rval = Bid(self._random_state.choice(allowed_bids + [0]))
         elif observation["game_phase"] == GamePhase.DOG:
-            raise ValueError()
+            permuted_hand = self._random_state.permutation(observation["hand"])
+            trump_allowed = False
+            rval = []
+            dog_size = len(observation["original_dog"])
+            while len(rval) < dog_size:
+                for card in permuted_hand:
+                    if not _is_oudler(card) and "king" not in card.value:
+                        if ("trump" in card.value and trump_allowed) or "trump" not in card.value:
+                            rval.append(card)
+                            if len(rval) == dog_size:
+                                break
+                trump_allowed = True
+            assert len(rval) == dog_size
         elif observation["game_phase"] == GamePhase.ANNOUNCEMENTS:
             announcements = []
             if len(observation["announcements"]) == 0 and self._random_state.rand() < 0.1:
