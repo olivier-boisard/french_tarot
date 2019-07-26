@@ -531,16 +531,18 @@ class FrenchTarotEnvironment:
 
     def _get_observation_for_current_player(self):
         rval = {
-            "hand": self._hand_per_player[self._current_player],
             "bid_per_player": self._bid_per_player,
             "game_phase": self._game_phase
         }
         if self._game_phase >= GamePhase.DOG:
             rval["original_dog"] = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
+            rval["hand"] = self._hand_per_player[0]
         if self._game_phase >= GamePhase.ANNOUNCEMENTS:
+            rval["hand"] = self._hand_per_player[self._current_player]
             rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
             rval["announcements"] = self._announcements
         if self._game_phase >= GamePhase.CARD:
+            rval["hand"] = self._hand_per_player[self._current_player]
             rval["played_cards"] = self._played_cards
             rval["plis"] = self._plis
 
