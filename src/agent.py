@@ -5,9 +5,9 @@ from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_
 
 
 def sort_trump_and_excuse(trumps_and_excuse):
-    values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 0 for card in trumps_and_excuse]
+    values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 22 for card in trumps_and_excuse]
     sorted_indexes = np.argsort(values)
-    return trumps_and_excuse[sorted_indexes]
+    return list(trumps_and_excuse[sorted_indexes])
 
 
 class RandomPlayer:

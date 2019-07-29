@@ -397,10 +397,15 @@ class FrenchTarotEnvironment:
                 raise ValueError("Wrong string value")
             elif isinstance(announcement, list):
                 current_player_hand = self._hand_per_player[len(self._announcements)]
+                n_cards = len(announcement)
+                if count_trumps_and_excuse(announcement) != n_cards:
+                    raise ValueError("Invalid cards in poignee")
+                if n_cards != SIMPLE_POIGNEE_SIZE and n_cards != DOUBLE_POIGNEE_SIZE and n_cards != TRIPLE_POIGNEE_SIZE:
+                    raise ValueError("Invalid poignee size")
                 n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
-                if Card.EXCUSE in announcement and n_trumps_in_hand != len(announcement):
+                if Card.EXCUSE in announcement and n_trumps_in_hand != n_cards:
                     raise ValueError("Excuse can be revealed only if player does not have any other trumps")
-                elif count_trumps_and_excuse(announcement) != len(announcement):
+                elif count_trumps_and_excuse(announcement) != n_cards:
                     raise ValueError("Revealed cards should be only trumps or excuse")
                 elif np.any([card not in current_player_hand for card in announcement]):
                     raise ValueError("Revealed card not owned by player")
@@ -408,7 +413,6 @@ class FrenchTarotEnvironment:
                 if len(self._announcements) > 0:
                     raise ValueError("Only taker can announce chelem")
                 self._chelem_announced = True
-                self._current_player = 0
 
         if np.any([not isinstance(e, str) and not isinstance(e, list) for e in action]):
             raise ValueError("Wrong announcement type")
@@ -416,10 +420,12 @@ class FrenchTarotEnvironment:
             raise ValueError("Player tried to announcement more than 1 poignees")
 
         self._announcements.append(action)
-        if len(self._announcements) == 4:
+        if len(self._announcements) == self._n_players:
             self._game_phase = GamePhase.CARD
+            if self._chelem_announced:
+                self._current_player = 0
         else:
-            pass  # Nothing to do
+            self._current_player += 1
 
         reward = 0
         done = False
@@ -456,6 +462,7 @@ class FrenchTarotEnvironment:
             self._revealed_cards_in_dog = []
 
         self._game_phase = GamePhase.ANNOUNCEMENTS
+        self._current_player = 0
         index_to_keep_in_hand = [card not in dog for card in taking_player_hand]
         self._hand_per_player[0] = taking_player_hand[index_to_keep_in_hand]
 
@@ -487,6 +494,7 @@ class FrenchTarotEnvironment:
                 self._game_phase = GamePhase.DOG
             else:
                 self._game_phase = GamePhase.ANNOUNCEMENTS
+                self._current_player = 0
         else:
             done = False
         info = None
