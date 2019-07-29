@@ -176,6 +176,7 @@ class FrenchTarotEnvironment:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
             reward, done, info = self._make_dog(action)
+            self._current_player = self._starting_player
         elif self._game_phase == GamePhase.ANNOUNCEMENTS:
             reward, done, info = self._announce(action)
         elif self._game_phase == GamePhase.CARD:
@@ -424,6 +425,8 @@ class FrenchTarotEnvironment:
             self._game_phase = GamePhase.CARD
             if self._chelem_announced:
                 self._current_player = 0
+            else:
+                self._current_player = self._starting_player
         else:
             self._current_player += 1
 
@@ -488,13 +491,13 @@ class FrenchTarotEnvironment:
             self._bid_per_player = rotate_list(self._bid_per_player, -taking_player)
             assert np.argmax(self._bid_per_player) == 0
             self._hand_per_player = rotate_list(self._hand_per_player, -taking_player)
-            self._current_player = -taking_player % self._n_players
+            self._starting_player = -taking_player % self._n_players
             if np.max(self._bid_per_player) <= Bid.GARDE:
                 self._hand_per_player[0] = np.concatenate((self._hand_per_player[0], self._original_dog))
                 self._game_phase = GamePhase.DOG
             else:
                 self._game_phase = GamePhase.ANNOUNCEMENTS
-                self._current_player = 0
+                self._current_player = 0  # taker makes announcements first
         else:
             done = False
         info = None
