@@ -428,7 +428,7 @@ class FrenchTarotEnvironment:
             else:
                 self._current_player = self._starting_player
         else:
-            self._current_player += 1
+            pass  # Nothing to do
 
         reward = 0
         done = False
