@@ -495,6 +495,7 @@ class FrenchTarotEnvironment:
             if np.max(self._bid_per_player) <= Bid.GARDE:
                 self._hand_per_player[0] = np.concatenate((self._hand_per_player[0], self._original_dog))
                 self._game_phase = GamePhase.DOG
+                self._current_player = self._starting_player
             else:
                 self._game_phase = GamePhase.ANNOUNCEMENTS
                 self._current_player = 0  # taker makes announcements first
