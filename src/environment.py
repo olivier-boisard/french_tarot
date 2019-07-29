@@ -505,9 +505,9 @@ class FrenchTarotEnvironment:
         return reward, done, info
 
     def reset(self):
-        deck = self._random_state.permutation(list(Card))
         while True:
             try:
+                deck = self._random_state.permutation(list(Card))
                 self._deal(deck)
                 break
             except RuntimeError as e:
