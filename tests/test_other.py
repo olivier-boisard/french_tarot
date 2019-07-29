@@ -16,4 +16,4 @@ def run_test_on_data(stuff):
 
 
 def test_stress_test_iteration_21_wrong_assignment_type():
-    run_test_on_data("stress_test_21.dill")
+    run_test_on_data("stress_test_433.dill")
