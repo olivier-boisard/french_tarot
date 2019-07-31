@@ -2,6 +2,7 @@ import copy
 import os
 
 import dill
+import matplotlib.pyplot as plt
 import numpy as np
 import tqdm
 
@@ -12,8 +13,8 @@ from environment import FrenchTarotEnvironment
 def _main():
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
-    scores = np.zeros(environment.n_players)
-    for i in tqdm.tqdm(range(1000)):
+    scores = []
+    for i in tqdm.tqdm(range(10)):
         observation = environment.reset()
         done = False
         cnt = 0
@@ -33,9 +34,16 @@ def _main():
             cnt += 1
             if cnt >= 1000:
                 raise RuntimeError("Infinite loop")
-        scores += np.array(reward)[observation["original_player_ids"]]
-        assert np.sum(scores) == 0
-    print("Scores:", scores)
+        game_scores = np.array(reward)[observation["original_player_ids"]]
+        if np.sum(game_scores) != 0:
+            RuntimeError("Scores do not sum up to 0")
+        scores.append(game_scores)
+    plt.plot(scores)
+    plt.xlabel("Game")
+    plt.ylabel("Scores")
+    plt.legend(["player " + str(player_id) for player_id in range(environment.n_players)])
+    plt.title("Score per player evolution")
+    plt.show()
 
 
 if __name__ == "__main__":
