@@ -14,7 +14,7 @@ def _main():
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     scores = []
-    for i in tqdm.tqdm(range(10)):
+    for i in tqdm.tqdm(range(100)):
         observation = environment.reset()
         done = False
         cnt = 0
