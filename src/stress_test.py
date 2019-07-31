@@ -45,6 +45,11 @@ def _main():
     plt.title("Score per player evolution")
     plt.show()
 
+    final_scores = np.stack(scores).sum(axis=0)
+    if np.sum(final_scores) != 0:
+        RuntimeError("Scores do not sum up to 0")
+    print("Final scores: ", final_scores)
+
 
 if __name__ == "__main__":
     _main()
