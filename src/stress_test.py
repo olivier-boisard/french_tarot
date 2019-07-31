@@ -34,7 +34,8 @@ def _main():
             cnt += 1
             if cnt >= 1000:
                 raise RuntimeError("Infinite loop")
-        game_scores = np.array(reward)[observation["original_player_ids"]]
+        offset = i % environment.n_players  # first player changes at each turn
+        game_scores = np.left_shift(np.array(reward)[observation["original_player_ids"]], offset)
         if np.sum(game_scores) != 0:
             RuntimeError("Scores do not sum up to 0")
         scores.append(game_scores)
