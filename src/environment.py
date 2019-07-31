@@ -213,12 +213,15 @@ class FrenchTarotEnvironment:
                 pass  # Nothing to do
 
         elif len(self._played_cards) < self._n_players:
-            self._current_player = (self._current_player + 1) % self._n_players
+            self._current_player = self._get_next_player()
         else:
             raise RuntimeError("Wrong number of played cards")
 
         info = None
         return rewards, done, info
+
+    def _get_next_player(self):
+        return (self._current_player + 1) % self._n_players
 
     def _compute_win_loss(self, is_petit_played_in_round, is_excuse_played_in_round, is_taker_win_round):
         dog = self._made_dog if self._made_dog is not None else self._original_dog
@@ -328,7 +331,7 @@ class FrenchTarotEnvironment:
         return rewards
 
     def _solve_round(self):
-        starting_player = (self._current_player + 1) % self._n_players
+        starting_player = self._get_next_player()
         winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
         play_order = np.arange(starting_player, starting_player + self._n_players) % self._n_players
         winner = play_order[winning_card_index]
@@ -397,7 +400,7 @@ class FrenchTarotEnvironment:
             elif isinstance(announcement, str) and announcement != CHELEM:
                 raise ValueError("Wrong string value")
             elif isinstance(announcement, list):
-                current_player_hand = self._hand_per_player[len(self._announcements)]
+                current_player_hand = self._hand_per_player[self._current_player]
                 n_cards = len(announcement)
                 if count_trumps_and_excuse(announcement) != n_cards:
                     raise ValueError("Invalid cards in poignee")
@@ -425,7 +428,7 @@ class FrenchTarotEnvironment:
             self._game_phase = GamePhase.CARD
             self._current_player = 0 if self._chelem_announced else self._starting_player
         else:
-            pass  # Nothing to do
+            self._current_player = self._get_next_player()
 
         reward = 0
         done = False
