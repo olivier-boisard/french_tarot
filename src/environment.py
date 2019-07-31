@@ -158,9 +158,8 @@ class FrenchTarotEnvironment:
         self._original_dog = None
         self._game_phase = None
         self._bid_per_player = None
-        self._n_players = None
-        n_players = 4
-        self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / n_players)
+        self._n_players = 4
+        self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / self._n_players)
         self._revealed_cards_in_dog = None
         self._announcements = None
         self._chelem_announced = None
