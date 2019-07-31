@@ -183,7 +183,7 @@ class FrenchTarotEnvironment:
             reward, done, info = self._play_card(action)
         else:
             raise RuntimeError("Unknown game phase")
-        return self._get_observation_for_current_player(), reward, done, info
+        return self._get_observation(), reward, done, info
 
     def _play_card(self, card):
         if not isinstance(card, Card):
@@ -525,7 +525,7 @@ class FrenchTarotEnvironment:
         self._made_dog = None
         self._winners_per_round = []
 
-        return self._get_observation_for_current_player()
+        return self._get_observation()
 
     def _deal(self, deck):
         if len(deck) != len(list(Card)):
@@ -541,7 +541,7 @@ class FrenchTarotEnvironment:
             if Card.TRUMP_1 in hand and count_trumps_and_excuse(hand) == 1:
                 raise RuntimeError("'Petit sec'. Deal again.")
 
-    def _get_observation_for_current_player(self):
+    def _get_observation(self):
         rval = {
             "bid_per_player": self._bid_per_player,
             "game_phase": self._game_phase
