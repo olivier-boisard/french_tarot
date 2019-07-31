@@ -2,6 +2,7 @@ import copy
 import os
 
 import dill
+import numpy as np
 import tqdm
 
 from agent import RandomPlayer
@@ -11,6 +12,7 @@ from environment import FrenchTarotEnvironment
 def _main():
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
+    scores = np.zeros()
     for i in tqdm.tqdm(range(1000)):
         observation = environment.reset()
         done = False
@@ -31,6 +33,7 @@ def _main():
             cnt += 1
             if cnt >= 1000:
                 raise RuntimeError("Infinite loop")
+        scores += np.array(reward[observation["original_player_ids"]])
 
 
 if __name__ == "__main__":
