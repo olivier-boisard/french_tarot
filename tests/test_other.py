@@ -15,5 +15,5 @@ def run_test_on_data(stuff):
     observation, _, done, _ = obj["environment"].step(obj["agent"].get_action(obj["observation"]))
 
 
-def test_stress_test_iteration_21_wrong_assignment_type():
+def test_stress_test_iteration_433_wrong_assignment_type():
     run_test_on_data("stress_test_433.dill")
