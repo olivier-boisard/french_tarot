@@ -12,7 +12,7 @@ from environment import FrenchTarotEnvironment
 def _main():
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
-    scores = np.zeros(environment._n_players)
+    scores = np.zeros(environment.n_players)
     for i in tqdm.tqdm(range(1000)):
         observation = environment.reset()
         done = False

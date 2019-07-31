@@ -158,8 +158,8 @@ class FrenchTarotEnvironment:
         self._original_dog = None
         self._game_phase = None
         self._bid_per_player = None
-        self._n_players = 4
-        self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / self._n_players)
+        self.n_players = 4
+        self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / self.n_players)
         self._revealed_cards_in_dog = None
         self._announcements = None
         self._chelem_announced = None
@@ -200,7 +200,7 @@ class FrenchTarotEnvironment:
         else:
             self._hand_per_player[self._current_player] = current_hand
 
-        if len(self._played_cards) == self._n_players:
+        if len(self._played_cards) == self.n_players:
             is_petit_played_in_round = Card.TRUMP_1 in self._played_cards
             is_excuse_played_in_round = Card.EXCUSE in self._played_cards
             rewards = self._solve_round()
@@ -212,7 +212,7 @@ class FrenchTarotEnvironment:
             else:
                 pass  # Nothing to do
 
-        elif len(self._played_cards) < self._n_players:
+        elif len(self._played_cards) < self.n_players:
             self._current_player = self._get_next_player()
         else:
             raise RuntimeError("Wrong number of played cards")
@@ -221,7 +221,7 @@ class FrenchTarotEnvironment:
         return rewards, done, info
 
     def _get_next_player(self):
-        return (self._current_player + 1) % self._n_players
+        return (self._current_player + 1) % self.n_players
 
     def _compute_win_loss(self, is_petit_played_in_round, is_excuse_played_in_round, is_taker_win_round):
         dog = self._made_dog if self._made_dog is not None else self._original_dog
@@ -333,17 +333,17 @@ class FrenchTarotEnvironment:
     def _solve_round(self):
         starting_player = self._get_next_player()
         winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
-        play_order = np.arange(starting_player, starting_player + self._n_players) % self._n_players
+        play_order = np.arange(starting_player, starting_player + self.n_players) % self.n_players
         winner = play_order[winning_card_index]
         reward_for_winner = get_card_set_point(self._played_cards)
         rewards = []
         if winner == 0:  # if winner is taking player
             rewards.append(reward_for_winner)
-            rewards.extend([0] * (self._n_players - 1))
+            rewards.extend([0] * (self.n_players - 1))
             self._winners_per_round.append("taker")
         else:
             rewards.append(0)
-            rewards.extend([reward_for_winner] * (self._n_players - 1))
+            rewards.extend([reward_for_winner] * (self.n_players - 1))
             self._winners_per_round.append("opponents")
         self._plis.append({"played_cards": self._played_cards, "starting_player": starting_player})
 
@@ -424,7 +424,7 @@ class FrenchTarotEnvironment:
             raise ValueError("Player tried to announcement more than 1 poignees")
 
         self._announcements.append(action)
-        if len(self._announcements) == self._n_players:
+        if len(self._announcements) == self.n_players:
             self._game_phase = GamePhase.CARD
             self._current_player = 0 if self._chelem_announced else self._starting_player
         else:
@@ -485,15 +485,15 @@ class FrenchTarotEnvironment:
         self._bid_per_player.append(action)
         self._current_player = len(self._bid_per_player)
         reward = 0
-        if len(self._bid_per_player) == self._n_players:
+        if len(self._bid_per_player) == self.n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
             taking_player = np.argmax(self._bid_per_player)
-            original_player_ids = np.arange(taking_player, taking_player + self._n_players) % self._n_players
+            original_player_ids = np.arange(taking_player, taking_player + self.n_players) % self.n_players
             self._original_player_ids = list(original_player_ids)
             self._bid_per_player = rotate_list(self._bid_per_player, -taking_player)
             assert np.argmax(self._bid_per_player) == 0
             self._hand_per_player = rotate_list(self._hand_per_player, -taking_player)
-            self._starting_player = -taking_player % self._n_players
+            self._starting_player = -taking_player % self.n_players
             if np.max(self._bid_per_player) <= Bid.GARDE:
                 self._hand_per_player[0] = np.concatenate((self._hand_per_player[0], self._original_dog))
                 self._game_phase = GamePhase.DOG
@@ -516,7 +516,7 @@ class FrenchTarotEnvironment:
                 print(e)
         self._game_phase = GamePhase.BID
         self._bid_per_player = []
-        self._n_players = 4
+        self.n_players = 4
         self._announcements = []
         self._chelem_announced = False
         self._current_player = 0

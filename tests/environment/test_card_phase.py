@@ -12,7 +12,7 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     else:
         pass  # Nothing to do
     good = False
-    for i in range(environment._n_players):
+    for i in range(environment.n_players):
         if i == taker:
             environment.step(Bid.GARDE_SANS)
             good = True
