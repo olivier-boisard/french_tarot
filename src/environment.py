@@ -170,6 +170,7 @@ class FrenchTarotEnvironment:
         self._won_cards_per_teams = None
         self._bonus_points_per_teams = None
         self._made_dog = None
+        self._original_player_ids = None
 
     def step(self, action):
         if self._game_phase == GamePhase.BID:
@@ -488,6 +489,8 @@ class FrenchTarotEnvironment:
         if len(self._bid_per_player) == self._n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
             taking_player = np.argmax(self._bid_per_player)
+            original_player_ids = np.arange(taking_player, taking_player + self._n_players) % self._n_players
+            self._original_player_ids = list(original_player_ids)
             self._bid_per_player = rotate_list(self._bid_per_player, -taking_player)
             assert np.argmax(self._bid_per_player) == 0
             self._hand_per_player = rotate_list(self._hand_per_player, -taking_player)
@@ -524,6 +527,7 @@ class FrenchTarotEnvironment:
         self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
         self._made_dog = None
         self._winners_per_round = []
+        self._original_player_ids = []
 
         return self._get_observation()
 
@@ -552,6 +556,7 @@ class FrenchTarotEnvironment:
         if self._game_phase >= GamePhase.DOG:
             rval["original_dog"] = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
             rval["hand"] = self._hand_per_player[0]
+            rval["original_player_ids"] = self._original_player_ids
         if self._game_phase >= GamePhase.ANNOUNCEMENTS:
             rval["hand"] = current_hand
             rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog

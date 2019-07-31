@@ -19,7 +19,7 @@ def _main():
             environment_copy = copy.deepcopy(environment)
             random_agent_copy = copy.deepcopy(random_agent)
             try:
-                observation, _, done, _ = environment.step(random_agent.get_action(observation))
+                observation, reward, done, _ = environment.step(random_agent.get_action(observation))
             except ValueError as e:
                 obj = {"agent": random_agent_copy, "environment": environment_copy, "observation": observation,
                        "done": done}
