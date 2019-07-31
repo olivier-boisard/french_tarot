@@ -423,10 +423,7 @@ class FrenchTarotEnvironment:
         self._announcements.append(action)
         if len(self._announcements) == self._n_players:
             self._game_phase = GamePhase.CARD
-            if self._chelem_announced:
-                self._current_player = 0
-            else:
-                self._current_player = self._starting_player
+            self._current_player = 0 if self._chelem_announced else self._starting_player
         else:
             pass  # Nothing to do
 
