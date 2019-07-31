@@ -38,17 +38,25 @@ def _main():
         if np.sum(game_scores) != 0:
             RuntimeError("Scores do not sum up to 0")
         scores.append(game_scores)
-    plt.plot(scores)
-    plt.xlabel("Game")
-    plt.ylabel("Scores")
-    plt.legend(["player " + str(player_id) for player_id in range(environment.n_players)])
-    plt.title("Score per player evolution")
-    plt.show()
 
+    _print_final_scores(scores)
+    _plot_scores(scores)
+
+
+def _print_final_scores(scores):
     final_scores = np.stack(scores).sum(axis=0)
     if np.sum(final_scores) != 0:
         RuntimeError("Scores do not sum up to 0")
     print("Final scores: ", final_scores)
+
+
+def _plot_scores(scores):
+    plt.plot(scores)
+    plt.xlabel("Game")
+    plt.ylabel("Scores")
+    plt.legend(["player " + str(player_id) for player_id in range(len(scores[0]))])
+    plt.title("Score per player evolution")
+    plt.show()
 
 
 if __name__ == "__main__":
