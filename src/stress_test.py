@@ -33,7 +33,9 @@ def _main():
             cnt += 1
             if cnt >= 1000:
                 raise RuntimeError("Infinite loop")
-        scores += np.array(reward[observation["original_player_ids"]])
+        scores += np.array(reward)[observation["original_player_ids"]]
+        assert np.sum(scores) == 0
+    print("Scores:", scores)
 
 
 if __name__ == "__main__":
