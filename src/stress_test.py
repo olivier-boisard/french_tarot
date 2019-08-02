@@ -14,7 +14,7 @@ def _main():
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     scores = []
-    for i in tqdm.tqdm(range(100)):
+    for i in tqdm.tqdm(range(10)):
         observation = environment.reset()
         done = False
         cnt = 0
@@ -45,14 +45,15 @@ def _main():
 
 
 def _print_final_scores(scores):
-    final_scores = np.stack(scores).sum(axis=0)
+    final_scores = np.stack(scores)
     if np.sum(final_scores) != 0:
         RuntimeError("Scores do not sum up to 0")
-    print("Final scores: ", final_scores)
+    print("Scores per episodes: ", final_scores)
+    print("Accumulated scores: ", final_scores.cumsum(axis=0))
 
 
 def _plot_scores(scores):
-    plt.plot(scores)
+    plt.plot(np.stack(scores).cumsum(axis=0))
     plt.xlabel("Game")
     plt.ylabel("Scores")
     plt.legend(["player " + str(player_id) for player_id in range(len(scores[0]))])
