@@ -504,6 +504,10 @@ class FrenchTarotEnvironment:
         else:
             done = False
         info = None
+
+        if done:
+            reward = [0] * self.n_players
+
         return reward, done, info
 
     def reset(self):

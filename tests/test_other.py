@@ -14,6 +14,8 @@ def run_test_on_data(stuff, mocker):
     obj = load_test_data(stuff)
     if not hasattr(obj["environment"], '_original_player_ids'):
         obj['environment']._original_player_ids = []
+    if not hasattr(obj["environment"], 'n_players'):
+        obj['environment'].n_players = 4
     observation, _, done, _ = obj["environment"].step(obj["agent"].get_action(obj["observation"]))
 
 
