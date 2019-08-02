@@ -1,4 +1,5 @@
 import copy
+import datetime
 import os
 
 import dill
@@ -26,7 +27,8 @@ def _main():
             except ValueError as e:
                 obj = {"agent": random_agent_copy, "environment": environment_copy, "observation": observation,
                        "done": done}
-                output_file_path = os.path.join(os.path.dirname(__file__), "stress_test_{}.dill".format(i))
+                timestamp = str(datetime.datetime.now()).replace(" ", "_").replace(":", "-").replace(".", "-")
+                output_file_path = os.path.join(os.path.dirname(__file__), "stress_test_{}.dill".format(timestamp))
                 print("Dumping file into " + output_file_path)
                 with open(output_file_path, "wb") as f:
                     dill.dump(obj, f)
