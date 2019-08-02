@@ -62,7 +62,7 @@ def _plot_scores(scores):
     plt.xlabel("Game")
     plt.ylabel("Scores")
     plt.legend(["player " + str(player_id) for player_id in range(len(scores[0]))])
-    plt.title("Score per player evolution")
+    plt.title("Score per player with random agent")
     plt.show()
 
 
