@@ -48,8 +48,7 @@ def _print_final_scores(scores):
     final_scores = np.stack(scores)
     if np.sum(final_scores) != 0:
         RuntimeError("Scores do not sum up to 0")
-    print("Scores per episodes: ", final_scores)
-    print("Accumulated scores: ", final_scores.cumsum(axis=0))
+    print("Final scores: ", final_scores.sum(axis=0))
 
 
 def _plot_scores(scores):
