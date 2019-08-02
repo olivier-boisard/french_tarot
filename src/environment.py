@@ -150,9 +150,9 @@ def check_card_is_allowed(card, played_cards, player_hand):
 class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self):
+    def __init__(self, seed=1988):
         self._winners_per_round = None
-        self._random_state = np.random.RandomState(1988)
+        self._random_state = np.random.RandomState(seed)
         self._n_cards_in_dog = 6
         self._hand_per_player = None
         self._original_dog = None

@@ -12,8 +12,8 @@ def sort_trump_and_excuse(trumps_and_excuse):
 
 class RandomPlayer:
 
-    def __init__(self):
-        self._random_state = np.random.RandomState(1988)
+    def __init__(self, seed=1988):
+        self._random_state = np.random.RandomState(seed)
 
     def get_action(self, observation):
         if observation["game_phase"] == GamePhase.BID:
