@@ -25,10 +25,18 @@ The total scores were as follows:
 - Player 2: -33599
 - Player 3: 6757
 
+Evolutions of the score games after games are shown below:
+
+![](results/random_players.png)
+
+There is an clear and unexpected tendency for player 2 to lose. Running
+the same experiment with different random seed will help understand
+if this is just luck or if there is something else.
+
 # TODO
 1. give short introduction to game's rules
 2. describe repository structure
-3. rerun random experiment with different seed 
+3. rerun random experiment with different seed and show results 
 4. implement DQN-based agent and train it
 5. make agent play against random agent
 6. make agent play against human
