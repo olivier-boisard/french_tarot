@@ -13,7 +13,7 @@ from environment import FrenchTarotEnvironment
 
 
 def _main():
-    scores = Parallel(n_jobs=-1, verbose=10)(delayed(_run_game)(i) for i in tqdm.tqdm(range(100)))
+    scores = Parallel(n_jobs=-1, verbose=1)(delayed(_run_game)(i) for i in tqdm.tqdm(range(1000)))
 
     _print_final_scores(scores)
     _plot_scores(scores)
@@ -25,6 +25,7 @@ def _run_game(iteration):
     observation = environment.reset()
     done = False
     cnt = 0
+    reward = None
     while not done:
         environment_copy = copy.deepcopy(environment)
         random_agent_copy = copy.deepcopy(random_agent)
