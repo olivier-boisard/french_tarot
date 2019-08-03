@@ -40,8 +40,9 @@ scores would tend to be closer. Same experiment was run with 10000 games
 per experiments and results were similar.
 
 # TODO
-1. give short introduction to game's rules
-2. describe repository structure
-3. implement DQN-based agent and train it
+1. implement DQN-based agents for each phase and train them
+    1. in bidding, use previous bids as input data
+2. give short introduction to game's rules
+3. describe repository structure
 4. make agent play against random agent
 5. make agent play against human
