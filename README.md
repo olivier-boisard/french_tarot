@@ -19,19 +19,24 @@ experiments.
 ## All-random games
 We made agents play randomly for 1000 independent games and we made sure
 each agent gets to be the starting player an equal amounts of times.
-The total scores were as follows:
-- Player 0: 10201
-- Player 1: 16641
-- Player 2: -33599
-- Player 3: 6757
+The total scores obtained when running the experiment with
+different random seeds are as follows:
 
-Evolutions of the score games after games are shown below:
+|Initial seed|Player 0|Player 1|Player 2|Player 3|
+|---|---|---|---|---|
+| 0 |10201|16641|-33599|6757|
+| 10000| -4707 | 3697  | -7747  | 8757  |
+| 20000|  82 | -30170  |7598   |22490   |
+
+Evolutions of the score games after games for the first line (i.e. with
+initial seed set to 0) are shown below:
 
 ![](results/random_players.png)
 
-There is an clear and unexpected tendency for player 2 to lose. Running
-the same experiment with different random seed will help understand
-if this is just luck or if there is something else.
+We see that using 3 different seeds make very different results:
+either one random player tends to lose a lot more, or scores are roughly
+the same. Expectations would be that with a larger amount of games,
+scores would tend to be closer.
 
 # TODO
 1. give short introduction to game's rules
