@@ -17,7 +17,7 @@ Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
 
-class ReplayMemory(object):
+class ReplayMemory:
     """
     Got from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
     """
@@ -36,7 +36,7 @@ class ReplayMemory(object):
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
-        return self._random_state.sample(self.memory, batch_size)
+        return self._random_state.choice(self.memory, batch_size, replace=False)
 
     def __len__(self):
         return len(self.memory)
@@ -55,7 +55,7 @@ class BidPhaseAgent:
         self._eps_decay = 200
         self._random_state = np.random.RandomState(1988)
         self._batch_size = 128
-        self._memory = ReplayMemory(10000)
+        self.memory = ReplayMemory(10000)
         self._optimizer = optim.Adam(policy_net.parameters())
 
     def get_action(self, observation):
@@ -69,10 +69,13 @@ class BidPhaseAgent:
         self._steps_done += 1
         if self._random_state.rand() > eps_threshold:
             with torch.no_grad():
-                output = self._policy_net(state).max(1)[1].view(1, 1)
+                output = self._policy_net(state).argmax().item()
         else:
             output = torch.argmax(torch.tensor([self._random_state.rand(self._policy_net[-1].out_features)])).item()
 
+        if len(observation["bid_per_player"]) > 0:
+            if np.max(observation["bid_per_player"]) >= output:
+                output = Bid.PASS
         return Bid(output)
 
     @staticmethod
@@ -85,12 +88,12 @@ class BidPhaseAgent:
             nn.Linear(nn_width, len(list(Bid)))
         )
 
-    def optimize_model(self, policy_net):
+    def optimize_model(self):
         """
         See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         """
-        if len(self._memory) > self._batch_size:
-            transitions = self._memory.sample(self._batch_size)
+        if len(self.memory) > self._batch_size:
+            transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state)
             action_batch = torch.cat(batch.action)

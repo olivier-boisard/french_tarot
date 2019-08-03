@@ -163,7 +163,7 @@ class FrenchTarotEnvironment:
         self._revealed_cards_in_dog = None
         self._announcements = None
         self._chelem_announced = None
-        self._current_player = None
+        self.current_player = None
         self._played_cards = None
         self._plis = None
         self._won_cards_per_teams = None
@@ -176,7 +176,7 @@ class FrenchTarotEnvironment:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
             reward, done, info = self._make_dog(action)
-            self._current_player = self._starting_player
+            self.current_player = self._starting_player
         elif self._game_phase == GamePhase.ANNOUNCEMENTS:
             reward, done, info = self._announce(action)
         elif self._game_phase == GamePhase.CARD:
@@ -188,17 +188,17 @@ class FrenchTarotEnvironment:
     def _play_card(self, card):
         if not isinstance(card, Card):
             raise ValueError("Action must be card")
-        check_card_is_allowed(card, self._played_cards, self._hand_per_player[self._current_player])
+        check_card_is_allowed(card, self._played_cards, self._hand_per_player[self.current_player])
         self._played_cards.append(card)
 
-        current_hand = self._hand_per_player[self._current_player]
+        current_hand = self._hand_per_player[self.current_player]
         current_hand = current_hand[current_hand != card]
         rewards = None
         done = False
         if isinstance(current_hand, Card):
-            self._hand_per_player[self._current_player] = np.array([current_hand])
+            self._hand_per_player[self.current_player] = np.array([current_hand])
         else:
-            self._hand_per_player[self._current_player] = current_hand
+            self._hand_per_player[self.current_player] = current_hand
 
         if len(self._played_cards) == self.n_players:
             is_petit_played_in_round = Card.TRUMP_1 in self._played_cards
@@ -213,7 +213,7 @@ class FrenchTarotEnvironment:
                 pass  # Nothing to do
 
         elif len(self._played_cards) < self.n_players:
-            self._current_player = self._get_next_player()
+            self.current_player = self._get_next_player()
         else:
             raise RuntimeError("Wrong number of played cards")
 
@@ -221,7 +221,7 @@ class FrenchTarotEnvironment:
         return rewards, done, info
 
     def _get_next_player(self):
-        return (self._current_player + 1) % self.n_players
+        return (self.current_player + 1) % self.n_players
 
     def _compute_win_loss(self, is_petit_played_in_round, is_excuse_played_in_round, is_taker_win_round):
         dog = self._made_dog if self._made_dog is not None else self._original_dog
@@ -366,7 +366,7 @@ class FrenchTarotEnvironment:
             self._won_cards_per_teams["taker"] += won_cards
         else:
             self._won_cards_per_teams["opponents"] += won_cards
-        self._current_player = winner
+        self.current_player = winner
         self._played_cards = []
         return rewards
 
@@ -400,7 +400,7 @@ class FrenchTarotEnvironment:
             elif isinstance(announcement, str) and announcement != CHELEM:
                 raise ValueError("Wrong string value")
             elif isinstance(announcement, list):
-                current_player_hand = self._hand_per_player[self._current_player]
+                current_player_hand = self._hand_per_player[self.current_player]
                 n_cards = len(announcement)
                 if count_trumps_and_excuse(announcement) != n_cards:
                     raise ValueError("Invalid cards in poignee")
@@ -426,9 +426,9 @@ class FrenchTarotEnvironment:
         self._announcements.append(action)
         if len(self._announcements) == self.n_players:
             self._game_phase = GamePhase.CARD
-            self._current_player = 0 if self._chelem_announced else self._starting_player
+            self.current_player = 0 if self._chelem_announced else self._starting_player
         else:
-            self._current_player = self._get_next_player()
+            self.current_player = self._get_next_player()
 
         reward = 0
         done = False
@@ -465,7 +465,7 @@ class FrenchTarotEnvironment:
             self._revealed_cards_in_dog = []
 
         self._game_phase = GamePhase.ANNOUNCEMENTS
-        self._current_player = 0
+        self.current_player = 0
         index_to_keep_in_hand = [card not in dog for card in taking_player_hand]
         self._hand_per_player[0] = taking_player_hand[index_to_keep_in_hand]
 
@@ -483,7 +483,7 @@ class FrenchTarotEnvironment:
             raise ValueError("Action is not pass and is lower than highest bid")
 
         self._bid_per_player.append(action)
-        self._current_player = len(self._bid_per_player)
+        self.current_player = len(self._bid_per_player)
         reward = 0
         if len(self._bid_per_player) == self.n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
@@ -497,10 +497,10 @@ class FrenchTarotEnvironment:
             if np.max(self._bid_per_player) <= Bid.GARDE:
                 self._hand_per_player[0] = np.concatenate((self._hand_per_player[0], self._original_dog))
                 self._game_phase = GamePhase.DOG
-                self._current_player = self._starting_player
+                self.current_player = self._starting_player
             else:
                 self._game_phase = GamePhase.ANNOUNCEMENTS
-                self._current_player = 0  # taker makes announcements first
+                self.current_player = 0  # taker makes announcements first
         else:
             done = False
         info = None
@@ -523,7 +523,7 @@ class FrenchTarotEnvironment:
         self.n_players = 4
         self._announcements = []
         self._chelem_announced = False
-        self._current_player = 0
+        self.current_player = 0
         self._played_cards = []
         self._plis = []
         self._won_cards_per_teams = {"taker": [], "opponents": []}
@@ -553,7 +553,7 @@ class FrenchTarotEnvironment:
             "bid_per_player": self._bid_per_player,
             "game_phase": self._game_phase
         }
-        current_hand = self._hand_per_player[self._current_player]
+        current_hand = self._hand_per_player[self.current_player]
         if self._game_phase == GamePhase.BID:
             rval["hand"] = current_hand
         if self._game_phase >= GamePhase.DOG:
