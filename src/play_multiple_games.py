@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from joblib import Parallel, delayed
 
-from agent import RandomPlayer
 from environment import FrenchTarotEnvironment
+from random_agent import RandomPlayer
 
 
 def _main():

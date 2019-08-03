@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from agent import RandomPlayer
+from random_agent import RandomPlayer
 from environment import FrenchTarotEnvironment, Bid
 
 
