@@ -11,6 +11,7 @@ from environment import Card, Bid, GamePhase
 
 
 def bid_phase_observation_encoder(observation):
+    # TODO this is called twice which is not optimal
     return tensor([card in observation["hand"] for card in list(Card)]).float()
 
 
@@ -72,12 +73,16 @@ class BidPhaseAgent:
             with torch.no_grad():
                 output = self._policy_net(state).argmax().item()
         else:
-            output = torch.argmax(torch.tensor([self._random_state.rand(self._policy_net[-1].out_features)])).item()
+            output = torch.argmax(torch.tensor([self._random_state.rand(self.output_dimension)])).item()
 
         if len(observation["bid_per_player"]) > 0:
             if np.max(observation["bid_per_player"]) >= output:
                 output = Bid.PASS
         return Bid(output)
+
+    @property
+    def output_dimension(self):
+        return self._policy_net[-1].out_features
 
     @staticmethod
     def create_dqn():
@@ -97,7 +102,9 @@ class BidPhaseAgent:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state)
-            action_batch = torch.cat(batch.action)
+
+            action_batch_one_hot = self.convert_to_one_hot(batch)
+            action_batch = torch.cat(action_batch_one_hot)
             reward_batch = torch.cat(batch.reward)
 
             state_action_values = self._policy_net(state_batch).gather(1, action_batch)
@@ -111,3 +118,9 @@ class BidPhaseAgent:
             for param in self._policy_net.parameters():
                 param.grad.data.clamp_(-1, 1)
             self._optimizer.step()
+
+    def convert_to_one_hot(self, batch):
+        action_batch_one_hot = torch.zeros(len(batch.action), self.output_dimension)
+        for i, c in enumerate(batch.action):
+            action_batch_one_hot[i, c] = 1
+        return action_batch_one_hot
