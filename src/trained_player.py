@@ -1,12 +1,24 @@
-import numpy as np
+from torch import nn, tensor, argmax
 
-from environment import Card
+from environment import Card, Bid, GamePhase
 
 
 def bid_phase_observation_encoder(observation):
-    return _encode_card_list(observation["hand"])
+    return tensor([card in observation["hand"] for card in list(Card)]).float()
 
 
-def _encode_card_list(card_list):
-    deck = list(Card)
-    return np.array([card in card_list for card in deck])
+class BidPhaseAgent:
+
+    def get_action(self, observation):
+        if observation["game_phase"] != GamePhase.BID:
+            raise ValueError("Invalid game phase")
+
+        state = bid_phase_observation_encoder(observation)
+
+        nn_width = 128
+        model = nn.Sequential(
+            nn.Linear(state.shape[0], nn_width),
+            nn.ReLU(),
+            nn.Linear(nn_width, len(list(Bid)))
+        )
+        return Bid(argmax(model(state)).item())
