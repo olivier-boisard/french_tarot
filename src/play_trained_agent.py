@@ -1,6 +1,4 @@
-from torch import optim
-
-from trained_player import BidPhaseAgent, ReplayMemory
+from trained_player import BidPhaseAgent
 
 
 def _main():
@@ -10,9 +8,8 @@ def _main():
     target_net.load_state_dict(policy_net.state_dict())
     target_net.eval()
 
-    optimizer = optim.Adam(policy_net.parameters())
-    memory = ReplayMemory(10000)
-
+    BidPhaseAgent(policy_net)
+    
 
 if __name__ == "__main__":
     _main()

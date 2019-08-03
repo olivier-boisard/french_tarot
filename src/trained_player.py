@@ -3,7 +3,8 @@ from collections import namedtuple
 
 import numpy as np
 import torch
-from torch import nn, tensor
+import torch.nn.functional as F
+from torch import nn, tensor, optim
 
 from environment import Card, Bid, GamePhase
 
@@ -43,15 +44,19 @@ class ReplayMemory(object):
 
 class BidPhaseAgent:
 
-    def __init__(self, model):
-        self._model = model
+    def __init__(self, policy_net):
+        self._policy_net = policy_net
         self._steps_done = 0
 
         # Training parameters
         self._eps_start = 0.9
         self._eps_end = 0.05
+        self._gamma = 0.999
         self._eps_decay = 200
         self._random_state = np.random.RandomState(1988)
+        self._batch_size = 128
+        self._memory = ReplayMemory(10000)
+        self._optimizer = optim.Adam(policy_net.parameters())
 
     def get_action(self, observation):
         if observation["game_phase"] != GamePhase.BID:
@@ -64,9 +69,9 @@ class BidPhaseAgent:
         self._steps_done += 1
         if self._random_state.rand() > eps_threshold:
             with torch.no_grad():
-                output = self._model(state).max(1)[1].view(1, 1)
+                output = self._policy_net(state).max(1)[1].view(1, 1)
         else:
-            output = torch.argmax(torch.tensor([self._random_state.rand(self._model[-1].out_features)])).item()
+            output = torch.argmax(torch.tensor([self._random_state.rand(self._policy_net[-1].out_features)])).item()
 
         return Bid(output)
 
@@ -79,3 +84,26 @@ class BidPhaseAgent:
             nn.ReLU(),
             nn.Linear(nn_width, len(list(Bid)))
         )
+
+    def optimize_model(self, policy_net):
+        """
+        See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+        """
+        if len(self._memory) > self._batch_size:
+            transitions = self._memory.sample(self._batch_size)
+            batch = Transition(*zip(*transitions))
+            state_batch = torch.cat(batch.state)
+            action_batch = torch.cat(batch.action)
+            reward_batch = torch.cat(batch.reward)
+
+            state_action_values = self._policy_net(state_batch).gather(1, action_batch)
+            next_state_values = torch.zeros(self._batch_size, device="cuda")
+            expected_state_action_values = (next_state_values * self._gamma) + reward_batch
+
+            loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+
+            self._optimizer.zero_grad()
+            loss.backward()
+            for param in self._policy_net.parameters():
+                param.grad.data.clamp_(-1, 1)
+            self._optimizer.step()
