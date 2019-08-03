@@ -1,4 +1,5 @@
 import math
+import random
 from collections import namedtuple
 
 import numpy as np
@@ -26,7 +27,7 @@ class ReplayMemory:
         self.capacity = capacity
         self.memory = []
         self.position = 0
-        self._random_state = np.random.RandomState(1988)
+        self._random_state = random.Random(1988)
 
     def push(self, *args):
         """Saves a transition."""
@@ -36,7 +37,7 @@ class ReplayMemory:
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
-        return self._random_state.choice(self.memory, batch_size, replace=False)
+        return self._random_state.sample(self.memory, batch_size)
 
     def __len__(self):
         return len(self.memory)
