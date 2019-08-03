@@ -35,13 +35,13 @@ initial seed set to 0) are shown below:
 
 We see that using 3 different seeds make very different results:
 either one random player tends to lose a lot more, or scores are roughly
-the same. Expectations would be that with a larger amount of games,
-scores would tend to be closer.
+the same. Expectations would be that with a large amount of games,
+scores would tend to be closer. Same experiment was run with 10000 games
+per experiments and results were similar.
 
 # TODO
 1. give short introduction to game's rules
 2. describe repository structure
-3. rerun random experiment with different seed and show results 
-4. implement DQN-based agent and train it
-5. make agent play against random agent
-6. make agent play against human
+3. implement DQN-based agent and train it
+4. make agent play against random agent
+5. make agent play against human
