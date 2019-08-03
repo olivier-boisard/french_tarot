@@ -1,3 +1,4 @@
+import argparse
 import copy
 import datetime
 import os
@@ -5,7 +6,6 @@ import os
 import dill
 import matplotlib.pyplot as plt
 import numpy as np
-import tqdm
 from joblib import Parallel, delayed
 
 from agent import RandomPlayer
@@ -13,15 +13,19 @@ from environment import FrenchTarotEnvironment
 
 
 def _main():
-    scores = Parallel(n_jobs=-1, verbose=1)(delayed(_run_game)(i) for i in tqdm.tqdm(range(1000)))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--initial-seed", default=0, type=int)
+    args = parser.parse_args()
+
+    scores = Parallel(n_jobs=-1, verbose=1)(delayed(_run_game)(i, initial_seed=args.initial_seed) for i in range(1000))
 
     _print_final_scores(scores)
     _plot_scores(scores)
 
 
-def _run_game(iteration):
-    environment = FrenchTarotEnvironment(seed=iteration)
-    random_agent = RandomPlayer(seed=iteration)
+def _run_game(iteration, initial_seed=0):
+    environment = FrenchTarotEnvironment(seed=initial_seed + iteration)
+    random_agent = RandomPlayer(seed=initial_seed + iteration)
     observation = environment.reset()
     done = False
     cnt = 0
