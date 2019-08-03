@@ -1,7 +1,9 @@
-import random
+import math
 from collections import namedtuple
 
-from torch import nn, tensor, argmax
+import numpy as np
+import torch
+from torch import nn, tensor
 
 from environment import Card, Bid, GamePhase
 
@@ -23,6 +25,7 @@ class ReplayMemory(object):
         self.capacity = capacity
         self.memory = []
         self.position = 0
+        self._random_state = np.random.RandomState(1988)
 
     def push(self, *args):
         """Saves a transition."""
@@ -32,7 +35,7 @@ class ReplayMemory(object):
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+        return self._random_state.sample(self.memory, batch_size)
 
     def __len__(self):
         return len(self.memory)
@@ -40,16 +43,39 @@ class ReplayMemory(object):
 
 class BidPhaseAgent:
 
+    def __init__(self, model):
+        self._model = model
+        self._steps_done = 0
+
+        # Training parameters
+        self._eps_start = 0.9
+        self._eps_end = 0.05
+        self._eps_decay = 200
+        self._random_state = np.random.RandomState(1988)
+
     def get_action(self, observation):
         if observation["game_phase"] != GamePhase.BID:
             raise ValueError("Invalid game phase")
 
         state = bid_phase_observation_encoder(observation)
 
+        eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
+            -1. * self._steps_done / self._eps_decay)
+        self._steps_done += 1
+        if self._random_state.rand() > eps_threshold:
+            with torch.no_grad():
+                output = self._model(state).max(1)[1].view(1, 1)
+        else:
+            output = torch.argmax(torch.tensor([self._random_state.rand(self._model[-1].out_features)])).item()
+
+        return Bid(output)
+
+    @staticmethod
+    def create_dqn():
+        input_size = len(list(Card))
         nn_width = 128
-        model = nn.Sequential(
-            nn.Linear(state.shape[0], nn_width),
+        return nn.Sequential(
+            nn.Linear(input_size, nn_width),
             nn.ReLU(),
             nn.Linear(nn_width, len(list(Bid)))
         )
-        return Bid(argmax(model(state)).item())
