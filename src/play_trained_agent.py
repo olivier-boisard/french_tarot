@@ -23,21 +23,21 @@ def _main():
     random_state = np.random.RandomState(1988)
     for _ in tqdm.tqdm(range(1000)):
         observation = environment.reset()
-        trained_agent_id = random_state.randint(4)
         done = False
-        observation_to_save = None
-        action_to_save = None
+        observations_to_save = []
+        actions_to_save = []
         while not done:
-            dqn_plays = environment.current_player == trained_agent_id and observation["game_phase"] == GamePhase.BID
+            dqn_plays = observation["game_phase"] == GamePhase.BID
             playing_agent = bid_phase_dqn_agent if dqn_plays else random_agent
             action = playing_agent.get_action(observation)
-            new_observation, reward, done, _ = environment.step(action)
+            new_observation, rewards, done, _ = environment.step(action)
             if dqn_plays:
-                observation_to_save = observation
-                action_to_save = action
+                observations_to_save.append(observation)
+                actions_to_save.append(action)
             observation = new_observation
-        bid_phase_dqn_agent.memory.push(bid_phase_observation_encoder(observation_to_save).unsqueeze(0),
-                                        action_to_save.value, None, reward[trained_agent_id])
+        for observation_to_save, action_to_save, reward in zip(observations_to_save, actions_to_save, rewards):
+            bid_phase_dqn_agent.memory.push(bid_phase_observation_encoder(observation_to_save).unsqueeze(0),
+                                            action_to_save.value, None, reward)
         bid_phase_dqn_agent.optimize_model()
 
 
