@@ -53,7 +53,6 @@ class BidPhaseAgent:
         # Training parameters
         self._eps_start = 0.9
         self._eps_end = 0.05
-        self._gamma = 0.999
         self._eps_decay = 200
         self._random_state = np.random.RandomState(1988)
         self._batch_size = 128
@@ -102,14 +101,10 @@ class BidPhaseAgent:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state)
-
             reward_batch = torch.tensor(batch.reward)
 
             state_action_values = self._policy_net(state_batch).gather(1, torch.tensor(batch.action).unsqueeze(1))
-            next_state_values = torch.zeros(self._batch_size, device="cuda")
-            expected_state_action_values = (next_state_values * self._gamma) + reward_batch
-
-            loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+            loss = F.smooth_l1_loss(state_action_values, reward_batch.unsqueeze(1))
 
             self._optimizer.zero_grad()
             loss.backward()
