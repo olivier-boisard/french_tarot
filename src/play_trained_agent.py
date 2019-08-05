@@ -39,7 +39,7 @@ def _main():
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
     all_rewards = np.stack(all_rewards)
-    plt.plot(all_rewards)
+    plt.plot(all_rewards, alpha=0.5)
     plt.legend(["player_{}".format(i) for i in range(all_rewards.shape[1])])
     plt.xlabel("game")
     plt.ylabel("scores")
