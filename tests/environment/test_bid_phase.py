@@ -82,7 +82,7 @@ def test_bid_completed(environment):
     assert np.all(environment._hand_per_player[1] == original_hands[2])
     assert np.all(environment._hand_per_player[2] == original_hands[3])
     assert np.all(environment._hand_per_player[3] == original_hands[0])
-    assert environment._current_player == 3
+    assert environment.current_player == 3
     assert observation["original_player_ids"] == [1, 2, 3, 0]
 
 
