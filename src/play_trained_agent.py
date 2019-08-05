@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 import tqdm
 
@@ -20,7 +19,6 @@ def _main():
     environment = FrenchTarotEnvironment()
     bid_phase_dqn_agent = BidPhaseAgent(policy_net)
     random_agent = RandomPlayer()
-    random_state = np.random.RandomState(1988)
     for _ in tqdm.tqdm(range(1000)):
         observation = environment.reset()
         done = False
