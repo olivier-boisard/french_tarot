@@ -103,11 +103,9 @@ class BidPhaseAgent:
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state)
 
-            action_batch_one_hot = self.convert_to_one_hot(batch)
-            action_batch = torch.cat(action_batch_one_hot)
-            reward_batch = torch.cat(batch.reward)
+            reward_batch = torch.tensor(batch.reward)
 
-            state_action_values = self._policy_net(state_batch).gather(1, action_batch)
+            state_action_values = self._policy_net(state_batch).gather(1, torch.tensor(batch.action).unsqueeze(1))
             next_state_values = torch.zeros(self._batch_size, device="cuda")
             expected_state_action_values = (next_state_values * self._gamma) + reward_batch
 
@@ -118,9 +116,3 @@ class BidPhaseAgent:
             for param in self._policy_net.parameters():
                 param.grad.data.clamp_(-1, 1)
             self._optimizer.step()
-
-    def convert_to_one_hot(self, batch):
-        action_batch_one_hot = torch.zeros(len(batch.action), self.output_dimension)
-        for i, c in enumerate(batch.action):
-            action_batch_one_hot[i, c] = 1
-        return action_batch_one_hot
