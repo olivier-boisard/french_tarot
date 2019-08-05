@@ -70,7 +70,7 @@ class BidPhaseAgent:
         self._steps_done += 1
         if self._random_state.rand() > eps_threshold:
             with torch.no_grad():
-                output = self._policy_net(state).argmax().item()
+                output = self._policy_net(state.to("cuda")).argmax().item()
         else:
             output = torch.argmax(torch.tensor([self._random_state.rand(self.output_dimension)])).item()
 
@@ -91,7 +91,7 @@ class BidPhaseAgent:
             nn.Linear(input_size, nn_width),
             nn.ReLU(),
             nn.Linear(nn_width, len(list(Bid)))
-        )
+        ).to("cuda")
 
     def optimize_model(self):
         """
@@ -100,10 +100,11 @@ class BidPhaseAgent:
         if len(self.memory) > self._batch_size:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
-            state_batch = torch.cat(batch.state)
-            reward_batch = torch.tensor(batch.reward).float()
+            state_batch = torch.cat(batch.state).to("cuda")
+            reward_batch = torch.tensor(batch.reward).float().to("cuda")
+            action_batch = torch.tensor(batch.action).unsqueeze(1).to("cuda")
 
-            state_action_values = self._policy_net(state_batch).gather(1, torch.tensor(batch.action).unsqueeze(1))
+            state_action_values = self._policy_net(state_batch).gather(1, action_batch)
             loss = F.smooth_l1_loss(state_action_values, reward_batch.unsqueeze(1))
 
             self._optimizer.zero_grad()
