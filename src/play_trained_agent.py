@@ -12,9 +12,6 @@ def _main():
 
     # Mostly got inspiration from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
     policy_net = BidPhaseAgent.create_dqn()
-    target_net = BidPhaseAgent.create_dqn()
-    target_net.load_state_dict(policy_net.state_dict())
-    target_net.eval()
 
     environment = FrenchTarotEnvironment()
     bid_phase_dqn_agent = BidPhaseAgent(policy_net)
