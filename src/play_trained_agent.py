@@ -19,7 +19,7 @@ def _main():
     bid_phase_dqn_agent = BidPhaseAgent(policy_net)
     random_agent = RandomPlayer()
     all_rewards = []
-    for i in tqdm.tqdm(range(10000)):
+    for i in tqdm.tqdm(range(200000)):
         observation = environment.reset()
         done = False
         observations_to_save = []

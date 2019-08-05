@@ -53,10 +53,10 @@ class BidPhaseAgent:
         # Training parameters
         self._eps_start = 0.9
         self._eps_end = 0.05
-        self._eps_decay = 200
+        self._eps_decay = 5000
         self._random_state = np.random.RandomState(1988)
         self._batch_size = 128
-        self.memory = ReplayMemory(10000)
+        self.memory = ReplayMemory(20000)
         self._optimizer = optim.Adam(policy_net.parameters())
 
     def get_action(self, observation):
