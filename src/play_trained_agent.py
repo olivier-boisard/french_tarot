@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import tqdm
 
@@ -16,7 +18,8 @@ def _main():
     environment = FrenchTarotEnvironment()
     bid_phase_dqn_agent = BidPhaseAgent(policy_net)
     random_agent = RandomPlayer()
-    for _ in tqdm.tqdm(range(1000)):
+    all_rewards = []
+    for i in tqdm.tqdm(range(10000)):
         observation = environment.reset()
         done = False
         observations_to_save = []
@@ -33,7 +36,14 @@ def _main():
         for observation_to_save, action_to_save, reward in zip(observations_to_save, actions_to_save, rewards):
             bid_phase_dqn_agent.memory.push(bid_phase_observation_encoder(observation_to_save).unsqueeze(0),
                                             action_to_save.value, None, reward / 1000.)
+        all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
+    all_rewards = np.stack(all_rewards)
+    plt.plot(all_rewards)
+    plt.legend(["player_{}".format(i) for i in range(all_rewards.shape[1])])
+    plt.xlabel("game")
+    plt.ylabel("scores")
+    plt.show()
 
 
 if __name__ == "__main__":
