@@ -101,7 +101,7 @@ class BidPhaseAgent:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state)
-            reward_batch = torch.tensor(batch.reward)
+            reward_batch = torch.tensor(batch.reward).float()
 
             state_action_values = self._policy_net(state_batch).gather(1, torch.tensor(batch.action).unsqueeze(1))
             loss = F.smooth_l1_loss(state_action_values, reward_batch.unsqueeze(1))
