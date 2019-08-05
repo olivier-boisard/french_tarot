@@ -24,4 +24,4 @@ def test_create_bid_phase_player_wrong_phase():
     observation = FrenchTarotEnvironment().reset()
     observation["game_phase"] = GamePhase.DOG
     with pytest.raises(ValueError):
-        action = player.get_action(observation)
+        player.get_action(observation)
