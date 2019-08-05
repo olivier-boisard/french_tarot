@@ -37,7 +37,7 @@ def _main():
             observation = new_observation
         for observation_to_save, action_to_save, reward in zip(observations_to_save, actions_to_save, rewards):
             bid_phase_dqn_agent.memory.push(bid_phase_observation_encoder(observation_to_save).unsqueeze(0),
-                                            action_to_save.value, None, reward)
+                                            action_to_save.value, None, reward / 1000.)
         bid_phase_dqn_agent.optimize_model()
 
 
