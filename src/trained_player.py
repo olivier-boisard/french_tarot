@@ -55,11 +55,15 @@ class BidPhaseAgent:
         self._eps_end = 0.05
         self._eps_decay = 5000
         self._random_state = np.random.RandomState(1988)
-        self._batch_size = 128
+        self._batch_size = 12
         self.memory = ReplayMemory(20000)
         self._optimizer = optim.Adam(policy_net.parameters())
 
         self.loss = []
+
+    @property
+    def device(self):
+        return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
 
     def get_action(self, observation):
         if observation["game_phase"] != GamePhase.BID:
@@ -72,7 +76,7 @@ class BidPhaseAgent:
         self._steps_done += 1
         if self._random_state.rand() > eps_threshold:
             with torch.no_grad():
-                output = self._policy_net(state.to("cuda")).argmax().item()
+                output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
         else:
             output = torch.argmax(torch.tensor([self._random_state.rand(self.output_dimension)])).item()
 
@@ -111,7 +115,7 @@ class BidPhaseAgent:
             nn.ReLU(),
 
             nn.Linear(8 * nn_width, len(list(Bid)))
-        ).to("cuda")
+        )
 
     def optimize_model(self):
         """
@@ -121,9 +125,9 @@ class BidPhaseAgent:
         if len(self.memory) > self._batch_size:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
-            state_batch = torch.cat(batch.state).to("cuda")
-            reward_batch = torch.tensor(batch.reward).float().to("cuda")
-            action_batch = torch.tensor(batch.action).unsqueeze(1).to("cuda")
+            state_batch = torch.cat(batch.state).to(self.device)
+            reward_batch = torch.tensor(batch.reward).float().to(self.device)
+            action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
 
             state_action_values = self._policy_net(state_batch).gather(1, action_batch)
             loss = F.smooth_l1_loss(state_action_values, reward_batch.unsqueeze(1))
