@@ -10,8 +10,9 @@ from trained_player import BidPhaseAgent, bid_phase_observation_encoder
 
 
 def _main():
-    torch.manual_seed(1988)
-    torch.cuda.manual_seed_all(1988)
+    seed = 1988
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
     # Mostly got inspiration from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
     policy_net = BidPhaseAgent.create_dqn()
@@ -40,28 +41,28 @@ def _main():
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
 
-    all_rewards = np.stack(all_rewards)
+    dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
+
+
+def dump_and_display_results(rewards, loss):
+    rewards = np.stack(rewards)
     output_file_path = "scores.csv"
     print("Dump scores at", output_file_path)
-    columns = ["player_{}".format(i) for i in range(all_rewards.shape[1])]
-    pd.DataFrame(all_rewards, columns=columns).to_csv(output_file_path)
-
+    columns = ["player_{}".format(i) for i in range(rewards.shape[1])]
+    pd.DataFrame(rewards, columns=columns).to_csv(output_file_path)
     output_file_path = "loss.csv"
     print("Dump loss at", output_file_path)
-    pd.DataFrame(bid_phase_dqn_agent.loss, columns=["loss"]).to_csv(output_file_path)
-
+    pd.DataFrame(loss, columns=["loss"]).to_csv(output_file_path)
     plt.subplot(211)
-    plt.plot(all_rewards, alpha=0.5)
+    plt.plot(rewards, alpha=0.5)
     plt.legend(columns)
     plt.xlabel("game")
     plt.ylabel("scores")
-
     plt.subplot(212)
-    plt.plot(bid_phase_dqn_agent.loss, label="loss")
+    plt.plot(loss, label="loss")
     plt.legend()
     plt.xlabel("step")
     plt.ylabel("loss")
-
     plt.title("Training results")
     plt.show()
 
