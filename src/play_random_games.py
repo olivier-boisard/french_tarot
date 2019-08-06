@@ -12,14 +12,12 @@ from environment import FrenchTarotEnvironment
 from random_agent import RandomPlayer
 
 
-def _main(n_iterations, n_jobs):
+def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial-seed", default=0, type=int)
     args = parser.parse_args()
 
-    scores = Parallel(n_jobs=n_jobs, verbose=1)(
-        delayed(_run_game)(i, initial_seed=args.initial_seed) for i in range(n_iterations)
-    )
+    scores = Parallel(n_jobs=-1, verbose=1)(delayed(_run_game)(i, initial_seed=args.initial_seed) for i in range(1000))
 
     _print_final_scores(scores)
     _plot_scores(scores)
@@ -73,4 +71,4 @@ def _plot_scores(scores):
 
 
 if __name__ == "__main__":
-    _main(1000, -1)
+    _main()
