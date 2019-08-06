@@ -90,7 +90,25 @@ class BidPhaseAgent:
         return nn.Sequential(
             nn.Linear(input_size, nn_width),
             nn.ReLU(),
-            nn.Linear(nn_width, len(list(Bid)))
+            nn.Linear(nn_width, nn_width),
+            nn.ReLU(),
+
+            nn.Linear(nn_width, 2 * nn_width),
+            nn.ReLU(),
+            nn.Linear(2 * nn_width, 2 * nn_width),
+            nn.ReLU(),
+
+            nn.Linear(2 * nn_width, 4 * nn_width),
+            nn.ReLU(),
+            nn.Linear(4 * nn_width, 4 * nn_width),
+            nn.ReLU(),
+
+            nn.Linear(4 * nn_width, 8 * nn_width),
+            nn.ReLU(),
+            nn.Linear(8 * nn_width, 8 * nn_width),
+            nn.ReLU(),
+
+            nn.Linear(8 * nn_width, len(list(Bid)))
         ).to("cuda")
 
     def optimize_model(self):
