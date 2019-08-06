@@ -11,13 +11,17 @@ from joblib import Parallel, delayed
 from environment import FrenchTarotEnvironment
 from random_agent import RandomPlayer
 
+N_ITERATIONS = 1000
+
 
 def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial-seed", default=0, type=int)
     args = parser.parse_args()
 
-    scores = Parallel(n_jobs=-1, verbose=1)(delayed(_run_game)(i, initial_seed=args.initial_seed) for i in range(1000))
+    scores = Parallel(n_jobs=-1, verbose=1)(
+        delayed(_run_game)(i, initial_seed=args.initial_seed) for i in range(N_ITERATIONS)
+    )
 
     _print_final_scores(scores)
     _plot_scores(scores)
