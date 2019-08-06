@@ -8,14 +8,16 @@ from environment import FrenchTarotEnvironment, GamePhase
 from random_agent import RandomPlayer
 from trained_player import BidPhaseAgent, bid_phase_observation_encoder
 
+DEVICE = "cuda"
 
-def _main(n_iterations, device="cuda", display=True):
+
+def _main(n_iterations):
     seed = 1988
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
     # Mostly got inspiration from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
-    policy_net = BidPhaseAgent.create_dqn().to(device)
+    policy_net = BidPhaseAgent.create_dqn().to(DEVICE)
 
     environment = FrenchTarotEnvironment()
     bid_phase_dqn_agent = BidPhaseAgent(policy_net)
@@ -42,8 +44,7 @@ def _main(n_iterations, device="cuda", display=True):
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
 
-    if display:
-        dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
+    dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
 
 
 def dump_and_display_results(rewards, loss):
