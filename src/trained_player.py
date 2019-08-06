@@ -59,6 +59,8 @@ class BidPhaseAgent:
         self.memory = ReplayMemory(20000)
         self._optimizer = optim.Adam(policy_net.parameters())
 
+        self.loss = []
+
     def get_action(self, observation):
         if observation["game_phase"] != GamePhase.BID:
             raise ValueError("Invalid game phase")
@@ -124,6 +126,7 @@ class BidPhaseAgent:
 
             state_action_values = self._policy_net(state_batch).gather(1, action_batch)
             loss = F.smooth_l1_loss(state_action_values, reward_batch.unsqueeze(1))
+            self.loss.append(loss.item())
 
             self._optimizer.zero_grad()
             loss.backward()

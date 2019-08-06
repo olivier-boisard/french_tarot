@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import torch
 import tqdm
 
@@ -38,11 +39,30 @@ def _main():
                                             action_to_save.value, None, reward / 1000.)
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
+
     all_rewards = np.stack(all_rewards)
+    output_file_path = "scores.csv"
+    print("Dump scores at", output_file_path)
+    columns = ["player_{}".format(i) for i in range(all_rewards.shape[1])]
+    pd.DataFrame(all_rewards, columns=columns).to_csv(output_file_path)
+
+    output_file_path = "loss.csv"
+    print("Dump loss at", output_file_path)
+    pd.DataFrame(bid_phase_dqn_agent.loss, columns=["loss"]).to_csv(output_file_path)
+
+    plt.subplot(211)
     plt.plot(all_rewards, alpha=0.5)
-    plt.legend(["player_{}".format(i) for i in range(all_rewards.shape[1])])
+    plt.legend(columns)
     plt.xlabel("game")
     plt.ylabel("scores")
+
+    plt.subplot(212)
+    plt.plot(bid_phase_dqn_agent.loss, label="loss")
+    plt.legend()
+    plt.xlabel("step")
+    plt.ylabel("loss")
+
+    plt.title("Training results")
     plt.show()
 
 
