@@ -9,7 +9,7 @@ from random_agent import RandomPlayer
 from trained_player import BidPhaseAgent, bid_phase_observation_encoder
 
 
-def _main():
+def _main(n_iterations):
     seed = 1988
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -21,7 +21,7 @@ def _main():
     bid_phase_dqn_agent = BidPhaseAgent(policy_net)
     random_agent = RandomPlayer()
     all_rewards = []
-    for i in tqdm.tqdm(range(200000)):
+    for i in tqdm.tqdm(range(n_iterations)):
         observation = environment.reset()
         done = False
         observations_to_save = []
@@ -69,4 +69,4 @@ def dump_and_display_results(rewards, loss):
 
 
 if __name__ == "__main__":
-    _main()
+    _main(200000)
