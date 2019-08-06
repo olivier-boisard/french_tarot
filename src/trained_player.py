@@ -117,6 +117,7 @@ class BidPhaseAgent:
         """
         See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         """
+        display_interval = 100
         if len(self.memory) > self._batch_size:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
@@ -131,3 +132,6 @@ class BidPhaseAgent:
             self._optimizer.zero_grad()
             loss.backward()
             self._optimizer.step()
+
+            if len(self.loss) % display_interval == 0:
+                print("Loss:", np.mean(self.loss[-display_interval:]))
