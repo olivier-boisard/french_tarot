@@ -13,14 +13,14 @@ def test_bid_phase_observation_encoder():
 
 
 def test_create_bid_phase_player():
-    player = BidPhaseAgent(BidPhaseAgent.create_dqn())
+    player = BidPhaseAgent(device="cpu")
     observation = FrenchTarotEnvironment().reset()
     action = player.get_action(observation)
     assert isinstance(action, Bid)
 
 
 def test_create_bid_phase_player_wrong_phase():
-    player = BidPhaseAgent(BidPhaseAgent.create_dqn())
+    player = BidPhaseAgent(device="cpu")
     observation = FrenchTarotEnvironment().reset()
     observation["game_phase"] = GamePhase.DOG
     with pytest.raises(ValueError):
