@@ -58,7 +58,7 @@ class BidPhaseAgent:
         self._eps_decay = eps_decay
         self._batch_size = batch_size
         self.memory = ReplayMemory(replay_memory_size)
-        self._optimizer = optim.Adam(self._policy_net.parameters(), lr=1e-4)
+        self._optimizer = optim.Adam(self._policy_net.parameters(), lr=1e-2)
 
         self.loss = []
 
