@@ -57,6 +57,9 @@ def dump_and_display_results(rewards, loss):
     pd.DataFrame(rewards, columns=columns).to_csv(output_file_path)
     output_file_path = "loss.csv"
     print("Dump loss at", output_file_path)
+
+    print("average_loss_on_last_1000_episodes:", np.mean(loss[-1000:]))
+
     pd.DataFrame(loss, columns=["loss"]).to_csv(output_file_path)
     plt.subplot(211)
     plt.plot(rewards, alpha=0.5)
