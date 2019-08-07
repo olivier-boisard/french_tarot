@@ -136,3 +136,34 @@ class BidPhaseAgent:
 
             if len(self.loss) % display_interval == 0:
                 print("Loss:", np.mean(self.loss[-display_interval:]))
+
+
+class TrainedPlayerNetwork(nn.Module):
+    N_CARDS_PER_COLOR = 14
+    N_TRUMPS = 21
+
+    def __init__(self):
+        nn_width = 64
+        self.standard_cards_tower = nn.Sequential(
+            nn.Linear(TrainedPlayerNetwork.N_CARDS_PER_COLOR, nn_width),
+            nn.ReLU(),
+            nn.BatchNorm1d(nn_width),
+            nn.Linear(nn_width, nn_width),
+            nn.ReLU()
+        )
+        self.trump_tower = nn.Sequential(
+            nn.Linear(TrainedPlayerNetwork.N_TRUMPS, nn_width),
+            nn.ReLU(),
+            nn.BatchNorm1d(nn_width),
+            nn.Linear(nn_width, nn_width),
+            nn.ReLU()
+        )
+
+    def forward(self, x):
+        n = TrainedPlayerNetwork.N_CARDS_PER_COLOR
+        x_color_1 = self.standard_cards_tower(x[:, n])
+        x_color_2 = self.standard_cards_tower(x[:, n:2 * n])
+        x_color_3 = self.standard_cards_tower(x[:, 2 * n:3 * n])
+        x_color_4 = self.standard_cards_tower(x[:, 3 * n:4 * n])
+        x_trumps = self.trump_tower(x[:, 4 * n:])
+        x_concat = nn.cat()
