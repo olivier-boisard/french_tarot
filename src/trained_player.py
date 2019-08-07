@@ -125,6 +125,7 @@ class BidPhaseAgent:
 
             self._optimizer.zero_grad()
             loss.backward()
+            nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
             self._optimizer.step()
 
             if len(self.loss) % display_interval == 0:
