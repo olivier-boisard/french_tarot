@@ -77,7 +77,9 @@ class BidPhaseAgent:
         self._steps_done += 1
         if self._random_state.rand() > eps_threshold:
             with torch.no_grad():
+                self._policy_net.eval()
                 output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
+                self._policy_net.train()
         else:
             output = torch.argmax(torch.tensor([self._random_state.rand(self.output_dimension)])).item()
 
@@ -97,24 +99,32 @@ class BidPhaseAgent:
         return nn.Sequential(
             nn.Linear(input_size, nn_width),
             nn.ReLU(),
+            nn.BatchNorm1d(nn_width),
             nn.Linear(nn_width, nn_width),
             nn.ReLU(),
 
+            nn.BatchNorm1d(nn_width),
             nn.Linear(nn_width, 2 * nn_width),
             nn.ReLU(),
+            nn.BatchNorm1d(2 * nn_width),
             nn.Linear(2 * nn_width, 2 * nn_width),
             nn.ReLU(),
 
+            nn.BatchNorm1d(2 * nn_width),
             nn.Linear(2 * nn_width, 4 * nn_width),
             nn.ReLU(),
+            nn.BatchNorm1d(4 * nn_width),
             nn.Linear(4 * nn_width, 4 * nn_width),
             nn.ReLU(),
 
+            nn.BatchNorm1d(4 * nn_width),
             nn.Linear(4 * nn_width, 8 * nn_width),
             nn.ReLU(),
+            nn.BatchNorm1d(8 * nn_width),
             nn.Linear(8 * nn_width, 8 * nn_width),
             nn.ReLU(),
 
+            nn.BatchNorm1d(8 * nn_width),
             nn.Linear(8 * nn_width, len(list(Bid)))
         )
 
