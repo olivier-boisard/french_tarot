@@ -111,21 +111,7 @@ class BidPhaseAgent:
             nn.ReLU(),
 
             nn.BatchNorm1d(2 * nn_width),
-            nn.Linear(2 * nn_width, 4 * nn_width),
-            nn.ReLU(),
-            nn.BatchNorm1d(4 * nn_width),
-            nn.Linear(4 * nn_width, 4 * nn_width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(4 * nn_width),
-            nn.Linear(4 * nn_width, 8 * nn_width),
-            nn.ReLU(),
-            nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, 8 * nn_width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, len(list(Bid)))
+            nn.Linear(2 * nn_width, len(list(Bid)))
         )
 
     def optimize_model(self):
