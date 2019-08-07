@@ -73,4 +73,4 @@ def dump_and_display_results(rewards, loss):
 
 
 if __name__ == "__main__":
-    _main(200000)
+    _main()
