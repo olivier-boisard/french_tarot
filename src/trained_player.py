@@ -103,13 +103,6 @@ class BidPhaseAgent:
             nn.Linear(nn_width, nn_width),
             nn.ReLU(),
 
-            nn.BatchNorm1d(nn_width),
-            nn.Linear(nn_width, 2 * nn_width),
-            nn.ReLU(),
-            nn.BatchNorm1d(2 * nn_width),
-            nn.Linear(2 * nn_width, 2 * nn_width),
-            nn.ReLU(),
-
             nn.BatchNorm1d(2 * nn_width),
             nn.Linear(2 * nn_width, len(list(Bid)))
         )
