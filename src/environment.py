@@ -494,6 +494,7 @@ class FrenchTarotEnvironment:
             assert np.argmax(self._bid_per_player) == 0
             self._hand_per_player = rotate_list(self._hand_per_player, -taking_player)
             self._starting_player = -taking_player % self.n_players
+            self.taking_player_original_id = taking_player
             if np.max(self._bid_per_player) <= Bid.GARDE:
                 self._hand_per_player[0] = np.concatenate((self._hand_per_player[0], self._original_dog))
                 self._game_phase = GamePhase.DOG
