@@ -46,8 +46,8 @@ class ReplayMemory:
 
 class BidPhaseAgent:
 
-    def __init__(self, eps_start=0.9, eps_end=0.05, eps_decay=5000, batch_size=128,
-                 replay_memory_size=20000, device="cuda"):
+    def __init__(self, eps_start=0.9, eps_end=0.05, eps_decay=50, batch_size=128,
+                 replay_memory_size=200, device="cuda"):
         self._policy_net = BidPhaseAgent._create_dqn().to(device)
         self._steps_done = 0
         self._random_state = np.random.RandomState(1988)
@@ -137,7 +137,7 @@ class TrainedPlayerNetwork(nn.Module):
     N_TRUMPS = 21
 
     def __init__(self):
-        nn_width = 64
+        nn_width = 32
         self.standard_cards_tower = nn.Sequential(
             nn.Linear(TrainedPlayerNetwork.N_CARDS_PER_COLOR, nn_width),
             nn.ReLU(),

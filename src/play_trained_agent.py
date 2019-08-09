@@ -17,7 +17,7 @@ def _main():
     dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
 
 
-def _run_training(bid_phase_dqn_agent, n_iterations=200000):
+def _run_training(bid_phase_dqn_agent, n_iterations=2000):
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     all_rewards = []
@@ -59,7 +59,8 @@ def dump_and_display_results(rewards, loss):
     output_file_path = "loss.csv"
     print("Dump loss at", output_file_path)
 
-    print("average_loss_on_last_1000_episodes:", np.mean(loss[-1000:]))
+    n_last_episodes = 100
+    print("average_loss_on_last_{}_episodes:".format(n_last_episodes), np.mean(loss[-n_last_episodes:]))
 
     pd.DataFrame(loss, columns=["loss"]).to_csv(output_file_path)
     plt.subplot(211)
