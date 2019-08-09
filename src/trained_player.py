@@ -59,6 +59,7 @@ class BidPhaseAgent:
         self._batch_size = batch_size
         self.memory = ReplayMemory(replay_memory_size)
         self._optimizer = optim.Adam(self._policy_net.parameters())
+        self._lr_scheduler = optim.lr_scheduler.StepLR(self._optimizer, 500)
 
         self.loss = []
 
@@ -116,6 +117,7 @@ class BidPhaseAgent:
             loss.backward()
             nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
             self._optimizer.step()
+            self._lr_scheduler.step()
 
             if len(self.loss) % display_interval == 0:
                 print("Loss:", np.mean(self.loss[-display_interval:]))
