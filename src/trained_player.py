@@ -128,7 +128,7 @@ class TrainedPlayerNetwork(nn.Module):
     def __init__(self):
         super(TrainedPlayerNetwork, self).__init__()
 
-        nn_width = 32
+        nn_width = 64
         self.standard_cards_tower = nn.Sequential(
             nn.Linear(TrainedPlayerNetwork.N_CARDS_PER_COLOR, nn_width),
             nn.ReLU(),
