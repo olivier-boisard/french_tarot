@@ -90,22 +90,11 @@ class BidPhaseAgent:
 
     @property
     def output_dimension(self):
-        return self._policy_net[-1].out_features
+        return self._policy_net.output_layer[-1].out_features
 
     @staticmethod
     def _create_dqn():
-        input_size = len(list(Card))
-        nn_width = 128
-        return nn.Sequential(
-            nn.Linear(input_size, nn_width),
-            nn.ReLU(),
-            nn.BatchNorm1d(nn_width),
-            nn.Linear(nn_width, nn_width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(nn_width),
-            nn.Linear(nn_width, len(list(Bid)))
-        )
+        return TrainedPlayerNetwork()
 
     def optimize_model(self):
         """
@@ -134,9 +123,11 @@ class BidPhaseAgent:
 
 class TrainedPlayerNetwork(nn.Module):
     N_CARDS_PER_COLOR = 14
-    N_TRUMPS = 21
+    N_TRUMPS_AND_EXCUSES = 22
 
     def __init__(self):
+        super(TrainedPlayerNetwork, self).__init__()
+
         nn_width = 32
         self.standard_cards_tower = nn.Sequential(
             nn.Linear(TrainedPlayerNetwork.N_CARDS_PER_COLOR, nn_width),
@@ -146,18 +137,34 @@ class TrainedPlayerNetwork(nn.Module):
             nn.ReLU()
         )
         self.trump_tower = nn.Sequential(
-            nn.Linear(TrainedPlayerNetwork.N_TRUMPS, nn_width),
+            nn.Linear(TrainedPlayerNetwork.N_TRUMPS_AND_EXCUSES, nn_width),
             nn.ReLU(),
             nn.BatchNorm1d(nn_width),
             nn.Linear(nn_width, nn_width),
             nn.ReLU()
         )
+        self.merge_tower = nn.Sequential(
+            nn.BatchNorm1d(5 * nn_width),
+            nn.Linear(5 * nn_width, 8 * nn_width),
+            nn.ReLU(),
+            nn.BatchNorm1d(8 * nn_width),
+            nn.Linear(8 * nn_width, 8 * nn_width),
+            nn.ReLU()
+        )
+
+        self.output_layer = nn.Sequential(
+            nn.BatchNorm1d(8 * nn_width),
+            nn.Linear(8 * nn_width, len(list(Bid)))
+        )
 
     def forward(self, x):
         n = TrainedPlayerNetwork.N_CARDS_PER_COLOR
-        x_color_1 = self.standard_cards_tower(x[:, n])
+        x_color_1 = self.standard_cards_tower(x[:, :n])
         x_color_2 = self.standard_cards_tower(x[:, n:2 * n])
         x_color_3 = self.standard_cards_tower(x[:, 2 * n:3 * n])
         x_color_4 = self.standard_cards_tower(x[:, 3 * n:4 * n])
         x_trumps = self.trump_tower(x[:, 4 * n:])
-        x_concat = nn.cat()
+        x = torch.cat([x_color_1, x_color_2, x_color_3, x_color_4, x_trumps], dim=1)
+        x = self.merge_tower(x)
+        x = self.output_layer(x)
+        return x
