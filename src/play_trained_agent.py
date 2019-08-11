@@ -17,7 +17,7 @@ def _main():
     dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
 
 
-def _run_training(bid_phase_dqn_agent, n_iterations=500):
+def _run_training(bid_phase_dqn_agent, n_iterations=200000):
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     all_rewards = []
