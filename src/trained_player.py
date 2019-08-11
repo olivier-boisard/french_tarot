@@ -95,7 +95,18 @@ class BidPhaseAgent:
 
     @staticmethod
     def _create_dqn():
-        return TrainedPlayerNetwork()
+        input_size = len(list(Card))
+        nn_width = 128
+        return nn.Sequential(
+            nn.Linear(input_size, nn_width),
+            nn.ReLU(),
+            nn.BatchNorm1d(nn_width),
+            nn.Linear(nn_width, nn_width),
+            nn.ReLU(),
+
+            nn.BatchNorm1d(nn_width),
+            nn.Linear(nn_width, len(list(Bid)))
+        )
 
     def optimize_model(self):
         """
