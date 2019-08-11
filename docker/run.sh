@@ -4,7 +4,7 @@ dir=$(dirname $0)
 source ${dir}/config.sh
 
 docker run \
-    --gpus all \
+    --runtime=nvidia \
     -d \
     --rm \
     --net=host \
