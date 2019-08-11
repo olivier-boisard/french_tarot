@@ -1,8 +1,8 @@
-import math
-import random
 from collections import namedtuple
 
+import math
 import numpy as np
+import random
 import torch
 import torch.nn.functional as F
 from torch import nn, tensor, optim
@@ -46,7 +46,7 @@ class ReplayMemory:
 
 class BidPhaseAgent:
 
-    def __init__(self, eps_start=0.9, eps_end=0.05, eps_decay=5000, batch_size=128,
+    def __init__(self, eps_start=0.9, eps_end=0.05, eps_decay=200, batch_size=64,
                  replay_memory_size=20000, device="cuda"):
         self._policy_net = BidPhaseAgent._create_dqn().to(device)
         self._steps_done = 0
