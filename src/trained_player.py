@@ -90,22 +90,11 @@ class BidPhaseAgent:
 
     @property
     def output_dimension(self):
-        return self._policy_net[-1].out_features
+        return self._policy_net.output_layer[-1].out_features
 
     @staticmethod
     def _create_dqn():
-        input_size = len(list(Card))
-        nn_width = 128
-        return nn.Sequential(
-            nn.Linear(input_size, nn_width),
-            nn.ReLU(),
-            nn.BatchNorm1d(nn_width),
-            nn.Linear(nn_width, nn_width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(nn_width),
-            nn.Linear(nn_width, len(list(Bid)))
-        )
+        return TrainedPlayerNetwork()
 
     def optimize_model(self):
         """
