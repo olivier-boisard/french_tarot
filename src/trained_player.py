@@ -59,7 +59,7 @@ class BidPhaseAgent:
         self._batch_size = batch_size
         self.memory = ReplayMemory(replay_memory_size)
         self._optimizer = optim.Adam(self._policy_net.parameters())
-        self._lr_scheduler = optim.lr_scheduler.CyclicLR(self._optimizer, 0.001, 0.1, cycle_momentum=False)
+        self._lr_scheduler = optim.lr_scheduler.CyclicLR(self._optimizer, 0.001, 0.01, cycle_momentum=False)
 
         self.loss = []
 
