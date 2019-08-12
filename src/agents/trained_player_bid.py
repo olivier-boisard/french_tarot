@@ -30,7 +30,7 @@ class BidPhaseAgent(Agent):
             with torch.no_grad():
                 self._policy_net.eval()
                 output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
-                self._policy_net.train()
+                self._policy_net.train()  # disable eval mode.
         else:
             output = self._random_state.rand(self.output_dimension).item()
 
