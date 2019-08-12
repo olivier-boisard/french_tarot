@@ -113,7 +113,7 @@ class Agent(object):
             state_batch = torch.cat(batch.state).to(self.device)
             reward_batch = torch.tensor(batch.reward).float().to(self.device)
             reward_batch[reward_batch >= 0] = 1.
-            reward_batch[reward_batch < 0.] = -1
+            reward_batch[reward_batch < 0.] = 0
 
             win_probability = self._policy_net(state_batch)
             loss = BCELoss()
