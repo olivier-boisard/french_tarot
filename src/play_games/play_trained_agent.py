@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -52,11 +54,12 @@ def _set_all_seeds(seed=1988):
 
 def dump_and_display_results(rewards, loss):
     rewards = np.stack(rewards)
-    output_file_path = "scores.csv"
+    output_folder = "bid_agent_training_results"
+    output_file_path = os.path.join(output_folder, "scores.csv")
     print("Dump scores at", output_file_path)
     columns = ["player_{}".format(i) for i in range(rewards.shape[1])]
     pd.DataFrame(rewards, columns=columns).to_csv(output_file_path)
-    output_file_path = "loss.csv"
+    output_file_path = os.path.join(output_folder, "loss.csv")
     print("Dump loss at", output_file_path)
 
     print("average_loss_on_last_1000_episodes:", np.mean(loss[-1000:]))
