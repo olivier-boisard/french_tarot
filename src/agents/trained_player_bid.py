@@ -11,7 +11,6 @@ from environment import Card, Bid, GamePhase
 
 
 def bid_phase_observation_encoder(observation):
-    # TODO this is called twice which is not optimal
     return tensor([card in observation["hand"] for card in list(Card)]).float()
 
 
