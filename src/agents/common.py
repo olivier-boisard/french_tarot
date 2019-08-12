@@ -86,8 +86,8 @@ class TrainedPlayerNetwork(nn.Module):
 
 
 class Agent(object):
-    def __init__(self, policy_net, eps_start=0.9, eps_end=0.05, eps_decay=5000, batch_size=128,
-                 replay_memory_size=20000):
+    def __init__(self, policy_net, eps_start=0.9, eps_end=0.05, eps_decay=500, batch_size=64,
+                 replay_memory_size=2000):
         self._policy_net = policy_net
         self._steps_done = 0
         self._random_state = np.random.RandomState(1988)
