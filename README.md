@@ -39,6 +39,19 @@ the same. Expectations would be that with a large amount of games,
 scores would tend to be closer. Same experiment was run with 10000 games
 per experiments and results were similar.
 
+## With trained agent for bidding
+We tested having a DQN-based agent for the bidding phase. It was trained on 200000 games. Everything else being
+random, the agent would have better chance by not "taking the game", hence we would expect the agent to collapse
+to the trivial solution of always passing. We test two different types of networks:
+- angelica: simple feedforward net without weight sharing
+- back_home: network designed for the purpose of french tarot with weight shared across card colors.
+
+Results are summed-up in this
+[Google Sheet](https://docs.google.com/spreadsheets/d/1jKxKGcHZPYEbEqXDQn-Qwko9_F8PxJigzj90CC79uZk/edit?usp=sharing).
+The network that trains the fastest is back_home, without any learning rate policy. During the last 1000 episodes
+of the training, the neural network decided to take the game XX% of the times, which means the aforementioned
+expectations are not met and we need further experimentation.
+
 # TODO
 1. implement DQN-based agents for each phase and train them
     1. in bidding, use previous bids as input data
