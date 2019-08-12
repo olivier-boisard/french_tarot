@@ -49,7 +49,7 @@ to the trivial solution of always passing. We test two different types of networ
 Results are summed-up in this
 [Google Sheet](https://docs.google.com/spreadsheets/d/1jKxKGcHZPYEbEqXDQn-Qwko9_F8PxJigzj90CC79uZk/edit?usp=sharing).
 The network that trains the fastest is back_home, without any learning rate policy. During the last 1000 episodes
-of the training, the neural network decided to take the game XX% of the times, which means the aforementioned
+of the training, the neural network decided to take the game (TODO XX)% of the times, which means the aforementioned
 expectations are not met and we need further experimentation.
 
 # TODO
