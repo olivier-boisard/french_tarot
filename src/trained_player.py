@@ -46,7 +46,7 @@ class ReplayMemory:
 
 class BidPhaseAgent:
 
-    def __init__(self, n_episodes_during_training=200000, eps_start=0.9, eps_end=0.05, eps_decay=5000, batch_size=128,
+    def __init__(self, eps_start=0.9, eps_end=0.05, eps_decay=5000, batch_size=128,
                  replay_memory_size=20000, device="cuda"):
         self._policy_net = BidPhaseAgent._create_dqn().to(device)
         self._steps_done = 0
@@ -59,8 +59,6 @@ class BidPhaseAgent:
         self._batch_size = batch_size
         self.memory = ReplayMemory(replay_memory_size)
         self._optimizer = optim.Adam(self._policy_net.parameters())
-        self._lr_scheduler = optim.lr_scheduler.CyclicLR(self._optimizer, 0.001, 0.01, cycle_momentum=False,
-                                                         step_size_up=(n_episodes_during_training - batch_size) / 2)
 
         self.loss = []
 
@@ -118,7 +116,6 @@ class BidPhaseAgent:
             loss.backward()
             nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
             self._optimizer.step()
-            self._lr_scheduler.step()
 
             if len(self.loss) % display_interval == 0:
                 print("Loss:", np.mean(self.loss[-display_interval:]))

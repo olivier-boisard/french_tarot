@@ -11,18 +11,17 @@ from trained_player import BidPhaseAgent, bid_phase_observation_encoder
 
 def _main():
     _set_all_seeds()
-    n_episodes = 200000
-    bid_phase_dqn_agent = BidPhaseAgent(n_episodes)
-    all_rewards = _run_training(bid_phase_dqn_agent, n_episodes)
+    bid_phase_dqn_agent = BidPhaseAgent()
+    all_rewards = _run_training(bid_phase_dqn_agent)
 
     dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
 
 
-def _run_training(bid_phase_dqn_agent, n_episodes):
+def _run_training(bid_phase_dqn_agent, n_iterations=200000):
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     all_rewards = []
-    for i in tqdm.tqdm(range(n_episodes)):
+    for i in tqdm.tqdm(range(n_iterations)):
         observation = environment.reset()
         done = False
         observations_to_save = []
