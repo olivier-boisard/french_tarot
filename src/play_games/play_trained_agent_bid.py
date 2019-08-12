@@ -55,6 +55,9 @@ def _set_all_seeds(seed=1988):
 def dump_and_display_results(rewards, loss):
     rewards = np.stack(rewards)
     output_folder = "bid_agent_training_results"
+    if not os.path.isdir(output_folder):
+        print("Creating directory at", output_folder)
+        os.makedirs(output_folder)
     output_file_path = os.path.join(output_folder, "scores.csv")
     print("Dump scores at", output_file_path)
     columns = ["player_{}".format(i) for i in range(rewards.shape[1])]
