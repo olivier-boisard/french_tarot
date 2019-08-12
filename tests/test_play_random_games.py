@@ -1,4 +1,4 @@
-import play_random_games
+from play_games import play_random_games
 
 
 def test_play_random_games(mocker):

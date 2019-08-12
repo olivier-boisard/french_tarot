@@ -7,9 +7,9 @@ import dill
 import matplotlib.pyplot as plt
 import numpy as np
 from joblib import Parallel, delayed
+from random_agent import RandomPlayer
 
 from environment import FrenchTarotEnvironment
-from random_agent import RandomPlayer
 
 N_ITERATIONS = 1000
 

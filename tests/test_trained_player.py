@@ -1,7 +1,7 @@
 import pytest
 
+from agents.trained_player import bid_phase_observation_encoder, BidPhaseAgent
 from environment import FrenchTarotEnvironment, Bid, GamePhase
-from trained_player import bid_phase_observation_encoder, BidPhaseAgent
 
 
 def test_bid_phase_observation_encoder():

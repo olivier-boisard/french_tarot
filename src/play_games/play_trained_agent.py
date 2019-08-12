@@ -4,9 +4,9 @@ import pandas as pd
 import torch
 import tqdm
 
+from agents.random_agent import RandomPlayer
+from agents.trained_player import BidPhaseAgent, bid_phase_observation_encoder
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list
-from random_agent import RandomPlayer
-from trained_player import BidPhaseAgent, bid_phase_observation_encoder
 
 
 def _main():

@@ -1,7 +1,7 @@
 from torch import nn
 
-import play_trained_agent
 from environment import Bid, Card
+from play_games import play_trained_agent
 
 
 def test_play_trained_agent(mocker):
