@@ -4,9 +4,7 @@ from collections import namedtuple
 import numpy as np
 import torch
 from torch import nn, optim
-from torch.nn import functional as F
-
-from environment import Bid
+from torch.nn import BCELoss
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
@@ -70,7 +68,8 @@ class TrainedPlayerNetwork(nn.Module):
 
         self.output_layer = nn.Sequential(
             nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, len(list(Bid)))
+            nn.Linear(8 * nn_width, 1),
+            nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -113,14 +112,16 @@ class Agent(object):
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state).to(self.device)
             reward_batch = torch.tensor(batch.reward).float().to(self.device)
-            action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
+            reward_batch[reward_batch >= 0] = 1.
+            reward_batch[reward_batch < 0.] = -1
 
-            state_action_values = self._policy_net(state_batch).gather(1, action_batch)
-            loss = F.smooth_l1_loss(state_action_values, reward_batch.unsqueeze(1))
-            self.loss.append(loss.item())
+            win_probability = self._policy_net(state_batch)
+            loss = BCELoss()
+            loss_output = loss(win_probability.flatten(), reward_batch.flatten())
+            self.loss.append(loss_output.item())
 
             self._optimizer.zero_grad()
-            loss.backward()
+            loss_output.backward()
             nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
             self._optimizer.step()
 

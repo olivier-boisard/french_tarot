@@ -37,11 +37,14 @@ def _run_training(bid_phase_dqn_agent, n_iterations=200000):
                 observations_to_save.append(observation)
                 actions_to_save.append(action)
             observation = new_observation
-        rewards = rotate_list(rewards, environment.taking_player_original_id)
-        for observation_to_save, action_to_save, reward in zip(observations_to_save, actions_to_save, rewards):
-            reward_scaling_factor = 100.
-            bid_phase_dqn_agent.memory.push(bid_phase_observation_encoder(observation_to_save).unsqueeze(0),
-                                            action_to_save.value, None, reward / reward_scaling_factor)
+        original_id = environment.taking_player_original_id
+        rewards = rotate_list(rewards, original_id)
+        reward_scaling_factor = 100.
+        bid_phase_dqn_agent.memory.push(
+            bid_phase_observation_encoder(observations_to_save[original_id]).unsqueeze(0),
+            None, None,
+            rewards[original_id] / reward_scaling_factor
+        )
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
     return all_rewards

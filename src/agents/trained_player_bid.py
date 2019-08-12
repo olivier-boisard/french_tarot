@@ -30,6 +30,16 @@ class BidPhaseAgent(Agent):
             with torch.no_grad():
                 self._policy_net.eval()
                 output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
+                if output >= 0.9:
+                    output = Bid.GARDE_CONTRE
+                elif output >= 0.8:
+                    output = Bid.GARDE_SANS
+                elif output >= 0.6:
+                    output = Bid.GARDE
+                elif output >= 0.5:
+                    output = Bid.PETITE
+                else:
+                    output = Bid.PASS
                 self._policy_net.train()
         else:
             output = torch.argmax(torch.tensor([self._random_state.rand(self.output_dimension)])).item()
@@ -41,7 +51,7 @@ class BidPhaseAgent(Agent):
 
     @property
     def output_dimension(self):
-        return self._policy_net.output_layer[-1].out_features
+        return self._policy_net.output_layer[-2].out_features
 
     @staticmethod
     def _create_dqn():
