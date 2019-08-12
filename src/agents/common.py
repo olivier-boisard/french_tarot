@@ -1,8 +1,10 @@
 import random
 from collections import namedtuple
 
+import numpy as np
 import torch
-from torch import nn
+from torch import nn, optim
+from torch.nn import functional as F
 
 from environment import Bid
 
@@ -82,3 +84,49 @@ class TrainedPlayerNetwork(nn.Module):
         x = self.merge_tower(x)
         x = self.output_layer(x)
         return x
+
+
+class Agent(object):
+    def __init__(self, policy_net, eps_start=0.9, eps_end=0.05, eps_decay=5000, batch_size=128,
+                 replay_memory_size=20000):
+        self._policy_net = policy_net
+        self._steps_done = 0
+        self._random_state = np.random.RandomState(1988)
+
+        # Training parameters
+        self._eps_start = eps_start
+        self._eps_end = eps_end
+        self._eps_decay = eps_decay
+        self._batch_size = batch_size
+        self.memory = ReplayMemory(replay_memory_size)
+        self._optimizer = optim.Adam(self._policy_net.parameters())
+
+        self.loss = []
+
+    def optimize_model(self):
+        """
+        See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+        """
+        display_interval = 100
+        if len(self.memory) > self._batch_size:
+            transitions = self.memory.sample(self._batch_size)
+            batch = Transition(*zip(*transitions))
+            state_batch = torch.cat(batch.state).to(self.device)
+            reward_batch = torch.tensor(batch.reward).float().to(self.device)
+            action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
+
+            state_action_values = self._policy_net(state_batch).gather(1, action_batch)
+            loss = F.smooth_l1_loss(state_action_values, reward_batch.unsqueeze(1))
+            self.loss.append(loss.item())
+
+            self._optimizer.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
+            self._optimizer.step()
+
+            if len(self.loss) % display_interval == 0:
+                print("Loss:", np.mean(self.loss[-display_interval:]))
+
+    @property
+    def device(self):
+        return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
