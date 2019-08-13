@@ -64,7 +64,9 @@ def dump_and_display_results(rewards, loss):
     output_file_path = os.path.join(output_folder, "scores.csv")
     print("Dump scores at", output_file_path)
     columns = ["player_{}".format(i) for i in range(rewards.shape[1])]
-    pd.DataFrame(rewards, columns=columns).to_csv(output_file_path)
+    rewards = pd.DataFrame(rewards, columns=columns)
+    rewards.to_csv(output_file_path)
+    print("% of the last 1000 games where somebody took the game:", (rewards.iloc[-1000:] != 0).mean() * 100)
     output_file_path = os.path.join(output_folder, "loss.csv")
     print("Dump loss at", output_file_path)
 
