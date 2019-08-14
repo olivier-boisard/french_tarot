@@ -3,6 +3,7 @@ import pytest
 
 from agents.common import card_set_encoder
 from agents.random_agent import RandomPlayer
+from agents.trained_player_dog import DogPhaseAgent
 from environment import FrenchTarotEnvironment, GamePhase, Bid
 
 
@@ -14,7 +15,7 @@ def test_dog_phase_observation_encoder():
     assert state.sum() == 24
 
 
-def test_create_bid_phase_player():
+def test_create_dog_phase_player():
     player = DogPhaseAgent(device="cpu")
     observation = _prepare_environment(player)
     action = player.get_action(observation)
@@ -34,7 +35,7 @@ def _prepare_environment(player=None):
     return observation
 
 
-def test_bid_phase():
+def test_dog_phase():
     player = DogPhaseAgent(device="cpu")
     observation = FrenchTarotEnvironment().reset()
     observation["game_phase"] = GamePhase.BID
