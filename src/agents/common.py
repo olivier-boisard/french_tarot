@@ -1,4 +1,5 @@
 import random
+from abc import abstractmethod, ABC
 from collections import namedtuple
 
 import numpy as np
@@ -85,7 +86,7 @@ class TrainedPlayerNetwork(nn.Module):
         return x
 
 
-class Agent(object):
+class Agent(ABC):
     def __init__(self, policy_net, eps_start=0.9, eps_end=0.05, eps_decay=500, batch_size=64,
                  replay_memory_size=2000):
         self._policy_net = policy_net
@@ -127,6 +128,15 @@ class Agent(object):
 
             if len(self.loss) % display_interval == 0:
                 print("Loss:", np.mean(self.loss[-display_interval:]))
+
+    @abstractmethod
+    def get_action(self, observation):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def _create_qdn(self):
+        pass
 
     @property
     def device(self):
