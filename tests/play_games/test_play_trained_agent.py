@@ -1,12 +1,12 @@
 from torch import nn
 
-from environment import Bid, Card
+from environment import Card
 from play_games import play_trained_agent_bid
 
 
 def test_play_trained_agent(mocker):
     def mock_create_dqn():
-        return nn.Sequential(nn.Linear(len(list(Card)), len(list(Bid))))
+        return nn.Sequential(nn.Linear(len(list(Card)), 1), nn.Sigmoid())
 
     mocker.patch('play_games.play_trained_agent_bid.BidPhaseAgent._create_dqn', mock_create_dqn)
     mocker.patch('play_games.play_trained_agent_bid.BidPhaseAgent.output_dimension', 5)
