@@ -6,8 +6,9 @@ import pandas as pd
 import torch
 import tqdm
 
+from agents.common import card_set_encoder
 from agents.random_agent import RandomPlayer
-from agents.trained_player_bid import BidPhaseAgent, bid_phase_observation_encoder
+from agents.trained_player_bid import BidPhaseAgent
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list
 
 
@@ -40,7 +41,7 @@ def _run_training(bid_phase_dqn_agent, dog_phase_dqn_agent, n_iterations=200000)
         rewards = rotate_list(rewards, environment.taking_player_original_id)
         for observation_to_save, action_to_save, reward in zip(observations_to_save, actions_to_save, rewards):
             reward_scaling_factor = 100.
-            bid_phase_dqn_agent.memory.push(bid_phase_observation_encoder(observation_to_save).unsqueeze(0),
+            bid_phase_dqn_agent.memory.push(card_set_encoder(observation_to_save).unsqueeze(0),
                                             action_to_save.value, None, reward / reward_scaling_factor)
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()

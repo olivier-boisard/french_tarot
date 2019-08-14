@@ -2,14 +2,9 @@ import math
 
 import numpy as np
 import torch
-from torch import tensor
 
-from agents.common import Agent, TrainedPlayerNetwork
-from environment import Card, Bid, GamePhase
-
-
-def bid_phase_observation_encoder(observation):
-    return tensor([card in observation["hand"] for card in list(Card)]).float()
+from agents.common import Agent, TrainedPlayerNetwork, card_set_encoder
+from environment import Bid, GamePhase
 
 
 class BidPhaseAgent(Agent):
@@ -21,7 +16,7 @@ class BidPhaseAgent(Agent):
         if observation["game_phase"] != GamePhase.BID:
             raise ValueError("Invalid game phase")
 
-        state = bid_phase_observation_encoder(observation)
+        state = card_set_encoder(observation)
 
         eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
             -1. * self._steps_done / self._eps_decay)

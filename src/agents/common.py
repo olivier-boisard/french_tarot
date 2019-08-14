@@ -4,8 +4,10 @@ from collections import namedtuple
 
 import numpy as np
 import torch
-from torch import nn, optim
+from torch import nn, optim, tensor
 from torch.nn import BCELoss
+
+from environment import Card
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
@@ -136,3 +138,7 @@ class Agent(ABC):
     @property
     def device(self):
         return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
+
+
+def card_set_encoder(observation):
+    return tensor([card in observation["hand"] for card in list(Card)]).float()

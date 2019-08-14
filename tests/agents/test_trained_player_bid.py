@@ -1,12 +1,13 @@
 import pytest
 
-from agents.trained_player_bid import bid_phase_observation_encoder, BidPhaseAgent
+from agents.common import card_set_encoder
+from agents.trained_player_bid import BidPhaseAgent
 from environment import FrenchTarotEnvironment, Bid, GamePhase
 
 
 def test_bid_phase_observation_encoder():
     observation = FrenchTarotEnvironment().reset()
-    state = bid_phase_observation_encoder(observation)
+    state = card_set_encoder(observation)
 
     assert state.shape[0] == 78
     assert state.sum() == 18
