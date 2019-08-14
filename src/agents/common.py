@@ -133,11 +133,6 @@ class Agent(ABC):
     def get_action(self, observation):
         pass
 
-    @staticmethod
-    @abstractmethod
-    def _create_qdn(self):
-        pass
-
     @property
     def device(self):
         return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
