@@ -45,18 +45,19 @@ random, the agent would have better chance by not "taking the game", hence we wo
 to the trivial solution of always passing. We test two different types of networks:
 - angelica: simple feedforward net without weight sharing
 - back_home: network designed for the purpose of french tarot with weight shared across card colors.
+- carnival: same as back_home, except we don't use a reinforcement learning approach but rather the task
+is to predict the probability of winning if a player takes the game w.r.t its hand
 
 Results are summed-up in this
 [Google Sheet](https://docs.google.com/spreadsheets/d/1jKxKGcHZPYEbEqXDQn-Qwko9_F8PxJigzj90CC79uZk/edit?usp=sharing).
-The network that trains the fastest is back_home, without any learning rate policy. During the last 1000 episodes
-of the training, the neural network decided to take the game 38% of the times, which means the aforementioned
-expectations are not met yet and we need further experimentation.
+The network that is fastest to train is "carnival", as it takes less than 1 hour, while angelica and back_home
+take both around 6 hours. At the end of the training, the network decided to take the game 10.3% of the times,
+which is satisfactory.
 
 # TODO
 1. implement DQN-based agents for each phase and train them
     1. in bidding, use previous bids as input data
-    2. in dog phase, create a state that distinguish cards taken from the dog (i.e. that other players know about) and
-    cards that were already in hand
+    2. in dog phase, create a state that distinguish cards taken from the dog (i.e. that other players know about) and cards that were already in hand
 2. give short introduction to game's rules
 3. describe repository structure
 4. make agent play against random agent
