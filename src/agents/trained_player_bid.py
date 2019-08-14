@@ -32,7 +32,7 @@ class BidPhaseAgent(Agent):
                 output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
                 self._policy_net.train()  # disable eval mode.
         else:
-            output = self._random_state.rand(self.output_dimension).item()
+            output = self._random_state.rand()
 
         if output >= 0.9:
             output = Bid.GARDE_CONTRE
