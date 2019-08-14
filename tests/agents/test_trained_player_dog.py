@@ -3,7 +3,7 @@ import pytest
 
 from agents.common import card_set_encoder
 from agents.random_agent import RandomPlayer
-from environment import FrenchTarotEnvironment, GamePhase
+from environment import FrenchTarotEnvironment, GamePhase, Bid
 
 
 def test_dog_phase_observation_encoder():
@@ -26,9 +26,11 @@ def _prepare_environment(player=None):
     if player is None:
         player = RandomPlayer()
     environment = FrenchTarotEnvironment()
-    observation = environment.reset()
-    while observation["game_phase"] != GamePhase.DOG:
-        observation = environment.step(player.get_action(observation))[0]
+    environment.reset()
+    environment.step(Bid.PETITE)
+    environment.step(Bid.PASS)
+    environment.step(Bid.PASS)
+    observation = environment.step(Bid.PASS)[0]
     return observation
 
 
