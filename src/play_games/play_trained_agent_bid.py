@@ -40,7 +40,6 @@ def _run_training(bid_phase_dqn_agent, n_iterations=20000):
             observation = new_observation
         original_id = environment.taking_player_original_id
         rewards = rotate_list(rewards, original_id)
-        reward_scaling_factor = 100.
         bid_phase_dqn_agent.memory.push(
             card_set_encoder(observations_to_save[original_id]).unsqueeze(0),
             None, None,
