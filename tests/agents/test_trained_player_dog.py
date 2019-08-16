@@ -34,7 +34,7 @@ def _prepare_environment(player=None):
     return observation
 
 
-def test_dog_phase():
+def test_bid_phase():
     player = DogPhaseAgent(device="cpu")
     observation = FrenchTarotEnvironment().reset()
     observation["game_phase"] = GamePhase.BID
