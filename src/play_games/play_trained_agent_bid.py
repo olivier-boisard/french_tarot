@@ -42,8 +42,7 @@ def _run_training(bid_phase_dqn_agent, n_iterations=20000):
         rewards = rotate_list(rewards, original_id)
         bid_phase_dqn_agent.memory.push(
             card_set_encoder(observations_to_save[original_id]).unsqueeze(0),
-            None, None,
-            rewards[original_id] / reward_scaling_factor
+            None, None, rewards[original_id]
         )
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
