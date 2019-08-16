@@ -1,7 +1,7 @@
 from torch import nn
 
 from agents.common import Agent, card_set_encoder
-from environment import Card
+from environment import Card, GamePhase
 
 
 class DogPhaseAgent(Agent):
@@ -10,6 +10,9 @@ class DogPhaseAgent(Agent):
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn().to(device))
 
     def get_action(self, observation):
+        if observation["game_phase"] != GamePhase.DOG:
+            raise ValueError("Game is not in dog phase")
+        
         xx = card_set_encoder(observation)
         xx = self._policy_net(xx)
         return DogPhaseAgent._select_cards(xx, len(observation["original_dog"]))
