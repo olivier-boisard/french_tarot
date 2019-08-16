@@ -4,7 +4,7 @@ from environment import Card
 from play_games import play_trained_agent_bid
 
 
-def test_play_trained_agent(mocker):
+def test_play_trained_agent_bid(mocker):
     def mock_create_dqn():
         return nn.Sequential(nn.Linear(len(list(Card)), 1), nn.Sigmoid())
 
