@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from agents.common import card_set_encoder
@@ -20,7 +19,7 @@ def test_create_dog_phase_player():
     observation = _prepare_environment(player)
     action = player.get_action(observation)
     assert isinstance(action, list)
-    assert np.sum(action) == 6
+    assert len(action) == 6
 
 
 def _prepare_environment(player=None):
