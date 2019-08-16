@@ -58,6 +58,7 @@ which is satisfactory.
 1. implement DQN-based agents for each phase and train them
     1. in bidding, use previous bids as input data
     2. in dog phase, create a state that distinguish cards taken from the dog (i.e. that other players know about) and cards that were already in hand
+    3. in dog phase, test selecting cards one by one
 2. give short introduction to game's rules
 3. describe repository structure
 4. make agent play against random agent
