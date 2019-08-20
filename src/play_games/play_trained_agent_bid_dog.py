@@ -26,6 +26,7 @@ def _run_training(agent, n_iterations=200000):
 
         early_phases_observations = []
         early_phases_actions = []
+        rewards = None
         while not done:
             action = agent.get_action(observation)
             new_observation, rewards, done, _ = environment.step(action)
@@ -37,8 +38,11 @@ def _run_training(agent, n_iterations=200000):
                 pass  # Nothing to do
             observation = new_observation
 
+        if rewards is None:
+            raise RuntimeError("No rewards set")
         rewards = rotate_list(rewards, environment.taking_player_original_id)
-        rewards *= len(early_phases_actions) / len(rewards)
+        # Add reward of creating the dog, i.e. append the reward that we got at the end of the game for the taker
+        rewards.append(rewards[environment.taking_player_original_id])
         assert len(rewards) == len(early_phases_observations)
         assert len(rewards) == len(early_phases_actions)
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
