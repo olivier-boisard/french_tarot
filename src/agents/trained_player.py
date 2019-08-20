@@ -1,3 +1,5 @@
+import numpy as np
+
 from agents.common import card_set_encoder
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
@@ -19,6 +21,19 @@ class TrainedPlayer:
     def get_action(self, observation):
         return self._agents[observation["game_phase"]].get_action(observation)
 
+    def optimize_models(self):
+        for model in self._agents.values():
+            model.optimize_model()
+
     def push_to_agent_memory(self, observation, action, reward):
-        self._agents[observation["game_phase"]].memory.push(card_set_encoder(observation).unsqueeze(0), action.value,
+        if observation["game_phase"] == GamePhase.BID:
+            action = action.value
+        elif observation["game_phase"] == GamePhase.DOG:
+            action = np.array([card in action for card in DogPhaseAgent.CARDS_OK_IN_DOG], dtype=np.float32)
+            if np.sum(action) != len(observation["original_dog"]):
+                raise ValueError("Invalid action for dog phase")
+        else:
+            raise NotImplemented()
+
+        self._agents[observation["game_phase"]].memory.push(card_set_encoder(observation).unsqueeze(0), action,
                                                             None, reward)

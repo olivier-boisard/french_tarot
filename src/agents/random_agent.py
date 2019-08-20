@@ -1,5 +1,6 @@
 import numpy as np
 
+from agents.common import Agent
 from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_POIGNEE_SIZE, \
     get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed, _is_oudler
 
@@ -10,10 +11,13 @@ def sort_trump_and_excuse(trumps_and_excuse):
     return list(trumps_and_excuse[sorted_indexes])
 
 
-class RandomPlayer:
+class RandomPlayer(Agent):
 
     def __init__(self, seed=1988):
         self._random_state = np.random.RandomState(seed)
+
+    def optimize_model(self):
+        pass  # overrides super class method to do nothing
 
     def get_action(self, observation):
         if observation["game_phase"] == GamePhase.BID:

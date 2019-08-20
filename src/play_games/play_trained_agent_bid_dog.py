@@ -3,7 +3,7 @@ import torch
 import tqdm
 
 from agents.trained_player import TrainedPlayer
-from environment import FrenchTarotEnvironment, GamePhase, rotate_list
+from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
 
 
 def _main():
@@ -42,14 +42,16 @@ def _run_training(agent, n_iterations=200000):
             raise RuntimeError("No rewards set")
         rewards = rotate_list(rewards, environment.taking_player_original_id)
         # Add reward of creating the dog, i.e. append the reward that we got at the end of the game for the taker
-        rewards.append(rewards[environment.taking_player_original_id])
+        max_bid = np.max(observation["bid_per_player"])
+        if Bid.PASS < max_bid < Bid.GARDE:
+            rewards.append(rewards[environment.taking_player_original_id])
         assert len(rewards) == len(early_phases_observations)
         assert len(rewards) == len(early_phases_actions)
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
             agent.push_to_agent_memory(observation, action, reward)
 
         all_rewards.append(np.roll(rewards, i % environment.n_players))
-        agent.optimize_model()
+        agent.optimize_models()
     return all_rewards
 
 

@@ -6,7 +6,12 @@ from agents.common import Agent, card_set_encoder
 from environment import Card, GamePhase
 
 
+def _card_is_ok_in_dog(card):
+    return "trump" not in card.value and "king" not in card.value and "excuse" not in card.value
+
+
 class DogPhaseAgent(Agent):
+    CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
 
     def __init__(self, device="cuda"):
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn().to(device))
@@ -21,22 +26,17 @@ class DogPhaseAgent(Agent):
                                            len(observation["original_dog"]))
 
     @staticmethod
-    def _card_is_ok_in_dog(card):
-        return "trump" not in card.value and "king" not in card.value and "excuse" not in card.value
-
-    @staticmethod
     def _select_cards(xx, hand, n_cards):
         xx = torch.tensor(xx)
-        card_list_set = [card for card in list(Card) if DogPhaseAgent._card_is_ok_in_dog(card)]
-        assert xx.size(0) == len(card_list_set)
-        mask = [card not in hand for card in card_list_set]
+        assert xx.size(0) == len(DogPhaseAgent.CARDS_OK_IN_DOG)
+        mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
         xx[mask] = 0
 
         new_dog = []
         for _ in range(n_cards):
             i = xx.argmax()
             xx[i] = 0
-            new_dog.append(card_list_set[i])
+            new_dog.append(DogPhaseAgent.CARDS_OK_IN_DOG[i])
         return new_dog
 
     @staticmethod
