@@ -12,6 +12,9 @@ def _card_is_ok_in_dog(card):
 
 
 class DogPhaseAgent(Agent):
+    """
+    Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
+    """
     CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
 
     def __init__(self, device="cuda"):
