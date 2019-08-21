@@ -43,7 +43,7 @@ def _run_training(agent, n_iterations=200000):
         rewards = rotate_list(rewards, environment.taking_player_original_id)
         # Add reward of creating the dog, i.e. append the reward that we got at the end of the game for the taker
         max_bid = np.max(observation["bid_per_player"])
-        if Bid.PASS < max_bid < Bid.GARDE:
+        if Bid.PASS < max_bid < Bid.GARDE_SANS:
             rewards.append(rewards[environment.taking_player_original_id])
         assert len(rewards) == len(early_phases_observations)
         assert len(rewards) == len(early_phases_actions)
