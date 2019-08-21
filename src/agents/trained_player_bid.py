@@ -71,7 +71,7 @@ class BidPhaseAgent(Agent):
             self._optimizer.step()
 
             if len(self.loss) % display_interval == 0:
-                print("Loss:", np.mean(self.loss[-display_interval:]))
+                print("Loss for bid agent:", np.mean(self.loss[-display_interval:]))
 
     @property
     def output_dimension(self):
