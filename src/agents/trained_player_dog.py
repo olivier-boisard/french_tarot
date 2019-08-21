@@ -26,8 +26,11 @@ class DogPhaseAgent(Agent):
 
         xx = card_set_encoder(observation)
         xx = self._policy_net(xx.to(self.device))
-        return DogPhaseAgent._select_cards(xx, np.concatenate((observation["hand"], observation["original_dog"])),
-                                           len(observation["original_dog"]))
+        return DogPhaseAgent._select_cards(
+            xx,
+            np.concatenate((observation["hand"], observation["original_dog"])),
+            len(observation["original_dog"])
+        )
 
     @staticmethod
     def _select_cards(xx, hand, n_cards):
@@ -36,12 +39,20 @@ class DogPhaseAgent(Agent):
         mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
         xx[mask] = 0
 
-        new_dog = []
-        for _ in range(n_cards):
-            i = xx.argmax()
-            xx[i] = 0
-            new_dog.append(DogPhaseAgent.CARDS_OK_IN_DOG[i])
+        indices = DogPhaseAgent._cards_selection_mask(xx, n_cards)
+        new_dog = [DogPhaseAgent.CARDS_OK_IN_DOG[i] for i in indices]
         return new_dog
+
+    @staticmethod
+    def _cards_selection_mask(model_output, n_cards):
+        model_output = model_output.clone().detach()
+        selections = torch.zeros_like(model_output)
+        for _ in range(n_cards):
+            i = model_output.argmax()
+            model_output[i] = 0
+            selections[i] = 1
+        assert selections.sum().item() == n_cards
+        return selections
 
     @staticmethod
     def _create_dqn():
@@ -60,6 +71,7 @@ class DogPhaseAgent(Agent):
 
             estimated_return = self._policy_net(state_batch)
             loss = BCELoss()
+
             loss_output = loss(estimated_return, return_batch)
             self.loss.append(loss_output.item())
 
