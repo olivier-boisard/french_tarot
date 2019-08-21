@@ -40,7 +40,7 @@ class DogPhaseAgent(Agent):
         xx[mask] = 0
 
         indices = DogPhaseAgent._cards_selection_mask(xx, n_cards)
-        new_dog = [DogPhaseAgent.CARDS_OK_IN_DOG[i] for i in indices]
+        new_dog = list(np.array(DogPhaseAgent.CARDS_OK_IN_DOG)[indices])
         return new_dog
 
     @staticmethod
