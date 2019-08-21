@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from torch import nn
 
 from agents.common import Agent, card_set_encoder
@@ -27,7 +26,7 @@ class DogPhaseAgent(Agent):
 
     @staticmethod
     def _select_cards(xx, hand, n_cards):
-        xx = torch.tensor(xx)
+        xx = xx.clone().detach()
         assert xx.size(0) == len(DogPhaseAgent.CARDS_OK_IN_DOG)
         mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
         xx[mask] = 0
