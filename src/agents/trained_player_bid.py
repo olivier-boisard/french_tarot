@@ -2,8 +2,10 @@ import math
 
 import numpy as np
 import torch
+from torch import nn
+from torch.nn.modules.loss import BCELoss
 
-from agents.common import Agent, TrainedPlayerNetwork, card_set_encoder
+from agents.common import Agent, TrainedPlayerNetwork, card_set_encoder, Transition
 from environment import Bid, GamePhase
 
 
@@ -44,6 +46,32 @@ class BidPhaseAgent(Agent):
             if np.max(observation["bid_per_player"]) >= output:
                 output = Bid.PASS
         return Bid(output)
+
+    def optimize_model(self):
+        """
+        See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+        """
+        display_interval = 100
+        if len(self.memory) > self._batch_size:
+            transitions = self.memory.sample(self._batch_size)
+            batch = Transition(*zip(*transitions))
+            state_batch = torch.cat(batch.state).to(self.device)
+            wins = torch.tensor(batch.reward).float().to(self.device)
+            wins[wins >= 0] = 1.
+            wins[wins < 0.] = 0
+
+            predicted_win_probability = self._policy_net(state_batch)
+            loss = BCELoss()
+            loss_output = loss(predicted_win_probability.flatten(), wins.flatten())
+            self.loss.append(loss_output.item())
+
+            self._optimizer.zero_grad()
+            loss_output.backward()
+            nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
+            self._optimizer.step()
+
+            if len(self.loss) % display_interval == 0:
+                print("Loss:", np.mean(self.loss[-display_interval:]))
 
     @property
     def output_dimension(self):

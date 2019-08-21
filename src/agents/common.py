@@ -5,7 +5,6 @@ from collections import namedtuple
 import numpy as np
 import torch
 from torch import nn, optim, tensor
-from torch.nn import BCELoss
 
 from environment import Card
 
@@ -105,31 +104,9 @@ class Agent(ABC):
 
         self.loss = []
 
+    @abstractmethod
     def optimize_model(self):
-        """
-        See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
-        """
-        display_interval = 100
-        if len(self.memory) > self._batch_size:
-            transitions = self.memory.sample(self._batch_size)
-            batch = Transition(*zip(*transitions))
-            state_batch = torch.cat(batch.state).to(self.device)
-            reward_batch = torch.tensor(batch.reward).float().to(self.device)
-            reward_batch[reward_batch >= 0] = 1.
-            reward_batch[reward_batch < 0.] = 0
-
-            win_probability = self._policy_net(state_batch)
-            loss = BCELoss()
-            loss_output = loss(win_probability.flatten(), reward_batch.flatten())
-            self.loss.append(loss_output.item())
-
-            self._optimizer.zero_grad()
-            loss_output.backward()
-            nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
-            self._optimizer.step()
-
-            if len(self.loss) % display_interval == 0:
-                print("Loss:", np.mean(self.loss[-display_interval:]))
+        pass
 
     @abstractmethod
     def get_action(self, observation):

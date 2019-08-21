@@ -1,7 +1,9 @@
 import numpy as np
+import torch
 from torch import nn
+from torch.nn.modules.loss import BCELoss
 
-from agents.common import Agent, card_set_encoder
+from agents.common import Agent, card_set_encoder, Transition
 from environment import Card, GamePhase
 
 
@@ -20,7 +22,7 @@ class DogPhaseAgent(Agent):
             raise ValueError("Game is not in dog phase")
 
         xx = card_set_encoder(observation)
-        xx = self._policy_net(xx)
+        xx = self._policy_net(xx.to(self.device))
         return DogPhaseAgent._select_cards(xx, np.concatenate((observation["hand"], observation["original_dog"])),
                                            len(observation["original_dog"]))
 
@@ -41,3 +43,27 @@ class DogPhaseAgent(Agent):
     @staticmethod
     def _create_dqn():
         return nn.Sequential(nn.Linear(78, 52), nn.Sigmoid())
+
+    def optimize_model(self):
+        """
+        See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+        """
+        display_interval = 100
+        if len(self.memory) > self._batch_size:
+            transitions = self.memory.sample(self._batch_size)
+            batch = Transition(*zip(*transitions))
+            state_batch = torch.cat(batch.state).to(self.device)
+            return_batch = torch.tensor(batch.reward).float().to(self.device)
+
+            estimated_return = self._policy_net(state_batch)
+            loss = BCELoss()
+            loss_output = loss(estimated_return, return_batch)
+            self.loss.append(loss_output.item())
+
+            self._optimizer.zero_grad()
+            loss_output.backward()
+            nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
+            self._optimizer.step()
+
+            if len(self.loss) % display_interval == 0:
+                print("Loss:", np.mean(self.loss[-display_interval:]))
