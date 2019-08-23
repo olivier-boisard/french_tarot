@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch import nn
-from torch.nn.modules.loss import BCELoss
+from torch.nn.functional import smooth_l1_loss
 
 from agents.common import Agent, card_set_encoder, Transition
 from environment import Card, GamePhase
@@ -68,9 +68,8 @@ class DogPhaseAgent(Agent):
             return_batch = torch.tensor(batch.reward).float().to(self.device) * return_scale_factor
 
             estimated_return = self._policy_net(state_batch).gather(1, action_batch)
-            loss = BCELoss()
 
-            loss_output = loss(estimated_return, return_batch)
+            loss_output = smooth_l1_loss(estimated_return, return_batch)
             self.loss.append(loss_output.item())
 
             self._optimizer.zero_grad()
