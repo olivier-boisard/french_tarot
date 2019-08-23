@@ -59,12 +59,13 @@ class DogPhaseAgent(Agent):
         See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         """
         display_interval = 100
+        return_scale_factor = 0.001
         if len(self.memory) > self._batch_size:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state).to(self.device)
             action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
-            return_batch = torch.tensor(batch.reward).float().to(self.device)
+            return_batch = torch.tensor(batch.reward).float().to(self.device) * return_scale_factor
 
             estimated_return = self._policy_net(state_batch).gather(1, action_batch)
             loss = BCELoss()
