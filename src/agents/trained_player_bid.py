@@ -18,7 +18,7 @@ class BidPhaseAgent(Agent):
         if observation["game_phase"] != GamePhase.BID:
             raise ValueError("Invalid game phase")
 
-        state = card_set_encoder(observation)
+        state = card_set_encoder(observation["hand"])
 
         eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
             -1. * self._steps_done / self._eps_decay)

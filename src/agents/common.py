@@ -117,5 +117,5 @@ class Agent(ABC):
         return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
 
 
-def card_set_encoder(observation):
-    return tensor([card in observation["hand"] for card in list(Card)]).float()
+def card_set_encoder(card_set):
+    return tensor([card in card_set for card in list(Card)]).float()

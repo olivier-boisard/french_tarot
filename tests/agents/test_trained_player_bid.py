@@ -7,7 +7,7 @@ from environment import FrenchTarotEnvironment, Bid, GamePhase
 
 def test_bid_phase_observation_encoder():
     observation = FrenchTarotEnvironment().reset()
-    state = card_set_encoder(observation)
+    state = card_set_encoder(observation["hand"])
 
     assert state.shape[0] == 78
     assert state.sum() == 18

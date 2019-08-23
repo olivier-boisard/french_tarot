@@ -16,6 +16,7 @@ class DogPhaseAgent(Agent):
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
     """
     CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
+    OUTPUT_DIMENSION = len(CARDS_OK_IN_DOG)
 
     def __init__(self, device="cuda", **kwargs):
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn().to(device), **kwargs)
@@ -24,24 +25,19 @@ class DogPhaseAgent(Agent):
         if observation["game_phase"] != GamePhase.DOG:
             raise ValueError("Game is not in dog phase")
 
-        xx = card_set_encoder(observation)
-        xx = self._policy_net(xx.to(self.device))
-        return DogPhaseAgent._select_cards(
-            xx,
-            np.concatenate((observation["hand"], observation["original_dog"])),
-            len(observation["original_dog"])
-        )
-
-    @staticmethod
-    def _select_cards(xx, hand, n_cards):
-        xx = xx.clone().detach()
-        assert xx.size(0) == len(DogPhaseAgent.CARDS_OK_IN_DOG)
-        mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
-        xx[mask] = 0
-
-        indices = DogPhaseAgent._cards_selection_mask(xx, n_cards)
-        new_dog = list(np.array(DogPhaseAgent.CARDS_OK_IN_DOG)[np.array(indices.cpu().numpy(), dtype=np.bool)])
-        return new_dog
+        hand = list(observation["hand"])
+        selected_cards = torch.zeros(DogPhaseAgent.OUTPUT_DIMENSION)
+        dog_size = len(observation["original_dog"])
+        for _ in range(dog_size):
+            xx = torch.cat([card_set_encoder(hand), selected_cards])
+            xx = self._policy_net(xx.to(self.device))
+            mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
+            xx[mask] = 0
+            selected_card_index = xx.argmax()
+            selected_cards[selected_card_index] = 1
+            hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[selected_card_index])
+        assert selected_cards.sum() == dog_size
+        return list(np.array(DogPhaseAgent.CARDS_OK_IN_DOG)[np.array(selected_cards, dtype=bool)])
 
     @staticmethod
     def _cards_selection_mask(model_output, n_cards):
@@ -56,7 +52,8 @@ class DogPhaseAgent(Agent):
 
     @staticmethod
     def _create_dqn():
-        return nn.Sequential(nn.Linear(78, 52), nn.Sigmoid())
+        return nn.Sequential(nn.Linear(78 + DogPhaseAgent.OUTPUT_DIMENSION, DogPhaseAgent.OUTPUT_DIMENSION),
+                             nn.Sigmoid())
 
     def optimize_model(self):
         """
@@ -67,9 +64,10 @@ class DogPhaseAgent(Agent):
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
             state_batch = torch.cat(batch.state).to(self.device)
+            action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
             return_batch = torch.tensor(batch.reward).float().to(self.device)
 
-            estimated_return = self._policy_net(state_batch)
+            estimated_return = self._policy_net(state_batch).gather(1, action_batch)
             loss = BCELoss()
 
             loss_output = loss(estimated_return, return_batch)

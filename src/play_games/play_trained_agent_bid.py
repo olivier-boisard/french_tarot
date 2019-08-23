@@ -41,7 +41,7 @@ def _run_training(bid_phase_dqn_agent, n_iterations=20000):
         original_id = environment.taking_player_original_id
         rewards = rotate_list(rewards, original_id)
         bid_phase_dqn_agent.memory.push(
-            card_set_encoder(observations_to_save[original_id]).unsqueeze(0),
+            card_set_encoder(observations_to_save[original_id]["hand"]).unsqueeze(0),
             None, None, rewards[original_id]
         )
         all_rewards.append(np.roll(rewards, i % environment.n_players))
