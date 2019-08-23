@@ -52,8 +52,7 @@ class DogPhaseAgent(Agent):
 
     @staticmethod
     def _create_dqn():
-        return nn.Sequential(nn.Linear(78 + DogPhaseAgent.OUTPUT_DIMENSION, DogPhaseAgent.OUTPUT_DIMENSION),
-                             nn.Sigmoid())
+        return nn.Sequential(nn.Linear(78 + DogPhaseAgent.OUTPUT_DIMENSION, DogPhaseAgent.OUTPUT_DIMENSION))
 
     def optimize_model(self):
         """
