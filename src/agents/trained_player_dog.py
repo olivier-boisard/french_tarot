@@ -79,4 +79,4 @@ class DogPhaseAgent(Agent):
             self._optimizer.step()
 
             if len(self.loss) % display_interval == 0:
-                print("Loss:", np.mean(self.loss[-display_interval:]))
+                print("Loss for dog agent:", np.mean(self.loss[-display_interval:]))
