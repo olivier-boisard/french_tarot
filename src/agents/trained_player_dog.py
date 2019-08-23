@@ -17,8 +17,8 @@ class DogPhaseAgent(Agent):
     """
     CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
 
-    def __init__(self, device="cuda"):
-        super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn().to(device))
+    def __init__(self, device="cuda", **kwargs):
+        super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn().to(device), **kwargs)
 
     def get_action(self, observation):
         if observation["game_phase"] != GamePhase.DOG:

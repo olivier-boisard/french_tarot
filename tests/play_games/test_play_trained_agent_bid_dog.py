@@ -17,5 +17,5 @@ def test_play_trained_agent_bid_dog(mocker):
     bid_phase_dqn_agent = BidPhaseAgent(
         eps_start=0.5, eps_end=0.05, eps_decay=50, batch_size=4, replay_memory_size=8, device="cpu"
     )
-    agent = TrainedPlayer(bid_phase_dqn_agent, DogPhaseAgent(device="cpu"))
-    play_trained_agent_bid_dog._run_training(agent, n_iterations=10)
+    agent = TrainedPlayer(bid_phase_dqn_agent, DogPhaseAgent(device="cpu", batch_size=4, replay_memory_size=8))
+    play_trained_agent_bid_dog._run_training(agent, n_iterations=100)
