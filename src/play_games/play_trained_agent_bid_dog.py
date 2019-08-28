@@ -9,18 +9,12 @@ from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
 def _main():
     _set_all_seeds()
     agent = TrainedPlayer()
-    all_rewards = _run_training(agent)
-    _display_results(all_rewards)
-
-
-def _display_results(all_rewards):
-    raise NotImplementedError()
+    _run_training(agent)
 
 
 def _run_training(agent, n_iterations=200000):
     environment = FrenchTarotEnvironment()
-    all_rewards = []
-    for i in tqdm.tqdm(range(n_iterations)):
+    for _ in tqdm.tqdm(range(n_iterations)):
         observation = environment.reset()
         done = False
 
@@ -49,10 +43,6 @@ def _run_training(agent, n_iterations=200000):
         assert len(rewards) == len(early_phases_actions)
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
             agent.push_to_agent_memory(observation, action, reward)
-
-        all_rewards.append(np.roll(rewards, i % environment.n_players))
-        agent.optimize_models()
-    return all_rewards
 
 
 def _set_all_seeds(seed=1988):
