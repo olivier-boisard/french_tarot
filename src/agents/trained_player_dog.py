@@ -16,6 +16,7 @@ class DogPhaseAgent(Agent):
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
     """
     CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
+    CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in list(Card) if _card_is_ok_in_dog(card) or "trump" in card.value]
     OUTPUT_DIMENSION = len(CARDS_OK_IN_DOG)
 
     def __init__(self, device="cuda", **kwargs):
@@ -31,13 +32,21 @@ class DogPhaseAgent(Agent):
         for _ in range(dog_size):
             xx = torch.cat([card_set_encoder(hand), selected_cards])
             xx = self._policy_net(xx.to(self.device))
-            mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
-            xx[mask] = -np.inf
+
+            xx[DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()
             selected_cards[selected_card_index] = 1
             hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[selected_card_index])
         assert selected_cards.sum() == dog_size
         return list(np.array(DogPhaseAgent.CARDS_OK_IN_DOG)[np.array(selected_cards, dtype=bool)])
+
+    @staticmethod
+    def _get_card_selection_mask(hand):
+        mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
+        if len(mask) == np.sum(mask):
+            mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG_WITH_TRUMPS]
+        assert np.sum(mask) > 0
+        return mask
 
     @staticmethod
     def _cards_selection_mask(model_output, n_cards):
