@@ -32,7 +32,7 @@ class DogPhaseAgent(Agent):
             xx = torch.cat([card_set_encoder(hand), selected_cards])
             xx = self._policy_net(xx.to(self.device))
             mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
-            xx[mask] = 0
+            xx[mask] = -np.inf
             selected_card_index = xx.argmax()
             selected_cards[selected_card_index] = 1
             hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[selected_card_index])
