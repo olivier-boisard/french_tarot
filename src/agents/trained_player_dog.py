@@ -69,7 +69,7 @@ class DogPhaseAgent(Agent):
 
             estimated_return = self._policy_net(state_batch).gather(1, action_batch)
 
-            loss_output = smooth_l1_loss(estimated_return, return_batch)
+            loss_output = smooth_l1_loss(estimated_return.squeeze(), return_batch)
             self.loss.append(loss_output.item())
 
             self._optimizer.zero_grad()
