@@ -37,23 +37,23 @@ class ReplayMemory:
         return len(self.memory)
 
 
-class TrainedPlayerNetwork(nn.Module):
+class BaseCardNeuralNet(nn.Module):
     N_CARDS_PER_COLOR = 14
     N_TRUMPS_AND_EXCUSES = 22
 
     def __init__(self):
-        super(TrainedPlayerNetwork, self).__init__()
+        super(BaseCardNeuralNet, self).__init__()
 
         nn_width = 64
         self.standard_cards_tower = nn.Sequential(
-            nn.Linear(TrainedPlayerNetwork.N_CARDS_PER_COLOR, nn_width),
+            nn.Linear(BaseCardNeuralNet.N_CARDS_PER_COLOR, nn_width),
             nn.ReLU(),
             nn.BatchNorm1d(nn_width),
             nn.Linear(nn_width, nn_width),
             nn.ReLU()
         )
         self.trump_tower = nn.Sequential(
-            nn.Linear(TrainedPlayerNetwork.N_TRUMPS_AND_EXCUSES, nn_width),
+            nn.Linear(BaseCardNeuralNet.N_TRUMPS_AND_EXCUSES, nn_width),
             nn.ReLU(),
             nn.BatchNorm1d(nn_width),
             nn.Linear(nn_width, nn_width),
@@ -68,14 +68,12 @@ class TrainedPlayerNetwork(nn.Module):
             nn.ReLU()
         )
 
-        self.output_layer = nn.Sequential(
-            nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, 1),
-            nn.Sigmoid()
-        )
+    @property
+    def output_dimensions(self):
+        return self.merge_tower[-2].out_features
 
     def forward(self, x):
-        n = TrainedPlayerNetwork.N_CARDS_PER_COLOR
+        n = BaseCardNeuralNet.N_CARDS_PER_COLOR
         x_color_1 = self.standard_cards_tower(x[:, :n])
         x_color_2 = self.standard_cards_tower(x[:, n:2 * n])
         x_color_3 = self.standard_cards_tower(x[:, 2 * n:3 * n])
@@ -83,7 +81,6 @@ class TrainedPlayerNetwork(nn.Module):
         x_trumps = self.trump_tower(x[:, 4 * n:])
         x = torch.cat([x_color_1, x_color_2, x_color_3, x_color_4, x_trumps], dim=1)
         x = self.merge_tower(x)
-        x = self.output_layer(x)
         return x
 
 

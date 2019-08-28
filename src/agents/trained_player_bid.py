@@ -5,14 +5,14 @@ import torch
 from torch import nn
 from torch.nn.modules.loss import BCELoss
 
-from agents.common import Agent, TrainedPlayerNetwork, card_set_encoder, Transition
+from agents.common import Agent, BaseCardNeuralNet, card_set_encoder, Transition
 from environment import Bid, GamePhase
 
 
 class BidPhaseAgent(Agent):
 
-    def __init__(self, device="cuda", **kwargs):
-        super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn().to(device), **kwargs)
+    def __init__(self, base_card_neural_net, device="cuda", **kwargs):
+        super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
     def get_action(self, observation):
         if observation["game_phase"] != GamePhase.BID:
@@ -78,5 +78,11 @@ class BidPhaseAgent(Agent):
         return self._policy_net.output_layer[-2].out_features
 
     @staticmethod
-    def _create_dqn():
-        return TrainedPlayerNetwork()
+    def _create_dqn(base_card_neural_net):
+        base_neural_net = BaseCardNeuralNet()
+        output_layer = nn.Sequential(
+            nn.BatchNorm1d(base_neural_net.output_dimensions),
+            nn.Linear(base_neural_net.output_dimensions, 1),
+            nn.Sigmoid()
+        )
+        return nn.Sequential(base_neural_net, output_layer)
