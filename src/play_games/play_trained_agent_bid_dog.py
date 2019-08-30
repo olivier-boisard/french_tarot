@@ -57,6 +57,8 @@ def _run_training(agent, n_episodes):
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
             agent.push_to_agent_memory(observation, action, reward)
 
+        agent.optimize_models()
+
 
 def _run_game(environment, agents):
     observation = environment.reset()
