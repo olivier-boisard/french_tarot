@@ -552,7 +552,8 @@ class FrenchTarotEnvironment:
     def _get_observation(self):
         rval = {
             "bid_per_player": self._bid_per_player,
-            "game_phase": self._game_phase
+            "game_phase": self._game_phase,
+            "current_player": self.current_player
         }
         current_hand = self._hand_per_player[self.current_player]
         if self._game_phase == GamePhase.BID:

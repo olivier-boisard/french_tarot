@@ -1,20 +1,33 @@
 import numpy as np
+import pandas as pd
 import torch
 import tqdm
 
+from agents.random_agent import RandomPlayer
 from agents.trained_player import TrainedPlayer
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
 
 
-def _main():
+def _main(n_episodes_training=200000, n_episodes_testing=1000):
     _set_all_seeds()
-    agent = TrainedPlayer()
-    _run_training(agent)
+    trained_agent = TrainedPlayer()
+    _run_training(trained_agent, n_episodes_training)
+
+    random_agent = RandomPlayer()
+    agents = [trained_agent, random_agent, random_agent, random_agent]
+    all_rewards = []
+    for i in range(n_episodes_testing):
+        rotation = i % len(agents)
+        rotated_agents = rotate_list(agents, rotation)
+        rewards = _run_game(FrenchTarotEnvironment(), rotated_agents)
+        all_rewards.append(rotate_list(rewards, -rotation))
+    all_rewards = pd.DataFrame(all_rewards, columns=["trained", "random_1", "random_2", "random_3"])
+    all_rewards.plot()
 
 
-def _run_training(agent, n_iterations=200000):
+def _run_training(agent, n_episodes):
     environment = FrenchTarotEnvironment()
-    for _ in tqdm.tqdm(range(n_iterations)):
+    for _ in tqdm.tqdm(range(n_episodes)):
         observation = environment.reset()
         done = False
 
@@ -43,6 +56,21 @@ def _run_training(agent, n_iterations=200000):
         assert len(rewards) == len(early_phases_actions)
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
             agent.push_to_agent_memory(observation, action, reward)
+
+
+def _run_game(environment, agents):
+    observation = environment.reset()
+    done = False
+    cnt = 0
+    reward = None
+    while not done:
+        observation, reward, done, _ = environment.step(agents[observation["current_player"]].get_action(observation))
+        cnt += 1
+        if cnt >= 1000:
+            raise RuntimeError("Infinite loop")
+    if np.sum(reward) != 0:
+        RuntimeError("Scores do not sum up to 0")
+    return reward
 
 
 def _set_all_seeds(seed=1988):
