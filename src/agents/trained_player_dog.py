@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
-from agents.common import Agent, card_set_encoder, Transition
+from agents.common import Agent, card_set_encoder, Transition, BaseCardNeuralNet
 from environment import Card, GamePhase
 
 
@@ -19,8 +19,8 @@ class DogPhaseAgent(Agent):
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in list(Card) if _card_is_ok_in_dog(card) or "trump" in card.value]
     OUTPUT_DIMENSION = len(CARDS_OK_IN_DOG)
 
-    def __init__(self, device="cuda", **kwargs):
-        super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn().to(device), **kwargs)
+    def __init__(self, base_card_neural_net=None, device="cuda", **kwargs):
+        super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
     def get_action(self, observation):
         if observation["game_phase"] != GamePhase.DOG:
@@ -60,7 +60,8 @@ class DogPhaseAgent(Agent):
         return selections
 
     @staticmethod
-    def _create_dqn():
+    def _create_dqn(base_card_neural_net):
+
         return nn.Sequential(nn.Linear(78 + DogPhaseAgent.OUTPUT_DIMENSION, DogPhaseAgent.OUTPUT_DIMENSION))
 
     def optimize_model(self):
@@ -88,3 +89,24 @@ class DogPhaseAgent(Agent):
 
             if len(self.loss) % display_interval == 0:
                 print("Loss for dog agent:", np.mean(self.loss[-display_interval:]))
+
+
+class TrainedPlayerDogNeuralNet(nn.Module):
+
+    def __init__(self, base_card_neural_net: BaseCardNeuralNet):
+        super(TrainedPlayerDogNeuralNet, self).__init__()
+        self.base_card_neural_net = base_card_neural_net
+        width = 128
+        self.loop_color_tower = nn.Sequential(
+            nn.Linear(DogPhaseAgent.OUTPUT_DIMENSION, width),
+            nn.ReLU(),
+            nn.BatchNorm1d(DogPhaseAgent.OUTPUT_DIMENSION, width),
+            nn.Linear(DogPhaseAgent.OUTPUT_DIMENSION, width),
+            nn.ReLU(),
+        )
+        self.merge_tower = nn.Sequential(
+            nn.BatchNorm1d(base_card_neural_net.output_dimensions)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError()
