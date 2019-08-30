@@ -5,7 +5,7 @@ from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_
     get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed, _is_oudler
 
 
-def sort_trump_and_excuse(trumps_and_excuse):
+def sort_trump_and_excuse(trumps_and_excuse: list[Card]) -> list[Card]:
     values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 22 for card in trumps_and_excuse]
     sorted_indexes = np.argsort(values)
     return list(trumps_and_excuse[sorted_indexes])
@@ -13,13 +13,13 @@ def sort_trump_and_excuse(trumps_and_excuse):
 
 class RandomPlayer(Agent):
 
-    def __init__(self, seed=1988):
+    def __init__(self, seed: int = 1988):
         self._random_state = np.random.RandomState(seed)
 
     def optimize_model(self):
         pass  # overrides super class method to do nothing
 
-    def get_action(self, observation):
+    def get_action(self, observation: dict):  # TODO this function should return a proper type
         if observation["game_phase"] == GamePhase.BID:
             allowed_bids = list(range(get_minimum_allowed_bid(observation["bid_per_player"]), np.max(list(Bid)) + 1))
             rval = Bid(self._random_state.choice(allowed_bids + [0]))

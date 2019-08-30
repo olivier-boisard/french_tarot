@@ -17,23 +17,23 @@ class ReplayMemory:
     Got from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
     """
 
-    def __init__(self, capacity):
+    def __init__(self, capacity: int):
         self.capacity = capacity
         self.memory = []
         self.position = 0
         self._random_state = random.Random(1988)
 
-    def push(self, *args):
+    def push(self, state: torch.Tensor, action: int, next_state: torch.Tensor, reward: float):
         """Saves a transition."""
         if len(self.memory) < self.capacity:
             self.memory.append(None)
-        self.memory[self.position] = Transition(*args)
+        self.memory[self.position] = Transition(state, action, next_state, reward)
         self.position = (self.position + 1) % self.capacity
 
-    def sample(self, batch_size):
+    def sample(self, batch_size: int) -> list[Transition]:
         return self._random_state.sample(self.memory, batch_size)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.memory)
 
 
@@ -69,10 +69,10 @@ class BaseCardNeuralNet(nn.Module):
         )
 
     @property
-    def output_dimensions(self):
+    def output_dimensions(self) -> int:
         return self.merge_tower[-2].out_features
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         n = BaseCardNeuralNet.N_CARDS_PER_COLOR
         x_color_1 = self.standard_cards_tower(x[:, :n])
         x_color_2 = self.standard_cards_tower(x[:, n:2 * n])
@@ -85,8 +85,13 @@ class BaseCardNeuralNet(nn.Module):
 
 
 class Agent(ABC):
-    def __init__(self, policy_net, eps_start=0.9, eps_end=0.05, eps_decay=500, batch_size=64,
-                 replay_memory_size=2000):
+    def __init__(
+            self,
+            policy_net: nn.Module,
+            eps_start: float = 0.9,
+            eps_end: float = 0.05, eps_decay: int = 500, batch_size: int = 64,
+            replay_memory_size: int = 2000
+    ):
         self._policy_net = policy_net
         self._steps_done = 0
         self._random_state = np.random.RandomState(1988)
@@ -106,13 +111,13 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def get_action(self, observation):
+    def get_action(self, observation: dict):
         pass
 
     @property
-    def device(self):
+    def device(self) -> str:
         return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
 
 
-def card_set_encoder(card_set):
+def card_set_encoder(card_set: list[Card]) -> torch.Tensor:
     return tensor([card in card_set for card in list(Card)]).float()
