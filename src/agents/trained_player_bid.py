@@ -16,7 +16,7 @@ class BidPhaseAgent(Agent):
             base_card_neural_net = BaseCardNeuralNet()
         super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
-    def get_action(self, observation: dict):  # TODO use proper type
+    def get_action(self, observation: dict):
         if observation["game_phase"] != GamePhase.BID:
             raise ValueError("Invalid game phase")
 

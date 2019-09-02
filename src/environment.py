@@ -171,7 +171,7 @@ class FrenchTarotEnvironment:
         self._made_dog = None
         self._original_player_ids = None
 
-    def step(self, action) -> Tuple[dict, float, bool, any]:  # TODO use proper type for action
+    def step(self, action) -> Tuple[dict, float, bool, any]:
         if self._game_phase == GamePhase.BID:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
@@ -392,7 +392,7 @@ class FrenchTarotEnvironment:
                 card_strengths.append(int(card.value.split("_")[1]))
         return np.argmax(card_strengths)
 
-    def _announce(self, action: List) -> Tuple[float, bool, any]:  # TODO use proper type
+    def _announce(self, action: List) -> Tuple[float, bool, any]:
         if not isinstance(action, list):
             raise ValueError("Input should be list")
         for announcement in action:

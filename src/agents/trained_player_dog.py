@@ -24,7 +24,7 @@ class DogPhaseAgent(Agent):
     def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
-    def get_action(self, observation: dict):  # TODO use proper type
+    def get_action(self, observation: dict):
         if observation["game_phase"] != GamePhase.DOG:
             raise ValueError("Game is not in dog phase")
 

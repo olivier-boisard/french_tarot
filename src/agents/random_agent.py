@@ -21,7 +21,7 @@ class RandomPlayer(Agent):
     def optimize_model(self):
         pass  # overrides super class method to do nothing
 
-    def get_action(self, observation: dict):  # TODO this function should return a proper type
+    def get_action(self, observation: dict):
         if observation["game_phase"] == GamePhase.BID:
             allowed_bids = list(range(get_minimum_allowed_bid(observation["bid_per_player"]), np.max(list(Bid)) + 1))
             rval = Bid(self._random_state.choice(allowed_bids + [0]))

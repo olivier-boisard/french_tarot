@@ -20,7 +20,7 @@ class TrainedPlayer:
             GamePhase.CARD: random_agent  # trained agent not implemented yet
         }
 
-    def get_action(self, observation: dict):  # TODO return proper type
+    def get_action(self, observation: dict):
         return self._agents[observation["game_phase"]].get_action(observation)
 
     def optimize_models(self):
