@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import tqdm
 
-from agents.common import Agent, set_all_seeds
+from agents.common import TrainableAgent, set_all_seeds
 from agents.random_agent import RandomPlayer
 from agents.trained_player import TrainedPlayer
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
@@ -63,7 +63,7 @@ def _run_training(agent: TrainedPlayer, n_episodes: int):
         agent.optimize_models()
 
 
-def _run_game(environment: FrenchTarotEnvironment, agents: List[Agent]) -> List[float]:
+def _run_game(environment: FrenchTarotEnvironment, agents: List[TrainableAgent]) -> List[float]:
     observation = environment.reset()
     done = False
     cnt = 0

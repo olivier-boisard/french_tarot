@@ -87,6 +87,13 @@ class BaseCardNeuralNet(nn.Module):
 
 
 class Agent(ABC):
+
+    @abstractmethod
+    def get_action(self, observation: dict):
+        pass
+
+
+class TrainableAgent(Agent):
     def __init__(
             self,
             policy_net: nn.Module,
@@ -110,10 +117,6 @@ class Agent(ABC):
 
     @abstractmethod
     def optimize_model(self):
-        pass
-
-    @abstractmethod
-    def get_action(self, observation: dict):
         pass
 
     @property

@@ -11,18 +11,15 @@ def sort_trump_and_excuse(trumps_and_excuse: List[Card]) -> List[Card]:
     values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 22 for card in trumps_and_excuse]
     sorted_indexes: np.array = np.argsort(values)
     # noinspection PyTypeChecker
-    return list(trumps_and_excuse[sorted_indexes])
+    return list(np.array(trumps_and_excuse)[sorted_indexes])
 
 
 class RandomPlayer(Agent):
 
     def __init__(self, seed: int = 1988):
         # noinspection PyTypeChecker
-        super(RandomPlayer, self).__init__(None)
+        super(RandomPlayer, self).__init__()
         self._random_state = np.random.RandomState(seed)
-
-    def optimize_model(self):
-        pass  # overrides super class method to do nothing
 
     def get_action(self, observation: dict):
         if observation["game_phase"] == GamePhase.BID:
