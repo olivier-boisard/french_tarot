@@ -2,6 +2,7 @@ import argparse
 import copy
 import datetime
 import os
+from typing import List
 
 import dill
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ def _main():
     _plot_scores(scores)
 
 
-def _run_game(iteration, initial_seed=0):
+def _run_game(iteration: int, initial_seed: int = 0) -> np.array:
     environment = FrenchTarotEnvironment(seed=initial_seed + iteration)
     random_agent = RandomPlayer(seed=initial_seed + iteration)
     observation = environment.reset()
@@ -58,14 +59,14 @@ def _run_game(iteration, initial_seed=0):
     return game_scores
 
 
-def _print_final_scores(scores):
+def _print_final_scores(scores: List[np.array]):
     final_scores = np.stack(scores)
     if np.sum(final_scores) != 0:
         RuntimeError("Scores do not sum up to 0")
     print("Final scores: ", final_scores.sum(axis=0))
 
 
-def _plot_scores(scores):
+def _plot_scores(scores: List[np.array]):
     plt.plot(np.stack(scores).cumsum(axis=0))
     plt.xlabel("Game")
     plt.ylabel("Scores")

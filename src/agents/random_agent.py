@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 
 from agents.common import Agent
@@ -5,7 +7,7 @@ from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_
     get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed, _is_oudler
 
 
-def sort_trump_and_excuse(trumps_and_excuse: list[Card]) -> list[Card]:
+def sort_trump_and_excuse(trumps_and_excuse: List[Card]) -> List[Card]:
     values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 22 for card in trumps_and_excuse]
     sorted_indexes = np.argsort(values)
     return list(trumps_and_excuse[sorted_indexes])

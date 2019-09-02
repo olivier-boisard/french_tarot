@@ -1,14 +1,17 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 import torch
 import tqdm
 
+from agents.common import Agent
 from agents.random_agent import RandomPlayer
 from agents.trained_player import TrainedPlayer
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
 
 
-def _main(n_episodes_training=200000, n_episodes_testing=1000):
+def _main(n_episodes_training: int = 200000, n_episodes_testing: int = 1000):
     _set_all_seeds()
     trained_agent = TrainedPlayer()
     _run_training(trained_agent, n_episodes_training)
@@ -26,7 +29,7 @@ def _main(n_episodes_training=200000, n_episodes_testing=1000):
     all_rewards.plot()
 
 
-def _run_training(agent, n_episodes):
+def _run_training(agent: torch.nn.Module, n_episodes: int):
     environment = FrenchTarotEnvironment()
     for _ in tqdm.tqdm(range(n_episodes)):
         observation = environment.reset()
@@ -61,7 +64,7 @@ def _run_training(agent, n_episodes):
         agent.optimize_models()
 
 
-def _run_game(environment, agents):
+def _run_game(environment: FrenchTarotEnvironment, agents: List[Agent]) -> int:
     observation = environment.reset()
     done = False
     cnt = 0
@@ -76,7 +79,7 @@ def _run_game(environment, agents):
     return reward
 
 
-def _set_all_seeds(seed=1988):
+def _set_all_seeds(seed: int = 1988):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 

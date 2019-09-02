@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +21,7 @@ def _main():
     dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
 
 
-def _run_training(bid_phase_dqn_agent, n_iterations=20000):
+def _run_training(bid_phase_dqn_agent: torch.nn.Module, n_iterations: int = 20000) -> List[np.array]:
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     all_rewards = []
@@ -49,12 +50,12 @@ def _run_training(bid_phase_dqn_agent, n_iterations=20000):
     return all_rewards
 
 
-def _set_all_seeds(seed=1988):
+def _set_all_seeds(seed: int = 1988):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
 
-def dump_and_display_results(rewards, loss):
+def dump_and_display_results(rewards: List[np.array], loss: np.array):
     rewards = np.stack(rewards)
     output_folder = "bid_agent_training_results"
     if not os.path.isdir(output_folder):

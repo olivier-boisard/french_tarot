@@ -11,12 +11,12 @@ from environment import Bid, GamePhase
 
 class BidPhaseAgent(Agent):
 
-    def __init__(self, base_card_neural_net=None, device="cuda", **kwargs):
+    def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
         if base_card_neural_net is None:
             base_card_neural_net = BaseCardNeuralNet()
         super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
-    def get_action(self, observation):
+    def get_action(self, observation: dict):  # TODO use proper type
         if observation["game_phase"] != GamePhase.BID:
             raise ValueError("Invalid game phase")
 
@@ -76,12 +76,11 @@ class BidPhaseAgent(Agent):
                 print("Loss for bid agent:", np.mean(self.loss[-display_interval:]))
 
     @property
-    def output_dimension(self):
+    def output_dimension(self) -> int:
         return self._policy_net.output_layer[-2].out_features
 
     @staticmethod
-    def _create_dqn(base_card_neural_net):
-        base_neural_net = BaseCardNeuralNet()
+    def _create_dqn(base_neural_net) -> nn.Module:
         output_layer = nn.Sequential(
             nn.BatchNorm1d(base_neural_net.output_dimensions),
             nn.Linear(base_neural_net.output_dimensions, 1),

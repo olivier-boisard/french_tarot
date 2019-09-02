@@ -11,7 +11,7 @@ from environment import GamePhase
 
 class TrainedPlayer:
 
-    def __init__(self, bid_phase_agent=None, dog_phase_agent=None):
+    def __init__(self, bid_phase_agent: torch.nn.Module = None, dog_phase_agent: torch.nn.Module = None):
         random_agent = RandomPlayer()
         self._agents = {
             GamePhase.BID: BidPhaseAgent() if bid_phase_agent is None else bid_phase_agent,
@@ -20,14 +20,14 @@ class TrainedPlayer:
             GamePhase.CARD: random_agent  # trained agent not implemented yet
         }
 
-    def get_action(self, observation):
+    def get_action(self, observation: dict):  # TODO return proper type
         return self._agents[observation["game_phase"]].get_action(observation)
 
     def optimize_models(self):
         for model in self._agents.values():
             model.optimize_model()
 
-    def push_to_agent_memory(self, observation, action, reward):
+    def push_to_agent_memory(self, observation: dict, action: int, reward: float):
         if observation["game_phase"] == GamePhase.BID:
             self._agents[GamePhase.BID].memory.push(card_set_encoder(observation["hand"]).unsqueeze(0),
                                                     action,

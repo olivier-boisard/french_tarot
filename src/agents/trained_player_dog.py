@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import torch
 from torch import nn
@@ -7,7 +9,7 @@ from agents.common import Agent, card_set_encoder, Transition, BaseCardNeuralNet
 from environment import Card, GamePhase
 
 
-def _card_is_ok_in_dog(card):
+def _card_is_ok_in_dog(card: Card) -> bool:
     return "trump" not in card.value and "king" not in card.value and "excuse" not in card.value
 
 
@@ -19,10 +21,10 @@ class DogPhaseAgent(Agent):
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in list(Card) if _card_is_ok_in_dog(card) or "trump" in card.value]
     OUTPUT_DIMENSION = len(CARDS_OK_IN_DOG)
 
-    def __init__(self, base_card_neural_net=None, device="cuda", **kwargs):
+    def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
-    def get_action(self, observation):
+    def get_action(self, observation: dict):  # TODO use proper type
         if observation["game_phase"] != GamePhase.DOG:
             raise ValueError("Game is not in dog phase")
 
@@ -41,7 +43,7 @@ class DogPhaseAgent(Agent):
         return list(np.array(DogPhaseAgent.CARDS_OK_IN_DOG)[np.array(selected_cards, dtype=bool)])
 
     @staticmethod
-    def _get_card_selection_mask(hand):
+    def _get_card_selection_mask(hand: List[Card]) -> List[bool]:
         mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
         if len(mask) == np.sum(mask):
             mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG_WITH_TRUMPS]
@@ -49,7 +51,7 @@ class DogPhaseAgent(Agent):
         return mask
 
     @staticmethod
-    def _cards_selection_mask(model_output, n_cards):
+    def _cards_selection_mask(model_output: torch.Tensor, n_cards: int) -> torch.Tensor:
         model_output = model_output.clone().detach()
         selections = torch.zeros_like(model_output)
         for _ in range(n_cards):
@@ -60,8 +62,7 @@ class DogPhaseAgent(Agent):
         return selections
 
     @staticmethod
-    def _create_dqn(base_card_neural_net):
-
+    def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
         return nn.Sequential(nn.Linear(78 + DogPhaseAgent.OUTPUT_DIMENSION, DogPhaseAgent.OUTPUT_DIMENSION))
 
     def optimize_model(self):

@@ -1,6 +1,7 @@
 import random
 from abc import abstractmethod, ABC
 from collections import namedtuple
+from typing import List
 
 import numpy as np
 import torch
@@ -30,7 +31,7 @@ class ReplayMemory:
         self.memory[self.position] = Transition(state, action, next_state, reward)
         self.position = (self.position + 1) % self.capacity
 
-    def sample(self, batch_size: int) -> list[Transition]:
+    def sample(self, batch_size: int) -> List[Transition]:
         return self._random_state.sample(self.memory, batch_size)
 
     def __len__(self) -> int:
@@ -119,5 +120,5 @@ class Agent(ABC):
         return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
 
 
-def card_set_encoder(card_set: list[Card]) -> torch.Tensor:
+def card_set_encoder(card_set: List[Card]) -> torch.Tensor:
     return tensor([card in card_set for card in list(Card)]).float()

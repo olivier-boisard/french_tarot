@@ -1,6 +1,7 @@
 import copy
 from collections import deque
 from enum import Enum, IntEnum
+from typing import List, Tuple
 
 import numpy as np
 
@@ -107,18 +108,17 @@ DOUBLE_POIGNEE_SIZE = 13
 TRIPLE_POIGNEE_SIZE = 15
 
 
-def rotate_list(input_list, n):
+def rotate_list(input_list: List, n: int) -> List:
     hand_per_player_deque = deque(input_list)
     hand_per_player_deque.rotate(n)
     return list(hand_per_player_deque)
 
 
-def get_minimum_allowed_bid(bid_per_player):
+def get_minimum_allowed_bid(bid_per_player: List[Bid]) -> Bid:
     return Bid.PETITE if len(bid_per_player) == 0 else np.max(bid_per_player) + 1
 
 
-def check_trump_or_pee_is_allowed(played_card, played_cards_before,
-                                  player_hand):
+def check_trump_or_pee_is_allowed(played_card: Card, played_cards_before: List[Card], player_hand: List[Card]):
     asked_color = _retrieve_asked_color(played_cards_before)
     if asked_color is not None:
         for card in player_hand:
@@ -126,17 +126,17 @@ def check_trump_or_pee_is_allowed(played_card, played_cards_before,
                 raise ValueError("Trump or pee unallowed")
 
 
-def check_trump_value_is_allowed(card, played_card_before, current_player_hand):
+def check_trump_value_is_allowed(card: Card, played_cards_before: List[Card], current_player_hand: List[Card]):
     trumps_in_hand = [int(card.value.split("_")[1]) for card in current_player_hand if "trump" in card.value]
     max_trump_in_hand = np.max(trumps_in_hand) if len(trumps_in_hand) > 0 else 0
-    played_trump = [int(card.value.split("_")[1]) for card in played_card_before if "trump" in card.value]
+    played_trump = [int(card.value.split("_")[1]) for card in played_cards_before if "trump" in card.value]
     max_played_trump = np.max(played_trump) if len(played_trump) > 0 else 0
     card_strength = int(card.value.split("_")[1])
     if max_trump_in_hand > max_played_trump > card_strength:
         raise ValueError("Higher trump value must be played when possible")
 
 
-def check_card_is_allowed(card, played_cards, player_hand):
+def check_card_is_allowed(card: Card, played_cards: List[Card], player_hand: List[Card]):
     if card not in player_hand:
         raise ValueError("Card not in current player's hand")
     card_color = card.value.split("_")[0]
@@ -150,7 +150,7 @@ def check_card_is_allowed(card, played_cards, player_hand):
 class FrenchTarotEnvironment:
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, seed=1988):
+    def __init__(self, seed: int = 1988):
         self._winners_per_round = None
         self._random_state = np.random.RandomState(seed)
         self._n_cards_in_dog = 6
@@ -171,7 +171,7 @@ class FrenchTarotEnvironment:
         self._made_dog = None
         self._original_player_ids = None
 
-    def step(self, action):
+    def step(self, action) -> Tuple[dict, float, bool, any]:  # TODO use proper type for action
         if self._game_phase == GamePhase.BID:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
@@ -185,7 +185,7 @@ class FrenchTarotEnvironment:
             raise RuntimeError("Unknown game phase")
         return self._get_observation(), reward, done, info
 
-    def _play_card(self, card):
+    def _play_card(self, card: Card) -> Tuple[int, bool, any]:
         if not isinstance(card, Card):
             raise ValueError("Action must be card")
         check_card_is_allowed(card, self._played_cards, self._hand_per_player[self.current_player])
@@ -220,10 +220,11 @@ class FrenchTarotEnvironment:
         info = None
         return rewards, done, info
 
-    def _get_next_player(self):
+    def _get_next_player(self) -> int:
         return (self.current_player + 1) % self.n_players
 
-    def _compute_win_loss(self, is_petit_played_in_round, is_excuse_played_in_round, is_taker_win_round):
+    def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
+                          is_taker_win_round: bool) -> List[float]:
         dog = self._made_dog if self._made_dog is not None else self._original_dog
         taker_points = get_card_set_point(self._won_cards_per_teams["taker"] + list(dog))
         taker_points += self._bonus_points_per_teams["taker"]
@@ -290,13 +291,13 @@ class FrenchTarotEnvironment:
         return rewards
 
     @staticmethod
-    def has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, team):
-        is_taker_won_all = np.all(winners_per_round == team)
-        is_taker_won_all_but_last = np.all(winners_per_round[:-1] == team)
-        is_chelem_achieved = is_taker_won_all or (is_taker_won_all_but_last and is_excuse_played_in_round)
+    def has_team_achieved_chelem(winners_per_round: List[str], is_excuse_played_in_round: bool, team: str) -> bool:
+        team_won_all = np.all(winners_per_round == team)
+        team_won_all_but_last = np.all(winners_per_round[:-1] == team)
+        is_chelem_achieved = team_won_all or (team_won_all_but_last and is_excuse_played_in_round)
         return is_chelem_achieved
 
-    def _update_rewards_with_poignee(self, rewards):
+    def _update_rewards_with_poignee(self, rewards: List[float]) -> List[float]:
         rewards = copy.copy(rewards)
         for player, announcements_for_player in enumerate(self._announcements):
             for announcement in announcements_for_player:
@@ -330,7 +331,7 @@ class FrenchTarotEnvironment:
                             rewards[3] += bonus
         return rewards
 
-    def _solve_round(self):
+    def _solve_round(self) -> List[float]:
         starting_player = self._get_next_player()
         winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
         play_order = np.arange(starting_player, starting_player + self.n_players) % self.n_players
@@ -371,7 +372,7 @@ class FrenchTarotEnvironment:
         return rewards
 
     @staticmethod
-    def _get_winning_card_index(played_cards):
+    def _get_winning_card_index(played_cards: List[Card]) -> int:
         asked_color = _retrieve_asked_color(played_cards)
         card_strengths = []
         for card in played_cards:
@@ -391,7 +392,7 @@ class FrenchTarotEnvironment:
                 card_strengths.append(int(card.value.split("_")[1]))
         return np.argmax(card_strengths)
 
-    def _announce(self, action: list):
+    def _announce(self, action: List) -> Tuple[float, bool, any]:  # TODO use proper type
         if not isinstance(action, list):
             raise ValueError("Input should be list")
         for announcement in action:
@@ -435,7 +436,7 @@ class FrenchTarotEnvironment:
         info = None
         return reward, done, info
 
-    def _make_dog(self, dog: list):
+    def _make_dog(self, dog: List[Card]) -> Tuple[float, bool, any]:
         taking_player_hand = self._hand_per_player[0]  # At this point, taking player is always player 0
         if type(dog) != list:
             raise ValueError("Wrong type for 'action'")
@@ -475,7 +476,7 @@ class FrenchTarotEnvironment:
         info = None
         return reward, done, info
 
-    def _bid(self, action: Bid):
+    def _bid(self, action: Bid) -> Tuple[float, bool, any]:
         if type(action) != Bid:
             raise ValueError("Wrong type for 'action'")
 
@@ -511,7 +512,7 @@ class FrenchTarotEnvironment:
 
         return reward, done, info
 
-    def reset(self):
+    def reset(self) -> dict:
         while True:
             try:
                 deck = self._random_state.permutation(list(Card))
@@ -535,7 +536,7 @@ class FrenchTarotEnvironment:
 
         return self._get_observation()
 
-    def _deal(self, deck):
+    def _deal(self, deck: List[Card]):
         if len(deck) != len(list(Card)):
             raise ValueError("Deck has wrong number of cards")
         self._hand_per_player = [
@@ -549,7 +550,7 @@ class FrenchTarotEnvironment:
             if Card.TRUMP_1 in hand and count_trumps_and_excuse(hand) == 1:
                 raise RuntimeError("'Petit sec'. Deal again.")
 
-    def _get_observation(self):
+    def _get_observation(self) -> dict:
         rval = {
             "bid_per_player": self._bid_per_player,
             "game_phase": self._game_phase,
@@ -577,7 +578,7 @@ class FrenchTarotEnvironment:
         raise NotImplementedError()
 
 
-def _retrieve_asked_color(played_cards):
+def _retrieve_asked_color(played_cards: List[Card]) -> str:
     asked_color = None
     if len(played_cards) > 0:
         if played_cards[0] != Card.EXCUSE:
@@ -592,12 +593,12 @@ def _retrieve_asked_color(played_cards):
     return asked_color
 
 
-def count_trumps_and_excuse(cards):
+def count_trumps_and_excuse(cards: List[Card]) -> int:
     trumps_and_excuse = get_trumps_and_excuse(cards)
     return len(trumps_and_excuse)
 
 
-def get_trumps_and_excuse(cards):
+def get_trumps_and_excuse(cards: List[Card]) -> List[Card]:
     output_as_list = isinstance(cards, list)
     cards = np.array(cards)
     rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
@@ -608,11 +609,11 @@ def get_trumps_and_excuse(cards):
     return rval
 
 
-def _is_oudler(card):
+def _is_oudler(card: Card) -> bool:
     return card == Card.TRUMP_1 or card == Card.TRUMP_21 or card == Card.EXCUSE
 
 
-def get_card_point(card: Card):
+def get_card_point(card: Card) -> float:
     if _is_oudler(card) or "king" in card.value:
         rval = 4.5
     elif "queen" in card.value:
@@ -626,5 +627,5 @@ def get_card_point(card: Card):
     return rval
 
 
-def get_card_set_point(card_list: list):
+def get_card_set_point(card_list: List[Card]) -> float:
     return np.sum([get_card_point(card) for card in card_list])
