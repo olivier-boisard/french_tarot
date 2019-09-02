@@ -17,11 +17,14 @@ class DogPhaseAgent(Agent):
     """
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
     """
+    # noinspection PyTypeChecker
     CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
+    # noinspection PyTypeChecker
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in list(Card) if _card_is_ok_in_dog(card) or "trump" in card.value]
     OUTPUT_DIMENSION = len(CARDS_OK_IN_DOG)
 
     def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
+        # noinspection PyUnresolvedReferences
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
     def get_action(self, observation: dict):
@@ -63,6 +66,7 @@ class DogPhaseAgent(Agent):
 
     @staticmethod
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
+        # This variable is not used yet be will be very soon.
         return nn.Sequential(nn.Linear(78 + DogPhaseAgent.OUTPUT_DIMENSION, DogPhaseAgent.OUTPUT_DIMENSION))
 
     def optimize_model(self):

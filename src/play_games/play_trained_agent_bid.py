@@ -4,24 +4,23 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import torch
 import tqdm
 
-from agents.common import card_set_encoder
+from agents.common import card_set_encoder, set_all_seeds
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list
 
 
 def _main():
-    _set_all_seeds()
+    set_all_seeds()
     bid_phase_dqn_agent = BidPhaseAgent()
     all_rewards = _run_training(bid_phase_dqn_agent)
 
     dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)
 
 
-def _run_training(bid_phase_dqn_agent: torch.nn.Module, n_iterations: int = 20000) -> List[np.array]:
+def _run_training(bid_phase_dqn_agent: BidPhaseAgent, n_iterations: int = 20000) -> List[np.array]:
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     all_rewards = []
@@ -30,6 +29,7 @@ def _run_training(bid_phase_dqn_agent: torch.nn.Module, n_iterations: int = 2000
         done = False
         observations_to_save = []
         actions_to_save = []
+        rewards = None
         while not done:
             dqn_plays = observation["game_phase"] == GamePhase.BID
             playing_agent = bid_phase_dqn_agent if dqn_plays else random_agent
@@ -48,11 +48,6 @@ def _run_training(bid_phase_dqn_agent: torch.nn.Module, n_iterations: int = 2000
         all_rewards.append(np.roll(rewards, i % environment.n_players))
         bid_phase_dqn_agent.optimize_model()
     return all_rewards
-
-
-def _set_all_seeds(seed: int = 1988):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
 
 
 def dump_and_display_results(rewards: List[np.array], loss: np.array):

@@ -71,6 +71,7 @@ class BaseCardNeuralNet(nn.Module):
 
     @property
     def output_dimensions(self) -> int:
+        # noinspection PyUnresolvedReferences
         return self.merge_tower[-2].out_features
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -121,4 +122,11 @@ class Agent(ABC):
 
 
 def card_set_encoder(card_set: List[Card]) -> torch.Tensor:
+    # noinspection PyTypeChecker
     return tensor([card in card_set for card in list(Card)]).float()
+
+
+def set_all_seeds(seed: int = 1988):
+    torch.manual_seed(seed)
+    # noinspection PyUnresolvedReferences
+    torch.cuda.manual_seed_all(seed)

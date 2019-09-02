@@ -14,6 +14,7 @@ class BidPhaseAgent(Agent):
     def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
         if base_card_neural_net is None:
             base_card_neural_net = BaseCardNeuralNet()
+        # noinspection PyUnresolvedReferences
         super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
     def get_action(self, observation: dict):

@@ -27,7 +27,7 @@ class TrainedPlayer:
         for model in self._agents.values():
             model.optimize_model()
 
-    def push_to_agent_memory(self, observation: dict, action: int, reward: float):
+    def push_to_agent_memory(self, observation: dict, action, reward: float):
         if observation["game_phase"] == GamePhase.BID:
             self._agents[GamePhase.BID].memory.push(card_set_encoder(observation["hand"]).unsqueeze(0),
                                                     action,
