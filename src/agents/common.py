@@ -92,8 +92,12 @@ class Agent(ABC):
     def get_action(self, observation: dict):
         pass
 
+    @abstractmethod
+    def optimize_model(self):
+        pass
 
-class TrainableAgent(Agent):
+
+class BaseNeuralNetAgent(Agent):
     def __init__(
             self,
             policy_net: nn.Module,

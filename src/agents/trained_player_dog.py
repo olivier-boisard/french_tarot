@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
-from agents.common import TrainableAgent, card_set_encoder, Transition, BaseCardNeuralNet
+from agents.common import BaseNeuralNetAgent, card_set_encoder, Transition, BaseCardNeuralNet
 from environment import Card, GamePhase
 
 
@@ -13,7 +13,7 @@ def _card_is_ok_in_dog(card: Card) -> bool:
     return "trump" not in card.value and "king" not in card.value and "excuse" not in card.value
 
 
-class DogPhaseAgent(TrainableAgent):
+class DogPhaseAgent(BaseNeuralNetAgent):
     """
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
     """

@@ -74,3 +74,6 @@ class RandomPlayer(Agent):
         else:
             raise ValueError("Unhandled game phase")
         return rval
+
+    def optimize_model(self):
+        pass

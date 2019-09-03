@@ -5,11 +5,11 @@ import torch
 from torch import nn
 from torch.nn.modules.loss import BCELoss
 
-from agents.common import TrainableAgent, BaseCardNeuralNet, card_set_encoder, Transition
+from agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, card_set_encoder, Transition
 from environment import Bid, GamePhase
 
 
-class BidPhaseAgent(TrainableAgent):
+class BidPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
         if base_card_neural_net is None:
