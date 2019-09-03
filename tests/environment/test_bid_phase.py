@@ -11,6 +11,7 @@ def environment():
     yield FrenchTarotEnvironment()
 
 
+# noinspection PyTypeChecker
 def test_n_cards():
     assert len(list(Card)) == 78
 

@@ -1,7 +1,7 @@
 import copy
 from collections import deque
 from enum import Enum, IntEnum
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -172,7 +172,7 @@ class FrenchTarotEnvironment:
         self._made_dog = None
         self._original_player_ids = None
 
-    def step(self, action) -> Tuple[dict, float, bool, any]:
+    def step(self, action) -> Tuple[dict, Union[float, List[float]], bool, any]:
         if self._game_phase == GamePhase.BID:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
@@ -518,6 +518,7 @@ class FrenchTarotEnvironment:
     def reset(self) -> dict:
         while True:
             try:
+                # noinspection PyTypeChecker
                 deck = list(self._random_state.permutation(list(Card)))
                 self._deal(deck)
                 break
@@ -541,6 +542,7 @@ class FrenchTarotEnvironment:
 
     def _deal(self, deck: List[Card]):
         deck = np.array(deck)
+        # noinspection PyTypeChecker
         if len(deck) != len(list(Card)):
             raise ValueError("Deck has wrong number of cards")
         self._hand_per_player = [

@@ -10,4 +10,5 @@ def test_point_count_spades_king():
 
 
 def test_point_count_card_set():
+    # noinspection PyTypeChecker
     assert get_card_set_point(list(Card)) == 91

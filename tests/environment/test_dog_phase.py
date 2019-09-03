@@ -17,6 +17,7 @@ def setup_environment():
 def prepare_environment_sorted_deck():
     environment = FrenchTarotEnvironment()
     environment.reset()
+    # noinspection PyTypeChecker, PyProtectedMember
     environment._deal(list(Card))
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
@@ -84,6 +85,7 @@ def test_make_dog_with_trump_valid():
 def test_make_dog_without_trump():
     environment = FrenchTarotEnvironment()
     environment.reset()
+    # noinspection PyTypeChecker
     environment._deal(list(Card))
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
@@ -104,6 +106,7 @@ def test_dog_with_card_not_in_players_hand():
 def test_dog_has_wrong_number_of_cards():
     environment = FrenchTarotEnvironment()
     environment.reset()
+    # noinspection PyTypeChecker
     environment._deal(list(Card))
     environment.step(Bid.PASS)
     environment.step(Bid.PETITE)

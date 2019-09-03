@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from environment import FrenchTarotEnvironment, Bid, Card, get_card_set_point, CHELEM
@@ -8,7 +7,8 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     environment = FrenchTarotEnvironment()
     environment.reset()
     if sorted_deck:
-        environment._deal(np.array(list(Card)))
+        # noinspection PyTypeChecker,PyProtectedMember
+        environment._deal(list(Card))
     else:
         pass  # Nothing to do
     good = False
@@ -27,6 +27,7 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     else:
         pass
     if poignee:
+        # noinspection PyProtectedMember
         announcements.append(list(environment._hand_per_player[0][-11:-1]))
     else:
         pass
@@ -75,25 +76,6 @@ def test_play_complete_round_valid_last_player_team_wins():
     assert reward[3] == get_card_set_point(expected_values)
     assert observation["played_cards"] == []
     assert environment.current_player == 1
-    assert not done
-
-
-def test_play_complete_round_valid_last_player_team_loses():
-    environment = setup_environment()[0]
-    starting_player = 1
-    environment.current_player = starting_player
-    environment.step(Card.HEART_KING)
-    environment.step(Card.HEART_4)
-    environment.step(Card.HEART_2)
-    observation, reward, done, _ = environment.step(Card.HEART_1)
-
-    expected_values = [Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation["plis"] == [{"played_cards": expected_values, "starting_player": starting_player}]
-    assert environment.current_player == 1
-    assert reward[0] == 0
-    assert reward[1] == get_card_set_point(expected_values)
-    assert reward[2] == get_card_set_point(expected_values)
-    assert reward[3] == get_card_set_point(expected_values)
     assert not done
 
 
