@@ -390,7 +390,7 @@ class FrenchTarotEnvironment:
                 card_strengths.append(14)
             else:
                 card_strengths.append(int(card.value.split("_")[1]))
-        return int(np.argmax(card_strengths))
+        return np.argmax(card_strengths)
 
     def _announce(self, action: List) -> Tuple[float, bool, any]:
         if not isinstance(action, list):
@@ -488,7 +488,7 @@ class FrenchTarotEnvironment:
         reward = 0
         if len(self._bid_per_player) == self.n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
-            taking_player = int(np.argmax(self._bid_per_player))
+            taking_player = np.argmax(self._bid_per_player)
             original_player_ids = np.arange(taking_player, taking_player + self.n_players) % self.n_players
             self._original_player_ids = list(original_player_ids)
             self._bid_per_player = rotate_list(self._bid_per_player, -taking_player)
@@ -515,8 +515,7 @@ class FrenchTarotEnvironment:
     def reset(self) -> dict:
         while True:
             try:
-                # noinspection PyTypeChecker
-                deck = list(self._random_state.permutation(list(Card)))
+                deck = self._random_state.permutation(list(Card))
                 self._deal(deck)
                 break
             except RuntimeError as e:
@@ -629,4 +628,4 @@ def get_card_point(card: Card) -> float:
 
 
 def get_card_set_point(card_list: List[Card]) -> float:
-    return float(np.sum([get_card_point(card) for card in card_list]))
+    return np.sum([get_card_point(card) for card in card_list])
