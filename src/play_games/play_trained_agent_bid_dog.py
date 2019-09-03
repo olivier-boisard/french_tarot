@@ -14,7 +14,13 @@ def _main(n_episodes_training: int = 200000, n_episodes_testing: int = 1000):
     set_all_seeds()
     trained_agent = TrainedPlayer()
     _run_training(trained_agent, n_episodes_training)
+    all_rewards = _evaluate_agent_performance(trained_agent, n_episodes_testing)
+    print("Scores per agent:", all_rewards.mean())
+    all_rewards.to_csv("bid_dog_results.csv")
+    all_rewards.plot()
 
+
+def _evaluate_agent_performance(trained_agent, n_episodes_testing):
     random_agent = RandomPlayer()
     agents = [trained_agent, random_agent, random_agent, random_agent]
     all_rewards = []
@@ -23,9 +29,7 @@ def _main(n_episodes_training: int = 200000, n_episodes_testing: int = 1000):
         rotated_agents = rotate_list(agents, rotation)
         rewards = _run_game(FrenchTarotEnvironment(), rotated_agents)
         all_rewards.append(rotate_list(rewards, -rotation))
-    all_rewards = pd.DataFrame(all_rewards, columns=["trained", "random_1", "random_2", "random_3"])
-    all_rewards.to_csv("bid_dog_results.csv")
-    all_rewards.plot()
+    return pd.DataFrame(all_rewards, columns=["trained", "random_1", "random_2", "random_3"])
 
 
 def _run_training(agent: TrainedPlayer, n_episodes: int):
