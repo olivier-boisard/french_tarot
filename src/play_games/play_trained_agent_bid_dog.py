@@ -24,7 +24,7 @@ def _main(n_episodes_training: int = 200000, n_episodes_testing: int = 1000):
         rewards = _run_game(FrenchTarotEnvironment(), rotated_agents)
         all_rewards.append(rotate_list(rewards, -rotation))
     all_rewards = pd.DataFrame(all_rewards, columns=["trained", "random_1", "random_2", "random_3"])
-    all_rewards.to_csv("big_dog_results.csv")
+    all_rewards.to_csv("bid_dog_results.csv")
     all_rewards.plot()
 
 
