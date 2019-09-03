@@ -1,7 +1,7 @@
 import copy
 from collections import deque
 from enum import Enum, IntEnum
-from typing import List, Tuple, Iterable
+from typing import List, Tuple
 
 import numpy as np
 
@@ -159,7 +159,6 @@ class FrenchTarotEnvironment:
         self._game_phase = None
         self._bid_per_player = None
         self.n_players = 4
-        # noinspection PyTypeChecker
         self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / self.n_players)
         self._revealed_cards_in_dog = None
         self._announcements = None
@@ -186,7 +185,7 @@ class FrenchTarotEnvironment:
             raise RuntimeError("Unknown game phase")
         return self._get_observation(), reward, done, info
 
-    def _play_card(self, card: Card) -> Tuple[List[float], bool, any]:
+    def _play_card(self, card: Card) -> Tuple[int, bool, any]:
         if not isinstance(card, Card):
             raise ValueError("Action must be card")
         check_card_is_allowed(card, self._played_cards, self._hand_per_player[self.current_player])
@@ -236,7 +235,6 @@ class FrenchTarotEnvironment:
         if taker_points != round(taker_points):
             raise RuntimeError("Score should be integer")
         n_oudlers_taker = np.sum([_is_oudler(card) for card in list(self._won_cards_per_teams["taker"]) + list(dog)])
-        victory_threshold = None
         if n_oudlers_taker == 3:
             victory_threshold = 36
         elif n_oudlers_taker == 2:
@@ -293,7 +291,7 @@ class FrenchTarotEnvironment:
         return rewards
 
     @staticmethod
-    def has_team_achieved_chelem(winners_per_round: Iterable, is_excuse_played_in_round: bool, team: str) -> bool:
+    def has_team_achieved_chelem(winners_per_round: List[str], is_excuse_played_in_round: bool, team: str) -> bool:
         team_won_all = np.all(winners_per_round == team)
         team_won_all_but_last = np.all(winners_per_round[:-1] == team)
         is_chelem_achieved = team_won_all or (team_won_all_but_last and is_excuse_played_in_round)
@@ -540,7 +538,6 @@ class FrenchTarotEnvironment:
         return self._get_observation()
 
     def _deal(self, deck: List[Card]):
-        # noinspection PyTypeChecker
         if len(deck) != len(list(Card)):
             raise ValueError("Deck has wrong number of cards")
         self._hand_per_player = [
