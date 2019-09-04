@@ -5,15 +5,13 @@ import torch
 from torch import nn
 from torch.nn.modules.loss import BCELoss
 
-from agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, card_set_encoder, Transition
+from agents.common import BaseNeuralNetAgent, card_set_encoder, Transition
 from environment import Bid, GamePhase
 
 
 class BidPhaseAgent(BaseNeuralNetAgent):
 
-    def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
-        if base_card_neural_net is None:
-            base_card_neural_net = BaseCardNeuralNet()
+    def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", **kwargs):
         # noinspection PyUnresolvedReferences
         super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
@@ -81,7 +79,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         return self._policy_net.output_layer[-2].out_features
 
     @staticmethod
-    def _create_dqn(base_neural_net) -> nn.Module:
+    def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
         output_layer = nn.Sequential(
             nn.BatchNorm1d(base_neural_net.output_dimensions),
             nn.Linear(base_neural_net.output_dimensions, 1),

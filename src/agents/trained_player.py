@@ -2,7 +2,7 @@ import itertools
 
 import torch
 
-from agents.common import card_set_encoder
+from agents.common import card_set_encoder, BaseCardNeuralNet
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
 from agents.trained_player_dog import DogPhaseAgent
@@ -13,9 +13,10 @@ class TrainedPlayer:
 
     def __init__(self, bid_phase_agent: torch.nn.Module = None, dog_phase_agent: torch.nn.Module = None):
         random_agent = RandomPlayer()
+        base_card_neural_net = BaseCardNeuralNet()
         self._agents = {
-            GamePhase.BID: BidPhaseAgent() if bid_phase_agent is None else bid_phase_agent,
-            GamePhase.DOG: DogPhaseAgent() if dog_phase_agent is None else dog_phase_agent,
+            GamePhase.BID: BidPhaseAgent(base_card_neural_net) if bid_phase_agent is None else bid_phase_agent,
+            GamePhase.DOG: DogPhaseAgent(base_card_neural_net) if dog_phase_agent is None else dog_phase_agent,
             GamePhase.ANNOUNCEMENTS: random_agent,  # trained agent not implemented yet
             GamePhase.CARD: random_agent  # trained agent not implemented yet
         }

@@ -21,9 +21,8 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
     # noinspection PyTypeChecker
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in list(Card) if _card_is_ok_in_dog(card) or "trump" in card.value]
-    OUTPUT_DIMENSION = len(CARDS_OK_IN_DOG)
 
-    def __init__(self, base_card_neural_net: nn.Module = None, device: str = "cuda", **kwargs):
+    def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
         # noinspection PyUnresolvedReferences
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
@@ -32,7 +31,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             raise ValueError("Game is not in dog phase")
 
         hand = list(observation["hand"])
-        selected_cards = torch.zeros(DogPhaseAgent.OUTPUT_DIMENSION)
+        selected_cards = torch.zeros(len(hand))
         dog_size = len(observation["original_dog"])
         for _ in range(dog_size):
             xx = torch.cat([card_set_encoder(hand), selected_cards])
@@ -41,15 +40,16 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             xx[DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()
             selected_cards[selected_card_index] = 1
-            hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[selected_card_index])
+            # noinspection PyTypeChecker
+            hand.remove(list(Card)[selected_card_index])
         assert selected_cards.sum() == dog_size
         return list(np.array(DogPhaseAgent.CARDS_OK_IN_DOG)[np.array(selected_cards, dtype=bool)])
 
     @staticmethod
     def _get_card_selection_mask(hand: List[Card]) -> List[bool]:
-        mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG]
+        mask = [card not in hand or card not in DogPhaseAgent.CARDS_OK_IN_DOG for card in Card]
         if len(mask) == np.sum(mask):
-            mask = [card not in hand for card in DogPhaseAgent.CARDS_OK_IN_DOG_WITH_TRUMPS]
+            mask = [card not in hand or card not in DogPhaseAgent.CARDS_OK_IN_DOG_WITH_TRUMPS for card in Card]
         assert np.sum(mask) > 0
         return mask
 
@@ -66,8 +66,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
 
     @staticmethod
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
-        # This variable is not used yet be will be very soon.
-        return nn.Sequential(nn.Linear(78 + DogPhaseAgent.OUTPUT_DIMENSION, DogPhaseAgent.OUTPUT_DIMENSION))
+        return TrainedPlayerDogNeuralNet(base_neural_net)
 
     def optimize_model(self):
         """
@@ -101,17 +100,21 @@ class TrainedPlayerDogNeuralNet(nn.Module):
     def __init__(self, base_card_neural_net: BaseCardNeuralNet):
         super(TrainedPlayerDogNeuralNet, self).__init__()
         self.base_card_neural_net = base_card_neural_net
-        width = 128
-        self.loop_color_tower = nn.Sequential(
-            nn.Linear(DogPhaseAgent.OUTPUT_DIMENSION, width),
-            nn.ReLU(),
-            nn.BatchNorm1d(DogPhaseAgent.OUTPUT_DIMENSION, width),
-            nn.Linear(DogPhaseAgent.OUTPUT_DIMENSION, width),
-            nn.ReLU(),
-        )
+        nn_width = base_card_neural_net.output_dimensions
+        # noinspection PyTypeChecker
         self.merge_tower = nn.Sequential(
-            nn.BatchNorm1d(base_card_neural_net.output_dimensions)
+            nn.BatchNorm1d(2 * nn_width),
+            nn.Linear(2 * nn_width, 4 * nn_width),
+            nn.ReLU(),
+            nn.BatchNorm1d(4 * nn_width),
+            nn.Linear(4 * nn_width, 4 * nn_width),
+            nn.ReLU(),
+            nn.BatchNorm1d(4 * nn_width),
+            nn.Linear(4 * nn_width, len(list(Card)))
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError()
+        hand_end_idx = x.size(0) // 2
+        x_hand = self.base_card_neural_net(x[:hand_end_idx])
+        x_feedback = self.base_card_neural_net(x[hand_end_idx:])
+        return self.merge_tower(torch.cat(x_hand, x_feedback))
