@@ -1,11 +1,8 @@
-from typing import List
-
 import numpy as np
-import pandas as pd
 import tqdm
 
-from agents.common import BaseNeuralNetAgent, set_all_seeds
-from agents.random_agent import RandomPlayer
+from agents.common import set_all_seeds
+from agents.performance_evaluation import evaluate_agent_performance
 from agents.trained_player import TrainedPlayer
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
 
@@ -14,22 +11,10 @@ def _main(n_episodes_training: int = 200000, n_episodes_testing: int = 1000):
     set_all_seeds()
     trained_agent = TrainedPlayer()
     _run_training(trained_agent, n_episodes_training)
-    all_rewards = _evaluate_agent_performance(trained_agent, n_episodes_testing)
+    all_rewards = evaluate_agent_performance(trained_agent, n_episodes_testing)
     print("Scores per agent:", all_rewards.mean())
     all_rewards.to_csv("bid_dog_results.csv")
     all_rewards.plot()
-
-
-def _evaluate_agent_performance(trained_agent: TrainedPlayer, n_episodes_testing: int):
-    random_agent = RandomPlayer()
-    agents = [trained_agent, random_agent, random_agent, random_agent]
-    all_rewards = []
-    for i in range(n_episodes_testing):
-        rotation = i % len(agents)
-        rotated_agents = rotate_list(agents, rotation)
-        rewards = _run_game(FrenchTarotEnvironment(), rotated_agents)
-        all_rewards.append(rotate_list(rewards, -rotation))
-    return pd.DataFrame(all_rewards, columns=["trained", "random_1", "random_2", "random_3"])
 
 
 def _run_training(agent: TrainedPlayer, n_episodes: int):
@@ -64,22 +49,7 @@ def _run_training(agent: TrainedPlayer, n_episodes: int):
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
             agent.push_to_agent_memory(observation, action, reward)
 
-        agent.optimize_models()
-
-
-def _run_game(environment: FrenchTarotEnvironment, agents: List[BaseNeuralNetAgent]) -> List[float]:
-    observation = environment.reset()
-    done = False
-    cnt = 0
-    reward = None
-    while not done:
-        observation, reward, done, _ = environment.step(agents[observation["current_player"]].get_action(observation))
-        cnt += 1
-        if cnt >= 1000:
-            raise RuntimeError("Infinite loop")
-    if np.sum(reward) != 0:
-        RuntimeError("Scores do not sum up to 0")
-    return reward
+        agent.optimize_model()
 
 
 if __name__ == "__main__":

@@ -2,14 +2,18 @@ import itertools
 
 import torch
 
-from agents.common import card_set_encoder, BaseCardNeuralNet
+from agents.common import card_set_encoder, BaseCardNeuralNet, Agent
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
 from agents.trained_player_dog import DogPhaseAgent
 from environment import GamePhase, Card
 
 
-class TrainedPlayer:
+class TrainedPlayer(Agent):
+
+    def optimize_model(self):
+        for model in self._agents.values():
+            model.optimize_model()
 
     def __init__(self, bid_phase_agent: torch.nn.Module = None, dog_phase_agent: torch.nn.Module = None):
         random_agent = RandomPlayer()
@@ -23,10 +27,6 @@ class TrainedPlayer:
 
     def get_action(self, observation: dict):
         return self._agents[observation["game_phase"]].get_action(observation)
-
-    def optimize_models(self):
-        for model in self._agents.values():
-            model.optimize_model()
 
     def push_to_agent_memory(self, observation: dict, action, reward: float):
         if observation["game_phase"] == GamePhase.BID:
