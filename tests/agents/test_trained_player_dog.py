@@ -1,6 +1,6 @@
 import pytest
 
-from agents.common import card_set_encoder
+from agents.common import card_set_encoder, BaseCardNeuralNet
 from agents.trained_player_dog import DogPhaseAgent
 from environment import FrenchTarotEnvironment, GamePhase, Bid
 
@@ -14,7 +14,7 @@ def test_dog_phase_observation_encoder():
 
 
 def test_create_dog_phase_player():
-    player = DogPhaseAgent(device="cpu")
+    player = DogPhaseAgent(BaseCardNeuralNet(), device="cpu")
     observation = _prepare_environment()
     action = player.get_action(observation)
     assert isinstance(action, list)
@@ -32,7 +32,7 @@ def _prepare_environment():
 
 
 def test_bid_phase():
-    player = DogPhaseAgent(device="cpu")
+    player = DogPhaseAgent(BaseCardNeuralNet(), device="cpu")
     observation = FrenchTarotEnvironment().reset()
     observation["game_phase"] = GamePhase.BID
     with pytest.raises(ValueError):
@@ -40,7 +40,7 @@ def test_bid_phase():
 
 
 def test_announcement_phase():
-    player = DogPhaseAgent(device="cpu")
+    player = DogPhaseAgent(BaseCardNeuralNet(), device="cpu")
     observation = FrenchTarotEnvironment().reset()
     observation["game_phase"] = GamePhase.ANNOUNCEMENTS
     with pytest.raises(ValueError):

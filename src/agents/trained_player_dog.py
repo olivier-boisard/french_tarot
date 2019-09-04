@@ -31,11 +31,13 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             raise ValueError("Game is not in dog phase")
 
         hand = list(observation["hand"])
-        selected_cards = torch.zeros(len(hand))
+        selected_cards = torch.zeros(len(list(Card)))
         dog_size = len(observation["original_dog"])
         for _ in range(dog_size):
-            xx = torch.cat([card_set_encoder(hand), selected_cards])
-            xx = self._policy_net(xx.to(self.device))
+            xx = torch.cat([card_set_encoder(hand), selected_cards]).unsqueeze(0)
+            self._policy_net.eval()
+            xx = self._policy_net(xx.to(self.device)).squeeze()
+            self._policy_net.train()
 
             xx[DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()
@@ -43,7 +45,8 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             # noinspection PyTypeChecker
             hand.remove(list(Card)[selected_card_index])
         assert selected_cards.sum() == dog_size
-        return list(np.array(DogPhaseAgent.CARDS_OK_IN_DOG)[np.array(selected_cards, dtype=bool)])
+        # noinspection PyTypeChecker
+        return list(np.array(Card)[np.array(selected_cards, dtype=bool)])
 
     @staticmethod
     def _get_card_selection_mask(hand: List[Card]) -> List[bool]:
@@ -114,7 +117,7 @@ class TrainedPlayerDogNeuralNet(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        hand_end_idx = x.size(0) // 2
-        x_hand = self.base_card_neural_net(x[:hand_end_idx])
-        x_feedback = self.base_card_neural_net(x[hand_end_idx:])
-        return self.merge_tower(torch.cat(x_hand, x_feedback))
+        hand_end_idx = x.size(1) // 2
+        x_hand = self.base_card_neural_net(x[:, :hand_end_idx])
+        x_feedback = self.base_card_neural_net(x[:, hand_end_idx:])
+        return self.merge_tower(torch.cat([x_hand, x_feedback], dim=1))

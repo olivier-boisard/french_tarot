@@ -6,7 +6,7 @@ from agents.common import card_set_encoder, BaseCardNeuralNet
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
 from agents.trained_player_dog import DogPhaseAgent
-from environment import GamePhase
+from environment import GamePhase, Card
 
 
 class TrainedPlayer:
@@ -34,7 +34,8 @@ class TrainedPlayer:
                                                     action,
                                                     None, reward)
         elif observation["game_phase"] == GamePhase.DOG:
-            selected_cards = torch.zeros(DogPhaseAgent.OUTPUT_DIMENSION)
+            # noinspection PyTypeChecker
+            selected_cards = torch.zeros(len(list(Card)))
             for permuted_action in itertools.permutations(action):
                 hand = list(observation["hand"])
                 for card in permuted_action:
