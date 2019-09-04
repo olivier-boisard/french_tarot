@@ -20,7 +20,7 @@ def _main(n_episodes_training: int = 200000, n_episodes_testing: int = 1000):
     all_rewards.plot()
 
 
-def _evaluate_agent_performance(trained_agent, n_episodes_testing):
+def _evaluate_agent_performance(trained_agent: TrainedPlayer, n_episodes_testing: int):
     random_agent = RandomPlayer()
     agents = [trained_agent, random_agent, random_agent, random_agent]
     all_rewards = []
