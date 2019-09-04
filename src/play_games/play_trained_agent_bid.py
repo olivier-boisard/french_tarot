@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import tqdm
 
-from agents.common import card_set_encoder, set_all_seeds
+from agents.common import card_set_encoder, set_all_seeds, BaseCardNeuralNet
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list
@@ -14,7 +14,7 @@ from environment import FrenchTarotEnvironment, GamePhase, rotate_list
 
 def _main():
     set_all_seeds()
-    bid_phase_dqn_agent = BidPhaseAgent()
+    bid_phase_dqn_agent = BidPhaseAgent(BaseCardNeuralNet())
     all_rewards = _run_training(bid_phase_dqn_agent)
 
     dump_and_display_results(all_rewards, bid_phase_dqn_agent.loss)

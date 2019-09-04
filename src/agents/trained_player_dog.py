@@ -31,6 +31,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             raise ValueError("Game is not in dog phase")
 
         hand = list(observation["hand"])
+        # noinspection PyTypeChecker
         selected_cards = torch.zeros(len(list(Card)))
         dog_size = len(observation["original_dog"])
         for _ in range(dog_size):
