@@ -39,8 +39,8 @@ the same. Expectations would be that with a large amount of games,
 scores would tend to be closer. Same experiment was run with 10000 games
 per experiments and results were similar.
 
-## With trained agent for bidding
-We tested having a DQN-based agent for the bidding phase. It was trained on 200000 games. Everything else being
+## With trained agent for bid phase
+We tested having a neural network based agent for the bidding phase. It was trained on 200000 games. Everything else being
 random, the agent would have better chance by not "taking the game", hence we would expect the agent to collapse
 to the trivial solution of always passing. We test two different types of networks:
 - angelica: simple feedforward net without weight sharing
@@ -53,6 +53,23 @@ Results are summed-up in this
 The network that is fastest to train is "carnival", as it takes less than 1 hour, while angelica and back_home
 take both around 6 hours. At the end of the training, the network decided to take the game 10.3% of the times,
 which is satisfactory.
+
+## With trained agent for dog phase
+We tested having a DQN-based agent for the dog making phase as well. Since it's based on the same input (i.e, the cards
+at hand), and we can assume the features to be extracted from the input would be close to what the neural would learn
+from the bid phase, we share weights between them. This allows to significantly reduce the complexity and to train
+both networks jointly.
+
+The way the algorithm works is as follows:
+1. Initialize input with cards at hand (including dog) and a vector $v_s$ of 78 zeros that will represent
+the selected card so far
+2. run the model. It's output is a vector $v_o$ of 78 components, one for each card.
+3. Mask out all illegal card indices from $v_o$, i.e. cards that are not allowed in dog or not in player's hand
+4. Get $i=argmax($v_o$). This will give us the picked up card.
+5. Set $v_s[i] <- 1$
+6. Repeat above procedure until we selected 6 cards.
+
+To run this, we use the "carnival" neural net described in previous section for the bid phase agent.
 
 # TODO
 1. implement DQN-based agents for each phase and train them
