@@ -8,7 +8,7 @@ from agents.random_agent import RandomPlayer
 from environment import rotate_list, FrenchTarotEnvironment
 
 
-def evaluate_agent_performance(agent: Agent, n_episodes_testing: int):
+def score_diff(agent: Agent, n_episodes_testing=10) -> float:
     random_agent = RandomPlayer()
     agents = [agent, random_agent, random_agent, random_agent]
     all_rewards = []
@@ -17,7 +17,8 @@ def evaluate_agent_performance(agent: Agent, n_episodes_testing: int):
         rotated_agents = rotate_list(agents, rotation)
         rewards = _run_game(FrenchTarotEnvironment(), rotated_agents)
         all_rewards.append(rotate_list(rewards, -rotation))
-    return pd.DataFrame(all_rewards, columns=["trained", "random_1", "random_2", "random_3"])
+    mean_scores = pd.DataFrame(all_rewards, columns=["trained", "random_1", "random_2", "random_3"]).mean()
+    return mean_scores["trained"] - mean_scores.filter(regex="random_").max()
 
 
 def _run_game(environment: FrenchTarotEnvironment, agents: List[BaseNeuralNetAgent]) -> List[float]:

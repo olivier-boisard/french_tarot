@@ -72,7 +72,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
             nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
             self._optimizer.step()
 
-            if self._epoch % 100 == 0:
+            if self._epoch % 1000 == 0:
                 tb_writer.add_scalar("Loss/train/Bid", loss_output.item(), self._epoch)
             self._epoch += 1
 

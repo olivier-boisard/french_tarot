@@ -3,25 +3,21 @@ import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import set_all_seeds
-from agents.performance_evaluation import evaluate_agent_performance
+from agents.performance_evaluation import score_diff
 from agents.trained_player import TrainedPlayer
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
 
 
-def _main(n_episodes_training: int = 200000, n_episodes_testing: int = 1000):
+def _main(n_episodes_training: int = 200000):
     set_all_seeds()
     writer = SummaryWriter()
     trained_agent = TrainedPlayer()
     _run_training(trained_agent, n_episodes_training, writer)
-    all_rewards = evaluate_agent_performance(trained_agent, n_episodes_testing)
-    print("Scores per agent:", all_rewards.mean())
-    all_rewards.to_csv("bid_dog_results.csv")
-    all_rewards.plot()
 
 
 def _run_training(agent: TrainedPlayer, n_episodes: int, tb_writer: SummaryWriter):
     environment = FrenchTarotEnvironment()
-    for _ in tqdm.tqdm(range(n_episodes)):
+    for i in tqdm.tqdm(range(n_episodes)):
         observation = environment.reset()
         done = False
 
@@ -52,6 +48,9 @@ def _run_training(agent: TrainedPlayer, n_episodes: int, tb_writer: SummaryWrite
             agent.push_to_agent_memory(observation, action, reward)
 
         agent.optimize_model(tb_writer)
+
+        if i % 1000 == 0:
+            tb_writer.add_scalar("score_diff", score_diff(agent), i)
 
 
 if __name__ == "__main__":

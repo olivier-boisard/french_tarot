@@ -8,7 +8,6 @@ import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import card_set_encoder, set_all_seeds, BaseCardNeuralNet
-from agents.performance_evaluation import evaluate_agent_performance
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
 from environment import FrenchTarotEnvironment, GamePhase, rotate_list
@@ -19,9 +18,6 @@ def _main():
     bid_phase_dqn_agent = BidPhaseAgent(BaseCardNeuralNet())
     all_rewards_training = _run_training(bid_phase_dqn_agent)
     dump_and_display_results(all_rewards_training, bid_phase_dqn_agent.loss)
-
-    all_rewards_testing = evaluate_agent_performance(bid_phase_dqn_agent, 1000)
-    print("Scores per agent:", all_rewards_testing.mean())
 
 
 def _run_training(bid_phase_dqn_agent: BidPhaseAgent, n_iterations: int = 20000) -> List[np.array]:
