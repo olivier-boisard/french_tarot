@@ -82,9 +82,24 @@ class BidPhaseAgent(BaseNeuralNetAgent):
 
     @staticmethod
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
+        width = base_neural_net.output_dimensions
         output_layer = nn.Sequential(
-            nn.BatchNorm1d(base_neural_net.output_dimensions),
-            nn.Linear(base_neural_net.output_dimensions, 1),
+            nn.BatchNorm1d(width),
+            nn.Linear(width, 2 * width),
+            nn.ReLU(),
+            nn.BatchNorm1d(2 * width),
+            nn.Linear(2 * width, 2 * width),
+            nn.ReLU(),
+
+            nn.BatchNorm1d(2 * width),
+            nn.Linear(2 * width, 4 * width),
+            nn.ReLU(),
+            nn.BatchNorm1d(4 * width),
+            nn.Linear(4 * width, 4 * width),
+            nn.ReLU(),
+
+            nn.BatchNorm1d(4 * width),
+            nn.Linear(4 * width, 1),
             nn.Sigmoid()
         )
         return nn.Sequential(base_neural_net, output_layer)

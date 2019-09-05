@@ -115,8 +115,16 @@ class TrainedPlayerDogNeuralNet(nn.Module):
             nn.BatchNorm1d(4 * nn_width),
             nn.Linear(4 * nn_width, 4 * nn_width),
             nn.ReLU(),
+
             nn.BatchNorm1d(4 * nn_width),
-            nn.Linear(4 * nn_width, len(list(Card)))
+            nn.Linear(4 * nn_width, 8 * nn_width),
+            nn.ReLU(),
+            nn.BatchNorm1d(8 * nn_width),
+            nn.Linear(8 * nn_width, 8 * nn_width),
+            nn.ReLU(),
+
+            nn.BatchNorm1d(8 * nn_width),
+            nn.Linear(8 * nn_width, len(list(Card)))
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
