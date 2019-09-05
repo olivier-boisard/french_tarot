@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn.modules.loss import BCELoss
+from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import BaseNeuralNetAgent, card_set_encoder, Transition
 from environment import Bid, GamePhase
@@ -14,6 +15,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
     def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", **kwargs):
         # noinspection PyUnresolvedReferences
         super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
+        self._epoch = 0
 
     def get_action(self, observation: dict):
         if observation["game_phase"] != GamePhase.BID:
@@ -48,11 +50,10 @@ class BidPhaseAgent(BaseNeuralNetAgent):
                 output = Bid.PASS
         return Bid(output)
 
-    def optimize_model(self):
+    def optimize_model(self, tb_writer: SummaryWriter):
         """
         See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         """
-        display_interval = 100
         if len(self.memory) > self._batch_size:
             transitions = self.memory.sample(self._batch_size)
             batch = Transition(*zip(*transitions))
@@ -71,8 +72,9 @@ class BidPhaseAgent(BaseNeuralNetAgent):
             nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
             self._optimizer.step()
 
-            if len(self.loss) % display_interval == 0:
-                print("Loss for bid agent:", np.mean(self.loss[-display_interval:]))
+            if self._epoch % 100 == 0:
+                tb_writer.add_scalar("Loss/train/Bid", loss_output.item(), self._epoch)
+            self._epoch += 1
 
     @property
     def output_dimension(self) -> int:

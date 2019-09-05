@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
+from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import BaseNeuralNetAgent, card_set_encoder, Transition, BaseCardNeuralNet
 from environment import Card, GamePhase
@@ -25,6 +26,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
         # noinspection PyUnresolvedReferences
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
+        self._epoch = 0
 
     def get_action(self, observation: dict):
         if observation["game_phase"] != GamePhase.DOG:
@@ -72,11 +74,10 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
         return TrainedPlayerDogNeuralNet(base_neural_net)
 
-    def optimize_model(self):
+    def optimize_model(self, tb_writer: SummaryWriter):
         """
         See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         """
-        display_interval = 100
         return_scale_factor = 0.001
         if len(self.memory) > self._batch_size:
             transitions = self.memory.sample(self._batch_size)
@@ -95,8 +96,9 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
             self._optimizer.step()
 
-            if len(self.loss) % display_interval == 0:
-                print("Loss for dog agent:", np.mean(self.loss[-display_interval:]))
+            if self._epoch % 100 == 0:
+                tb_writer.add_scalar("Loss/train/Dog", loss_output.item(), self._epoch)
+            self._epoch += 1
 
 
 class TrainedPlayerDogNeuralNet(nn.Module):

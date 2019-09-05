@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import card_set_encoder, set_all_seeds, BaseCardNeuralNet
 from agents.performance_evaluation import evaluate_agent_performance
@@ -27,6 +28,7 @@ def _run_training(bid_phase_dqn_agent: BidPhaseAgent, n_iterations: int = 20000)
     environment = FrenchTarotEnvironment()
     random_agent = RandomPlayer()
     all_rewards = []
+    tb_writer = SummaryWriter()
     for i in tqdm.tqdm(range(n_iterations)):
         observation = environment.reset()
         done = False
@@ -49,7 +51,7 @@ def _run_training(bid_phase_dqn_agent: BidPhaseAgent, n_iterations: int = 20000)
             None, None, rewards[original_id]
         )
         all_rewards.append(np.roll(rewards, i % environment.n_players))
-        bid_phase_dqn_agent.optimize_model()
+        bid_phase_dqn_agent.optimize_model(tb_writer)
     return all_rewards
 
 

@@ -6,6 +6,7 @@ from typing import List
 import numpy as np
 import torch
 from torch import nn, optim, tensor
+from torch.utils.tensorboard import SummaryWriter
 
 from environment import Card
 
@@ -93,7 +94,7 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def optimize_model(self):
+    def optimize_model(self, tb_writer: SummaryWriter):
         pass
 
 
@@ -120,7 +121,7 @@ class BaseNeuralNetAgent(Agent):
         self.loss = []
 
     @abstractmethod
-    def optimize_model(self):
+    def optimize_model(self, tb_writer: SummaryWriter):
         pass
 
     @property

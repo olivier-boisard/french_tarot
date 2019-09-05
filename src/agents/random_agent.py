@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import Agent
 from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_POIGNEE_SIZE, \
@@ -75,5 +76,5 @@ class RandomPlayer(Agent):
             raise ValueError("Unhandled game phase")
         return rval
 
-    def optimize_model(self):
+    def optimize_model(self, tb_writer: SummaryWriter):
         pass

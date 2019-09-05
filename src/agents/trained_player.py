@@ -1,6 +1,7 @@
 import itertools
 
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import card_set_encoder, BaseCardNeuralNet, Agent
 from agents.random_agent import RandomPlayer
@@ -11,9 +12,9 @@ from environment import GamePhase, Card
 
 class TrainedPlayer(Agent):
 
-    def optimize_model(self):
+    def optimize_model(self, tb_writer: SummaryWriter):
         for model in self._agents.values():
-            model.optimize_model()
+            model.optimize_model(tb_writer)
 
     def __init__(self, bid_phase_agent: torch.nn.Module = None, dog_phase_agent: torch.nn.Module = None):
         random_agent = RandomPlayer()

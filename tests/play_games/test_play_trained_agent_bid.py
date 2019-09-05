@@ -14,6 +14,7 @@ def test_play_trained_agent_bid(mocker):
 
     mocker.patch('play_games.play_trained_agent_bid.BidPhaseAgent._create_dqn', mock_create_dqn)
     mocker.patch('play_games.play_trained_agent_bid.BidPhaseAgent.output_dimension', 5)
+    mocker.patch('torch.utils.tensorboard.SummaryWriter')
     agents.common.set_all_seeds()
     bid_phase_dqn_agent = BidPhaseAgent(
         BaseCardNeuralNet(),
