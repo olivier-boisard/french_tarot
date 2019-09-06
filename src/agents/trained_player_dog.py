@@ -6,7 +6,7 @@ from torch import nn
 from torch.nn.functional import smooth_l1_loss
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import BaseNeuralNetAgent, card_set_encoder, Transition, BaseCardNeuralNet
+from agents.common import BaseNeuralNetAgent, encode_card_set, Transition, BaseCardNeuralNet
 from environment import Card, GamePhase
 
 
@@ -37,7 +37,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         selected_cards = torch.zeros(len(list(Card)))
         dog_size = len(observation["original_dog"])
         for _ in range(dog_size):
-            xx = torch.cat([card_set_encoder(hand), selected_cards]).unsqueeze(0)
+            xx = torch.cat([encode_card_set(hand), selected_cards]).unsqueeze(0)
             self._policy_net.eval()
             xx = self._policy_net(xx.to(self.device)).squeeze()
             self._policy_net.train()

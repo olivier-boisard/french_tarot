@@ -129,7 +129,7 @@ class BaseNeuralNetAgent(Agent):
         return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
 
 
-def card_set_encoder(card_set: List[Card]) -> torch.Tensor:
+def encode_card_set(card_set: List[Card]) -> torch.Tensor:
     # noinspection PyTypeChecker
     return tensor([card in card_set for card in list(Card)]).float()
 

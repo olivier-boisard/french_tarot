@@ -3,7 +3,7 @@ import itertools
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import card_set_encoder, BaseCardNeuralNet, Agent
+from agents.common import encode_card_set, BaseCardNeuralNet, Agent
 from agents.random_agent import RandomPlayer
 from agents.trained_player_bid import BidPhaseAgent
 from agents.trained_player_dog import DogPhaseAgent
@@ -31,7 +31,7 @@ class TrainedPlayer(Agent):
 
     def push_to_agent_memory(self, observation: dict, action, reward: float):
         if observation["game_phase"] == GamePhase.BID:
-            self._agents[GamePhase.BID].memory.push(card_set_encoder(observation["hand"]).unsqueeze(0),
+            self._agents[GamePhase.BID].memory.push(encode_card_set(observation["hand"]).unsqueeze(0),
                                                     action,
                                                     None, reward)
         elif observation["game_phase"] == GamePhase.DOG:
@@ -40,7 +40,7 @@ class TrainedPlayer(Agent):
             for permuted_action in itertools.permutations(action):
                 hand = list(observation["hand"])
                 for card in permuted_action:
-                    xx = torch.cat((card_set_encoder(hand), selected_cards)).unsqueeze(0)
+                    xx = torch.cat((encode_card_set(hand), selected_cards)).unsqueeze(0)
                     action_id = DogPhaseAgent.CARDS_OK_IN_DOG.index(card)
                     self._agents[GamePhase.DOG].memory.push(xx, action_id, None, reward)
 

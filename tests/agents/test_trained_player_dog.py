@@ -1,13 +1,13 @@
 import pytest
 
-from agents.common import card_set_encoder, BaseCardNeuralNet
+from agents.common import encode_card_set, BaseCardNeuralNet
 from agents.trained_player_dog import DogPhaseAgent
 from environment import FrenchTarotEnvironment, GamePhase, Bid
 
 
 def test_dog_phase_observation_encoder():
     observation = _prepare_environment()
-    state = card_set_encoder(observation["hand"])
+    state = encode_card_set(observation["hand"])
 
     assert state.shape[0] == 78
     assert state.sum() == 24

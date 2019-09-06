@@ -6,7 +6,7 @@ from torch import nn
 from torch.nn.modules.loss import BCELoss
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import BaseNeuralNetAgent, card_set_encoder, Transition
+from agents.common import BaseNeuralNetAgent, encode_card_set, Transition
 from environment import Bid, GamePhase
 
 
@@ -21,7 +21,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         if observation["game_phase"] != GamePhase.BID:
             raise ValueError("Invalid game phase")
 
-        state = card_set_encoder(observation["hand"])
+        state = encode_card_set(observation["hand"])
 
         eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
             -1. * self._steps_done / self._eps_decay)
