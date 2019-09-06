@@ -6,7 +6,11 @@ from torch.utils.tensorboard import SummaryWriter
 from agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, encode_card_set
 from environment import CARDS
 
-N_FEATURES = 0
+FEATURE_VECTOR_SIZE = 16
+
+
+def _extract_features(observation: dict) -> dict:
+    raise NotImplementedError()
 
 
 def _encode_features(observation: dict) -> torch.Tensor:
@@ -20,7 +24,7 @@ class CardPhaseAgent(BaseNeuralNetAgent):
 
     def get_action(self, observation: dict):
         hand_vector = encode_card_set(observation["hand"])
-        additional_feature_vector = _encode_features(observation)
+        additional_feature_vector = _encode_features(_extract_features(observation))
         output_vector = self._policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
         output_vector[~hand_vector] = -np.inf
         return CARDS[output_vector.argmax()]
@@ -30,7 +34,7 @@ class CardPhaseAgent(BaseNeuralNetAgent):
 
     @staticmethod
     def _create_dqn(base_card_neural_net: torch.nn.Module) -> torch.nn.Module:
-        return CardPhaseNeuralNet(base_card_neural_net, N_FEATURES)
+        return CardPhaseNeuralNet(base_card_neural_net, FEATURE_VECTOR_SIZE)
 
 
 class CardPhaseNeuralNet(torch.nn.Module):
