@@ -4,7 +4,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, encode_card_set
-from environment import Card
+from environment import CARDS
 
 N_FEATURES = 0
 
@@ -23,8 +23,7 @@ class CardPhaseAgent(BaseNeuralNetAgent):
         additional_feature_vector = _encode_features(observation)
         output_vector = self._policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
         output_vector[~hand_vector] = -np.inf
-        # noinspection PyTypeChecker
-        return list(Card)[output_vector.argmax()]
+        return CARDS[output_vector.argmax()]
 
     def optimize_model(self, tb_writer: SummaryWriter):
         raise NotImplementedError()
@@ -41,7 +40,6 @@ class CardPhaseNeuralNet(torch.nn.Module):
         self._base_card_neural_net = base_card_neural_net
         n_inputs = base_card_neural_net.output_dimensions + n_additional_features
         nn_width = 256
-        # noinspection PyTypeChecker
         self._merge_tower = nn.Sequential(
             nn.BatchNorm1d(n_inputs),
             nn.Linear(n_inputs, nn_width),
@@ -65,11 +63,10 @@ class CardPhaseNeuralNet(torch.nn.Module):
             nn.ReLU(),
 
             nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, len(list(Card)))
+            nn.Linear(8 * nn_width, len(CARDS))
         )
 
     def forward(self, xx: torch.Tensor) -> torch.Tensor:
-        # noinspection PyTypeChecker
-        n_cards = len(list(Card))
+        n_cards = len(CARDS)
         xx_base = self._base_card_neural_net(xx[:, :n_cards])
         return self._merge_tower(torch.cat([xx_base, xx[:, n_cards:]]))

@@ -1,11 +1,12 @@
+import copy
+
 import pytest
 
-from environment import FrenchTarotEnvironment, Card
+from environment import FrenchTarotEnvironment, Card, CARDS
 
 
 def test_deal():
-    # noinspection PyTypeChecker
-    card_list = list(Card)
+    card_list = copy.copy(CARDS)
     card_list[0] = Card.TRUMP_1
     card_list[-21] = Card.SPADES_1
     environment = FrenchTarotEnvironment()

@@ -1,14 +1,14 @@
 import pytest
 
-from environment import FrenchTarotEnvironment, Bid, Card, get_card_set_point, CHELEM
+from environment import FrenchTarotEnvironment, Bid, Card, get_card_set_point, CHELEM, CARDS
 
 
 def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     environment = FrenchTarotEnvironment()
     environment.reset()
     if sorted_deck:
-        # noinspection PyTypeChecker,PyProtectedMember
-        environment._deal(list(Card))
+        # noinspection PyProtectedMember
+        environment._deal(CARDS)
     else:
         pass  # Nothing to do
     good = False

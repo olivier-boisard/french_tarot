@@ -8,7 +8,7 @@ import torch
 from torch import nn, optim, tensor
 from torch.utils.tensorboard import SummaryWriter
 
-from environment import Card
+from environment import Card, CARDS
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
@@ -130,8 +130,7 @@ class BaseNeuralNetAgent(Agent):
 
 
 def encode_card_set(card_set: List[Card]) -> torch.Tensor:
-    # noinspection PyTypeChecker
-    return tensor([card in card_set for card in list(Card)]).float()
+    return tensor([card in card_set for card in CARDS]).float()
 
 
 def set_all_seeds(seed: int = 1988):

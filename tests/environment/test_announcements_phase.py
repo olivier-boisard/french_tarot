@@ -1,6 +1,6 @@
 import pytest
 
-from environment import FrenchTarotEnvironment, Bid, CHELEM, GamePhase, Card
+from environment import FrenchTarotEnvironment, Bid, CHELEM, GamePhase, Card, CARDS
 
 
 def setup_environment():
@@ -65,8 +65,7 @@ def test_announce_chelem_by_non_taking_player():
 def test_announce_simple_poignee_valid():
     environment = FrenchTarotEnvironment()
     environment.reset()
-    # noinspection PyTypeChecker
-    environment._deal(list(Card))
+    environment._deal(CARDS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
@@ -81,8 +80,7 @@ def test_announce_simple_poignee_valid():
 def test_announce_chelem_player0():
     environment = FrenchTarotEnvironment()
     environment.reset()
-    # noinspection PyTypeChecker
-    environment._deal(list(Card))
+    environment._deal(CARDS)
     environment.step(Bid.GARDE_SANS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
@@ -97,8 +95,7 @@ def test_announce_chelem_player0():
 def test_announce_chelem_wrong_string():
     environment = FrenchTarotEnvironment()
     environment.reset()
-    # noinspection PyTypeChecker
-    environment._deal(list(Card))
+    environment._deal(CARDS)
     environment.step(Bid.GARDE_SANS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
@@ -111,8 +108,7 @@ def test_announce_chelem_wrong_string():
 def test_announce_simple_poignee_excuse_refused():
     environment = FrenchTarotEnvironment()
     environment.reset()
-    # noinspection PyTypeChecker
-    environment._deal(list(Card))
+    environment._deal(CARDS)
     environment._hand_per_player[-1][-1] = Card.EXCUSE
     environment._original_dog[-1] = Card.TRUMP_16
     environment.step(Bid.PASS)
@@ -130,8 +126,7 @@ def test_announce_simple_poignee_excuse_refused():
 def test_announce_simple_poignee_excuse_accepted():
     environment = FrenchTarotEnvironment()
     environment.reset()
-    # noinspection PyTypeChecker
-    environment._deal(list(Card))
+    environment._deal(CARDS)
     environment._hand_per_player[3][15] = Card.EXCUSE
     environment._hand_per_player[3][16] = Card.SPADES_1
     environment._hand_per_player[0][0] = Card.TRUMP_15
@@ -153,8 +148,7 @@ def test_announce_simple_poignee_excuse_accepted():
 def test_announce_simple_poignee_no_trump():
     environment = FrenchTarotEnvironment()
     environment.reset()
-    # noinspection PyTypeChecker
-    environment._deal(list(Card))
+    environment._deal(CARDS)
     environment.step(Bid.GARDE_SANS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
@@ -170,8 +164,7 @@ def test_announce_simple_poignee_no_trump():
 def test_announce_simple_poignee_no_such_cards_in_hand():
     environment = FrenchTarotEnvironment()
     environment.reset()
-    # noinspection PyTypeChecker
-    environment._deal(list(Card))
+    environment._deal(CARDS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)

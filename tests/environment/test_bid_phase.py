@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import pytest
 
-from environment import Card, FrenchTarotEnvironment, GamePhase, Bid
+from environment import Card, FrenchTarotEnvironment, GamePhase, Bid, CARDS
 
 
 @pytest.fixture(scope="module")
@@ -11,9 +11,8 @@ def environment():
     yield FrenchTarotEnvironment()
 
 
-# noinspection PyTypeChecker
 def test_n_cards():
-    assert len(list(Card)) == 78
+    assert len(CARDS) == 78
 
 
 def test_reset_environment(environment):

@@ -7,7 +7,7 @@ from torch.nn.functional import smooth_l1_loss
 from torch.utils.tensorboard import SummaryWriter
 
 from agents.common import BaseNeuralNetAgent, encode_card_set, Transition, BaseCardNeuralNet
-from environment import Card, GamePhase
+from environment import Card, GamePhase, CARDS
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:
@@ -18,10 +18,8 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     """
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
     """
-    # noinspection PyTypeChecker
-    CARDS_OK_IN_DOG = [card for card in list(Card) if _card_is_ok_in_dog(card)]
-    # noinspection PyTypeChecker
-    CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in list(Card) if _card_is_ok_in_dog(card) or "trump" in card.value]
+    CARDS_OK_IN_DOG = [card for card in CARDS if _card_is_ok_in_dog(card)]
+    CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
 
     def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
         # noinspection PyUnresolvedReferences
@@ -33,8 +31,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             raise ValueError("Game is not in dog phase")
 
         hand = list(observation["hand"])
-        # noinspection PyTypeChecker
-        selected_cards = torch.zeros(len(list(Card)))
+        selected_cards = torch.zeros(len(CARDS))
         dog_size = len(observation["original_dog"])
         for _ in range(dog_size):
             xx = torch.cat([encode_card_set(hand), selected_cards]).unsqueeze(0)
@@ -45,10 +42,8 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             xx[DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()
             selected_cards[selected_card_index] = 1
-            # noinspection PyTypeChecker
-            hand.remove(list(Card)[selected_card_index])
+            hand.remove(CARDS[selected_card_index])
         assert selected_cards.sum() == dog_size
-        # noinspection PyTypeChecker
         return list(np.array(Card)[np.array(selected_cards, dtype=bool)])
 
     @staticmethod
@@ -107,7 +102,6 @@ class TrainedPlayerDogNeuralNet(nn.Module):
         super(TrainedPlayerDogNeuralNet, self).__init__()
         self.base_card_neural_net = base_card_neural_net
         nn_width = base_card_neural_net.output_dimensions
-        # noinspection PyTypeChecker
         self.merge_tower = nn.Sequential(
             nn.BatchNorm1d(2 * nn_width),
             nn.Linear(2 * nn_width, 4 * nn_width),
@@ -124,7 +118,7 @@ class TrainedPlayerDogNeuralNet(nn.Module):
             nn.ReLU(),
 
             nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, len(list(Card)))
+            nn.Linear(8 * nn_width, len(CARDS))
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

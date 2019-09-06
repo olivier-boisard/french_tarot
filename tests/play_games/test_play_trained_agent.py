@@ -1,13 +1,12 @@
 from torch import nn
 
-from environment import Card
+from environment import CARDS
 from play_games import play_trained_agent
 
 
 def test_play_trained_agent_bid_dog(mocker):
     def mock_create_dog_phase_dqn(_):
-        # noinspection PyTypeChecker
-        return nn.Sequential(nn.Linear(len(list(Card)), 1), nn.Sigmoid())
+        return nn.Sequential(nn.Linear(len(CARDS), 1), nn.Sigmoid())
 
     mocker.patch('agents.trained_player_bid.BidPhaseAgent._create_dqn', mock_create_dog_phase_dqn)
     mocker.patch('agents.trained_player_bid.BidPhaseAgent.output_dimension', 5)

@@ -11,20 +11,17 @@ from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_
 def sort_trump_and_excuse(trumps_and_excuse: List[Card]) -> List[Card]:
     values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 22 for card in trumps_and_excuse]
     sorted_indexes: np.array = np.argsort(values)
-    # noinspection PyTypeChecker
     return list(np.array(trumps_and_excuse)[sorted_indexes])
 
 
 class RandomPlayer(Agent):
 
     def __init__(self, seed: int = 1988):
-        # noinspection PyTypeChecker
         super(RandomPlayer, self).__init__()
         self._random_state = np.random.RandomState(seed)
 
     def get_action(self, observation: dict):
         if observation["game_phase"] == GamePhase.BID:
-            # noinspection PyTypeChecker
             allowed_bids = list(range(get_minimum_allowed_bid(observation["bid_per_player"]), np.max(list(Bid)) + 1))
             rval = Bid(self._random_state.choice(allowed_bids + [0]))
         elif observation["game_phase"] == GamePhase.DOG:
@@ -61,7 +58,6 @@ class RandomPlayer(Agent):
 
             rval = announcements
         elif observation["game_phase"] == GamePhase.CARD:
-            # noinspection PyTypeChecker
             card_list = np.array(Card)
             allowed_cards = []
             for card in card_list:

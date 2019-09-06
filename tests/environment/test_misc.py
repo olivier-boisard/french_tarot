@@ -1,4 +1,4 @@
-from environment import Card, get_card_point, get_card_set_point
+from environment import Card, get_card_point, get_card_set_point, CARDS
 
 
 def test_point_count_spades_1():
@@ -10,5 +10,4 @@ def test_point_count_spades_king():
 
 
 def test_point_count_card_set():
-    # noinspection PyTypeChecker
-    assert get_card_set_point(list(Card)) == 91
+    assert get_card_set_point(CARDS) == 91

@@ -102,6 +102,8 @@ class Bid(IntEnum):
     GARDE_CONTRE = 4
 
 
+CARDS = list(Card)
+
 CHELEM = "chelem"
 SIMPLE_POIGNEE_SIZE = 10
 DOUBLE_POIGNEE_SIZE = 13
@@ -159,8 +161,7 @@ class FrenchTarotEnvironment:
         self._game_phase = None
         self._bid_per_player = None
         self.n_players = 4
-        # noinspection PyTypeChecker
-        self._n_cards_per_player = int((len(list(Card)) - self._n_cards_in_dog) / self.n_players)
+        self._n_cards_per_player = int((len(CARDS) - self._n_cards_in_dog) / self.n_players)
         self._revealed_cards_in_dog = None
         self._announcements = None
         self._chelem_announced = None
@@ -518,8 +519,7 @@ class FrenchTarotEnvironment:
     def reset(self) -> dict:
         while True:
             try:
-                # noinspection PyTypeChecker
-                deck = list(self._random_state.permutation(list(Card)))
+                deck = list(self._random_state.permutation(CARDS))
                 self._deal(deck)
                 break
             except RuntimeError as e:
@@ -542,8 +542,7 @@ class FrenchTarotEnvironment:
 
     def _deal(self, deck: List[Card]):
         deck = np.array(deck)
-        # noinspection PyTypeChecker
-        if len(deck) != len(list(Card)):
+        if len(deck) != len(CARDS):
             raise ValueError("Deck has wrong number of cards")
         self._hand_per_player = [
             deck[:self._n_cards_per_player],
