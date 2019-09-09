@@ -1,8 +1,9 @@
 import pytest
 
-from agents.common import encode_card_set, BaseCardNeuralNet
-from agents.trained_player_bid import BidPhaseAgent
-from environment import FrenchTarotEnvironment, Bid, GamePhase
+from french_tarot.agents.common import encode_card_set, BaseCardNeuralNet
+from french_tarot.agents.trained_player_bid import BidPhaseAgent
+from french_tarot.environment.common import GamePhase, Bid
+from french_tarot.environment.environment import FrenchTarotEnvironment
 
 
 def test_bid_phase_observation_encoder():

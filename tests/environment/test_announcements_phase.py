@@ -1,6 +1,7 @@
 import pytest
 
-from environment import FrenchTarotEnvironment, Bid, CHELEM, GamePhase, Card, CARDS
+from french_tarot.environment.common import Card, GamePhase, Bid, CARDS
+from french_tarot.environment.environment import FrenchTarotEnvironment, CHELEM
 
 
 def setup_environment():

@@ -2,10 +2,11 @@ import numpy as np
 import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import set_all_seeds
-from agents.performance_evaluation import score_diff
-from agents.trained_player import TrainedPlayer
-from environment import FrenchTarotEnvironment, GamePhase, rotate_list, Bid
+from french_tarot.agents.common import set_all_seeds
+from french_tarot.agents.performance_evaluation import score_diff
+from french_tarot.agents.trained_player import TrainedPlayer
+from french_tarot.environment.common import GamePhase, Bid
+from french_tarot.environment.environment import FrenchTarotEnvironment, rotate_list
 
 
 def _main(n_episodes_training: int = 200000):

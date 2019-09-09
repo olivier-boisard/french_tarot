@@ -1,6 +1,7 @@
 import pytest
 
-from environment import FrenchTarotEnvironment, Bid, Card, get_card_set_point, CHELEM, CARDS
+from french_tarot.environment.common import Card, Bid, CARDS
+from french_tarot.environment.environment import FrenchTarotEnvironment, get_card_set_point, CHELEM
 
 
 def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):

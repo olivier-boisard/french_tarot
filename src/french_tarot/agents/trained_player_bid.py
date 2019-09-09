@@ -6,8 +6,8 @@ from torch import nn
 from torch.nn.modules.loss import BCELoss
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import BaseNeuralNetAgent, encode_card_set, Transition
-from environment import Bid, GamePhase
+from french_tarot.agents.common import BaseNeuralNetAgent, encode_card_set, Transition
+from french_tarot.environment.common import GamePhase, Bid
 
 
 class BidPhaseAgent(BaseNeuralNetAgent):

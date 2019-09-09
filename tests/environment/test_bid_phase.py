@@ -3,7 +3,8 @@ import copy
 import numpy as np
 import pytest
 
-from environment import Card, FrenchTarotEnvironment, GamePhase, Bid, CARDS
+from french_tarot.environment.common import Card, GamePhase, Bid, CARDS
+from french_tarot.environment.environment import FrenchTarotEnvironment
 
 
 @pytest.fixture(scope="module")

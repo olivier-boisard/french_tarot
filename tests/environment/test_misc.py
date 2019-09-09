@@ -1,4 +1,5 @@
-from environment import Card, get_card_point, get_card_set_point, CARDS
+from french_tarot.environment.common import Card, CARDS
+from french_tarot.environment.environment import get_card_point, get_card_set_point
 
 
 def test_point_count_spades_1():

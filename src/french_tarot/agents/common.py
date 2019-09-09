@@ -8,7 +8,7 @@ import torch
 from torch import nn, optim, tensor
 from torch.utils.tensorboard import SummaryWriter
 
-from environment import Card, CARDS
+from french_tarot.environment.common import Card, CARDS
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))

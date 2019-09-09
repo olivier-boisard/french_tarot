@@ -2,7 +2,8 @@ import copy
 
 import pytest
 
-from environment import FrenchTarotEnvironment, Card, CARDS
+from french_tarot.environment.common import Card, CARDS
+from french_tarot.environment.environment import FrenchTarotEnvironment
 
 
 def test_deal():

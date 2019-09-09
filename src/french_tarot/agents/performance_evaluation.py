@@ -3,9 +3,9 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from agents.common import Agent, BaseNeuralNetAgent
-from agents.random_agent import RandomPlayer
-from environment import rotate_list, FrenchTarotEnvironment
+from french_tarot.agents.common import Agent, BaseNeuralNetAgent
+from french_tarot.agents.random_agent import RandomPlayer
+from french_tarot.environment.environment import rotate_list, FrenchTarotEnvironment
 
 
 def score_diff(agent: Agent, n_episodes_testing=10) -> float:

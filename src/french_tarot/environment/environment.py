@@ -1,108 +1,13 @@
 import copy
 from collections import deque
-from enum import Enum, IntEnum
 from typing import List, Tuple, Union
 
 import numpy as np
+from tensorboard.backend.event_processing.event_file_inspector import Observation
 
-
-class Card(Enum):
-    SPADES_1 = "spades_1"
-    SPADES_2 = "spades_2"
-    SPADES_3 = "spades_3"
-    SPADES_4 = "spades_4"
-    SPADES_5 = "spades_5"
-    SPADES_6 = "spades_6"
-    SPADES_7 = "spades_7"
-    SPADES_8 = "spades_8"
-    SPADES_9 = "spades_9"
-    SPADES_10 = "spades_10"
-    SPADES_JACK = "spades_jack"
-    SPADES_RIDER = "spades_rider"
-    SPADES_QUEEN = "spades_queen"
-    SPADES_KING = "spades_king"
-    CLOVER_1 = "clover_1"
-    CLOVER_2 = "clover_2"
-    CLOVER_3 = "clover_3"
-    CLOVER_4 = "clover_4"
-    CLOVER_5 = "clover_5"
-    CLOVER_6 = "clover_6"
-    CLOVER_7 = "clover_7"
-    CLOVER_8 = "clover_8"
-    CLOVER_9 = "clover_9"
-    CLOVER_10 = "clover_10"
-    CLOVER_JACK = "clover_jack"
-    CLOVER_RIDER = "clover_rider"
-    CLOVER_QUEEN = "clover_queen"
-    CLOVER_KING = "clover_king"
-    HEART_1 = "heart_1"
-    HEART_2 = "heart_2"
-    HEART_3 = "heart_3"
-    HEART_4 = "heart_4"
-    HEART_5 = "heart_5"
-    HEART_6 = "heart_6"
-    HEART_7 = "heart_7"
-    HEART_8 = "heart_8"
-    HEART_9 = "heart_9"
-    HEART_10 = "heart_10"
-    HEART_JACK = "heart_jack"
-    HEART_RIDER = "heart_rider"
-    HEART_QUEEN = "heart_queen"
-    HEART_KING = "heart_king"
-    DIAMOND_1 = "diamond_1"
-    DIAMOND_2 = "diamond_2"
-    DIAMOND_3 = "diamond_3"
-    DIAMOND_4 = "diamond_4"
-    DIAMOND_5 = "diamond_5"
-    DIAMOND_6 = "diamond_6"
-    DIAMOND_7 = "diamond_7"
-    DIAMOND_8 = "diamond_8"
-    DIAMOND_9 = "diamond_9"
-    DIAMOND_10 = "diamond_10"
-    DIAMOND_JACK = "diamond_jack"
-    DIAMOND_RIDER = "diamond_rider"
-    DIAMOND_QUEEN = "diamond_queen"
-    DIAMOND_KING = "diamond_king"
-    TRUMP_1 = "trump_1"
-    TRUMP_2 = "trump_2"
-    TRUMP_3 = "trump_3"
-    TRUMP_4 = "trump_4"
-    TRUMP_5 = "trump_5"
-    TRUMP_6 = "trump_6"
-    TRUMP_7 = "trump_7"
-    TRUMP_8 = "trump_8"
-    TRUMP_9 = "trump_9"
-    TRUMP_10 = "trump_10"
-    TRUMP_11 = "trump_11"
-    TRUMP_12 = "trump_12"
-    TRUMP_13 = "trump_13"
-    TRUMP_14 = "trump_14"
-    TRUMP_15 = "trump_15"
-    TRUMP_16 = "trump_16"
-    TRUMP_17 = "trump_17"
-    TRUMP_18 = "trump_18"
-    TRUMP_19 = "trump_19"
-    TRUMP_20 = "trump_20"
-    TRUMP_21 = "trump_21"
-    EXCUSE = "excuse"
-
-
-class GamePhase(IntEnum):
-    BID = 0
-    DOG = 1
-    ANNOUNCEMENTS = 2
-    CARD = 3
-
-
-class Bid(IntEnum):
-    PASS = 0
-    PETITE = 1
-    GARDE = 2
-    GARDE_SANS = 3
-    GARDE_CONTRE = 4
-
-
-CARDS = list(Card)
+from french_tarot.environment.common import Card, GamePhase, Bid, CARDS
+from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
+    AnnouncementPhaseObservation, CardPhaseObservation, Round
 
 CHELEM = "chelem"
 SIMPLE_POIGNEE_SIZE = 10
@@ -166,8 +71,8 @@ class FrenchTarotEnvironment:
         self._announcements = None
         self._chelem_announced = None
         self.current_player = None
-        self._played_cards = None
-        self._plis = None
+        self._played_cards_in_round = None
+        self._past_rounds = None
         self._won_cards_per_teams = None
         self._bonus_points_per_teams = None
         self._made_dog = None
@@ -190,8 +95,8 @@ class FrenchTarotEnvironment:
     def _play_card(self, card: Card) -> Tuple[List[float], bool, any]:
         if not isinstance(card, Card):
             raise ValueError("Action must be card")
-        check_card_is_allowed(card, self._played_cards, self._hand_per_player[self.current_player])
-        self._played_cards.append(card)
+        check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player])
+        self._played_cards_in_round.append(card)
 
         current_hand = self._hand_per_player[self.current_player]
         current_hand = current_hand[current_hand != card]
@@ -202,9 +107,9 @@ class FrenchTarotEnvironment:
         else:
             self._hand_per_player[self.current_player] = current_hand
 
-        if len(self._played_cards) == self.n_players:
-            is_petit_played_in_round = Card.TRUMP_1 in self._played_cards
-            is_excuse_played_in_round = Card.EXCUSE in self._played_cards
+        if len(self._played_cards_in_round) == self.n_players:
+            is_petit_played_in_round = Card.TRUMP_1 in self._played_cards_in_round
+            is_excuse_played_in_round = Card.EXCUSE in self._played_cards_in_round
             rewards = self._solve_round()
             is_taker_win_round = rewards[0] > 0
             if len(self._hand_per_player[0]) == 0:
@@ -214,7 +119,7 @@ class FrenchTarotEnvironment:
             else:
                 pass  # Nothing to do
 
-        elif len(self._played_cards) < self.n_players:
+        elif len(self._played_cards_in_round) < self.n_players:
             self.current_player = self._get_next_player()
         else:
             raise RuntimeError("Wrong number of played cards")
@@ -337,10 +242,10 @@ class FrenchTarotEnvironment:
 
     def _solve_round(self) -> List[float]:
         starting_player = self._get_next_player()
-        winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards)
+        winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards_in_round)
         play_order = np.arange(starting_player, starting_player + self.n_players) % self.n_players
         winner = play_order[winning_card_index]
-        reward_for_winner = get_card_set_point(self._played_cards)
+        reward_for_winner = get_card_set_point(self._played_cards_in_round)
         rewards = []
         if winner == 0:  # if winner is taking player
             rewards.append(reward_for_winner)
@@ -350,11 +255,11 @@ class FrenchTarotEnvironment:
             rewards.append(0)
             rewards.extend([reward_for_winner] * (self.n_players - 1))
             self._winners_per_round.append("opponents")
-        self._plis.append({"played_cards": self._played_cards, "starting_player": starting_player})
+        self._past_rounds.append(Round(self._played_cards_in_round, starting_player))
 
-        won_cards = self._played_cards.copy()
-        if Card.EXCUSE in self._played_cards:
-            excuse_owner = play_order[self._played_cards.index(Card.EXCUSE)]
+        won_cards = self._played_cards_in_round.copy()
+        if Card.EXCUSE in self._played_cards_in_round:
+            excuse_owner = play_order[self._played_cards_in_round.index(Card.EXCUSE)]
             won_cards.remove(Card.EXCUSE)
             if excuse_owner == 0:
                 self._won_cards_per_teams["taker"].append(Card.EXCUSE)
@@ -372,7 +277,7 @@ class FrenchTarotEnvironment:
         else:
             self._won_cards_per_teams["opponents"] += won_cards
         self.current_player = winner
-        self._played_cards = []
+        self._played_cards_in_round = []
         return rewards
 
     @staticmethod
@@ -530,8 +435,8 @@ class FrenchTarotEnvironment:
         self._announcements = []
         self._chelem_announced = False
         self.current_player = 0
-        self._played_cards = []
-        self._plis = []
+        self._played_cards_in_round = []
+        self._past_rounds = []
         self._won_cards_per_teams = {"taker": [], "opponents": []}
         self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
         self._made_dog = None
@@ -555,29 +460,28 @@ class FrenchTarotEnvironment:
             if Card.TRUMP_1 in hand and count_trumps_and_excuse(hand) == 1:
                 raise RuntimeError("'Petit sec'. Deal again.")
 
-    def _get_observation(self) -> dict:
-        rval = {
-            "bid_per_player": self._bid_per_player,
-            "game_phase": self._game_phase,
-            "current_player": self.current_player
-        }
+    def _get_observation(self) -> Observation:
         current_hand = self._hand_per_player[self.current_player]
         if self._game_phase == GamePhase.BID:
-            rval["hand"] = current_hand
-        if self._game_phase >= GamePhase.DOG:
-            rval["original_dog"] = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
-            rval["hand"] = self._hand_per_player[0]
-            rval["original_player_ids"] = self._original_player_ids
-        if self._game_phase >= GamePhase.ANNOUNCEMENTS:
-            rval["hand"] = current_hand
-            rval["revealed_cards_in_dog"] = self._revealed_cards_in_dog
-            rval["announcements"] = self._announcements
-        if self._game_phase >= GamePhase.CARD:
-            rval["hand"] = current_hand
-            rval["played_cards"] = self._played_cards
-            rval["plis"] = self._plis
+            observation = BidPhaseObservation(self._game_phase, self._bid_per_player, self.current_player, current_hand)
+        else:
+            original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
+            if self._game_phase == GamePhase.DOG:
+                observation = DogPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
+                                                  self._hand_per_player[0], original_dog, self._original_player_ids)
+            elif self._game_phase == GamePhase.ANNOUNCEMENTS:
+                observation = AnnouncementPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
+                                                           current_hand, original_dog, self._original_player_ids,
+                                                           self._revealed_cards_in_dog)
+            elif self._game_phase == GamePhase.CARD:
+                observation = CardPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
+                                                   current_hand, original_dog, self._original_player_ids,
+                                                   self._revealed_cards_in_dog, self._played_cards_in_round,
+                                                   self._past_rounds)
+            else:
+                raise RuntimeError("Unknown game phase")
 
-        return copy.deepcopy(rval)
+        return observation
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()

@@ -1,4 +1,4 @@
-from play_games import play_random_games
+from french_tarot.play_games import play_random_games
 
 
 def test_play_random_games(mocker):

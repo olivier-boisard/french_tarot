@@ -1,7 +1,7 @@
 from torch import nn
 
-from environment import CARDS
-from play_games import play_trained_agent
+from french_tarot.environment.common import CARDS
+from french_tarot.play_games import play_trained_agent
 
 
 def test_play_trained_agent_bid_dog(mocker):

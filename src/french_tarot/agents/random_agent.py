@@ -3,9 +3,10 @@ from typing import List
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import Agent
-from environment import Bid, get_minimum_allowed_bid, GamePhase, CHELEM, TRIPLE_POIGNEE_SIZE, \
-    get_trumps_and_excuse, Card, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed, _is_oudler
+from french_tarot.agents.common import Agent
+from french_tarot.environment.common import Card, GamePhase, Bid
+from french_tarot.environment.environment import get_minimum_allowed_bid, CHELEM, TRIPLE_POIGNEE_SIZE, \
+    get_trumps_and_excuse, DOUBLE_POIGNEE_SIZE, SIMPLE_POIGNEE_SIZE, check_card_is_allowed, _is_oudler
 
 
 def sort_trump_and_excuse(trumps_and_excuse: List[Card]) -> List[Card]:

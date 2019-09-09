@@ -1,8 +1,9 @@
 import pytest
 
-from agents.common import encode_card_set, BaseCardNeuralNet
-from agents.trained_player_dog import DogPhaseAgent
-from environment import FrenchTarotEnvironment, GamePhase, Bid
+from french_tarot.agents.common import encode_card_set, BaseCardNeuralNet
+from french_tarot.agents.trained_player_dog import DogPhaseAgent
+from french_tarot.environment.common import GamePhase, Bid
+from french_tarot.environment.environment import FrenchTarotEnvironment
 
 
 def test_dog_phase_observation_encoder():

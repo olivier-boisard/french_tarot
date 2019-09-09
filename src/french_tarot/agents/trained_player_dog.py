@@ -6,8 +6,8 @@ from torch import nn
 from torch.nn.functional import smooth_l1_loss
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import BaseNeuralNetAgent, encode_card_set, Transition, BaseCardNeuralNet
-from environment import Card, GamePhase, CARDS
+from french_tarot.agents.common import BaseNeuralNetAgent, encode_card_set, Transition, BaseCardNeuralNet
+from french_tarot.environment.common import Card, GamePhase, CARDS
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:

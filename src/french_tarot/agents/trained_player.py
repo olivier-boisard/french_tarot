@@ -3,11 +3,11 @@ import itertools
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import encode_card_set, BaseCardNeuralNet, Agent
-from agents.random_agent import RandomPlayer
-from agents.trained_player_bid import BidPhaseAgent
-from agents.trained_player_dog import DogPhaseAgent
-from environment import GamePhase, CARDS
+from french_tarot.agents.common import encode_card_set, BaseCardNeuralNet, Agent
+from french_tarot.agents.random_agent import RandomPlayer
+from french_tarot.agents.trained_player_bid import BidPhaseAgent
+from french_tarot.agents.trained_player_dog import DogPhaseAgent
+from french_tarot.environment.common import GamePhase, CARDS
 
 
 class TrainedPlayer(Agent):

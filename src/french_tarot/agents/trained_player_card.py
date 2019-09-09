@@ -3,8 +3,8 @@ import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
-from agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, encode_card_set
-from environment import CARDS
+from french_tarot.agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, encode_card_set
+from french_tarot.environment.common import CARDS
 
 FEATURE_VECTOR_SIZE = 16
 

@@ -1,8 +1,9 @@
 import numpy as np
 import torch
 
-from agents import trained_player_card
-from environment import Card, FrenchTarotEnvironment
+from french_tarot.agents import trained_player_card
+from french_tarot.environment.common import Card
+from french_tarot.environment.environment import FrenchTarotEnvironment
 
 
 def create_observation():
