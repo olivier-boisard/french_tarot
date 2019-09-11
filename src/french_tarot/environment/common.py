@@ -1,3 +1,4 @@
+from abc import ABC
 from enum import Enum, IntEnum
 
 
@@ -82,6 +83,9 @@ class Card(Enum):
     EXCUSE = "excuse"
 
 
+CARDS = list(Card)
+
+
 class GamePhase(IntEnum):
     BID = 0
     DOG = 1
@@ -97,4 +101,23 @@ class Bid(IntEnum):
     GARDE_CONTRE = 4
 
 
-CARDS = list(Card)
+class Announcement(ABC):
+    pass
+
+
+class ChelemAnnouncement(Announcement):
+    pass
+
+
+class PoigneeAnnouncement(Announcement, ABC):
+    SIMPLE_POIGNEE_SIZE = 10
+    DOUBLE_POIGNEE_SIZE = 13
+    TRIPLE_POIGNEE_SIZE = 15
+
+    def __init__(self, revealed_cards):
+        # TODO cleanup
+        if len(revealed_cards) != PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE and \
+                len(revealed_cards) != PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE and \
+                len(revealed_cards) != PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
+            raise ValueError("Invalid number of cards")
+        self.revealed_cards = revealed_cards

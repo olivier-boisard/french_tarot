@@ -5,14 +5,10 @@ from typing import List, Tuple, Union
 import numpy as np
 from tensorboard.backend.event_processing.event_file_inspector import Observation
 
-from french_tarot.environment.common import Card, GamePhase, Bid, CARDS
+from french_tarot.environment.common import Card, GamePhase, Bid, CARDS, PoigneeAnnouncement, Announcement, \
+    ChelemAnnouncement
 from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
     AnnouncementPhaseObservation, CardPhaseObservation, Round
-
-CHELEM = "chelem"
-SIMPLE_POIGNEE_SIZE = 10
-DOUBLE_POIGNEE_SIZE = 13
-TRIPLE_POIGNEE_SIZE = 15
 
 
 def rotate_list(input_list: List, n: int) -> List:
@@ -141,7 +137,7 @@ class FrenchTarotEnvironment:
             raise RuntimeError("Invalid score")
         if taker_points != round(taker_points):
             raise RuntimeError("Score should be integer")
-        n_oudlers_taker = np.sum([_is_oudler(card) for card in list(self._won_cards_per_teams["taker"]) + list(dog)])
+        n_oudlers_taker = np.sum([is_oudler(card) for card in list(self._won_cards_per_teams["taker"]) + list(dog)])
         victory_threshold = None
         if n_oudlers_taker == 3:
             victory_threshold = 36
@@ -211,7 +207,11 @@ class FrenchTarotEnvironment:
         for player, announcements_for_player in enumerate(self._announcements):
             for announcement in announcements_for_player:
                 if isinstance(announcement, list):  # if announcement is poignee
-                    poignee_size_to_bonus = {SIMPLE_POIGNEE_SIZE: 20, DOUBLE_POIGNEE_SIZE: 30, TRIPLE_POIGNEE_SIZE: 40}
+                    poignee_size_to_bonus = {
+                        PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE: 20,
+                        PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE: 30,
+                        PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE: 40
+                    }
                     bonus = poignee_size_to_bonus[len(announcement)]
                     is_player_won = rewards[player] > 0
                     if player == 0:
@@ -301,20 +301,20 @@ class FrenchTarotEnvironment:
                 card_strengths.append(int(card.value.split("_")[1]))
         return int(np.argmax(card_strengths))
 
-    def _announce(self, action: List) -> Tuple[float, bool, any]:
+    def _announce(self, action: List[Announcement]) -> Tuple[float, bool, any]:
         if not isinstance(action, list):
             raise ValueError("Input should be list")
         for announcement in action:
-            if not isinstance(announcement, str) and not isinstance(announcement, list):
-                raise ValueError("Wrong announcement type")
-            elif isinstance(announcement, str) and announcement != CHELEM:
-                raise ValueError("Wrong string value")
-            elif isinstance(announcement, list):
+            # TODO breakdown in some kind of function overloading
+            if isinstance(announcement, PoigneeAnnouncement):
                 current_player_hand = self._hand_per_player[self.current_player]
                 n_cards = len(announcement)
                 if count_trumps_and_excuse(announcement) != n_cards:
                     raise ValueError("Invalid cards in poignee")
-                if n_cards != SIMPLE_POIGNEE_SIZE and n_cards != DOUBLE_POIGNEE_SIZE and n_cards != TRIPLE_POIGNEE_SIZE:
+                # TODO cleanup
+                if n_cards != PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE \
+                        and n_cards != PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE \
+                        and n_cards != PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
                     raise ValueError("Invalid poignee size")
                 n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
                 if Card.EXCUSE in announcement and n_trumps_in_hand != n_cards:
@@ -323,7 +323,7 @@ class FrenchTarotEnvironment:
                     raise ValueError("Revealed cards should be only trumps or excuse")
                 elif np.any([card not in current_player_hand for card in announcement]):
                     raise ValueError("Revealed card not owned by player")
-            if announcement == CHELEM:
+            elif isinstance(announcement, ChelemAnnouncement):
                 if len(self._announcements) > 0:
                     raise ValueError("Only taker can announce chelem")
                 self._chelem_announced = True
@@ -353,7 +353,7 @@ class FrenchTarotEnvironment:
             raise ValueError("Duplicated cards in dog")
         if np.any(["king" in card.value for card in dog]):
             raise ValueError("There should be no king in dog")
-        if np.any([_is_oudler(card) for card in dog]):
+        if np.any([is_oudler(card) for card in dog]):
             raise ValueError("There should be no oudler in dog")
         if np.any([card not in taking_player_hand for card in dog]):
             raise ValueError("Card in dog not in taking player's hand")
@@ -472,7 +472,7 @@ class FrenchTarotEnvironment:
             elif self._game_phase == GamePhase.ANNOUNCEMENTS:
                 observation = AnnouncementPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
                                                            current_hand, original_dog, self._original_player_ids,
-                                                           self._revealed_cards_in_dog)
+                                                           self._revealed_cards_in_dog, self._announcements)
             elif self._game_phase == GamePhase.CARD:
                 observation = CardPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
                                                    current_hand, original_dog, self._original_player_ids,
@@ -518,12 +518,12 @@ def get_trumps_and_excuse(cards: List[Card]) -> List[Card]:
     return rval
 
 
-def _is_oudler(card: Card) -> bool:
+def is_oudler(card: Card) -> bool:
     return card == Card.TRUMP_1 or card == Card.TRUMP_21 or card == Card.EXCUSE
 
 
 def get_card_point(card: Card) -> float:
-    if _is_oudler(card) or "king" in card.value:
+    if is_oudler(card) or "king" in card.value:
         rval = 4.5
     elif "queen" in card.value:
         rval = 3.5

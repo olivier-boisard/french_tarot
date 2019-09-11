@@ -1,10 +1,10 @@
 from abc import ABC
 from typing import List
 
-from french_tarot.environment.common import Card, GamePhase, Bid
+from french_tarot.environment.common import Card, GamePhase, Bid, Announcement
 
 
-class _Observation(ABC):
+class Observation(ABC):
 
     def __init__(self, game_phase: GamePhase, bid_per_player: List[Bid], current_player_id: int, hand: List[Card]):
         self.game_phase = game_phase
@@ -13,7 +13,7 @@ class _Observation(ABC):
         self.hand = hand
 
 
-class _AfterBidPhaseObservation(_Observation):
+class _AfterBidPhaseObservation(Observation):
     def __init__(
             self,
             game_phase: GamePhase,
@@ -37,12 +37,14 @@ class _AfterDogPhaseObservation(_AfterBidPhaseObservation):
             hand: List[Card],
             original_dog: List[Card],
             original_player_ids: List[int],
-            revealed_cards_in_new_dog: List[Card]
+            revealed_cards_in_new_dog: List[Card],
+            announcements: List[Announcement]
     ):
         super(_AfterBidPhaseObservation, self).__init__(game_phase, bid_per_player, current_player_id, hand)
         self.original_dog = original_dog
         self.original_player_ids = original_player_ids
         self.revealed_cards_in_new_dog = revealed_cards_in_new_dog
+        self.announcements = announcements
 
 
 class Round:
@@ -52,7 +54,7 @@ class Round:
         self.starting_player_id = starting_player_id
 
 
-class BidPhaseObservation(_Observation):
+class BidPhaseObservation(Observation):
     pass
 
 
