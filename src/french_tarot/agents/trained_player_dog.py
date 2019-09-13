@@ -1,3 +1,4 @@
+import copy
 from typing import List
 
 import numpy as np
@@ -7,7 +8,8 @@ from torch.nn.functional import smooth_l1_loss
 from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import BaseNeuralNetAgent, encode_card_set, Transition, BaseCardNeuralNet
-from french_tarot.environment.common import Card, GamePhase, CARDS
+from french_tarot.environment.common import Card, CARDS
+from french_tarot.environment.observations import DogPhaseObservation
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:
@@ -26,13 +28,10 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
         self._epoch = 0
 
-    def get_action(self, observation: dict):
-        if observation["game_phase"] != GamePhase.DOG:
-            raise ValueError("Game is not in dog phase")
-
-        hand = list(observation["hand"])
+    def get_action(self, observation: DogPhaseObservation):
+        hand = copy.copy(observation.hand)
         selected_cards = torch.zeros(len(CARDS))
-        dog_size = len(observation["original_dog"])
+        dog_size = len(observation.original_dog)
         for _ in range(dog_size):
             xx = torch.cat([encode_card_set(hand), selected_cards]).unsqueeze(0)
             self._policy_net.eval()

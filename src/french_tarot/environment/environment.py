@@ -3,12 +3,11 @@ from collections import deque
 from typing import List, Tuple, Union
 
 import numpy as np
-from tensorboard.backend.event_processing.event_file_inspector import Observation
 
 from french_tarot.environment.common import Card, GamePhase, Bid, CARDS, PoigneeAnnouncement, Announcement, \
     ChelemAnnouncement
 from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
-    AnnouncementPhaseObservation, CardPhaseObservation, Round
+    AnnouncementPhaseObservation, CardPhaseObservation, Round, Observation
 
 
 def rotate_list(input_list: List, n: int) -> List:
@@ -74,7 +73,7 @@ class FrenchTarotEnvironment:
         self._made_dog = None
         self._original_player_ids = None
 
-    def step(self, action) -> Tuple[dict, Union[float, List[float]], bool, any]:
+    def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
         if self._game_phase == GamePhase.BID:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
@@ -99,7 +98,7 @@ class FrenchTarotEnvironment:
         rewards = None
         done = False
         if isinstance(current_hand, Card):
-            self._hand_per_player[self.current_player] = np.array([current_hand])
+            self._hand_per_player[self.current_player] = list([current_hand])
         else:
             self._hand_per_player[self.current_player] = current_hand
 
@@ -305,31 +304,29 @@ class FrenchTarotEnvironment:
         if not isinstance(action, list):
             raise ValueError("Input should be list")
         for announcement in action:
-            # TODO breakdown in some kind of function overloading
-            if isinstance(announcement, PoigneeAnnouncement):
+            if not isinstance(announcement, Announcement):
+                raise ValueError("Invalid action type")
+            elif isinstance(announcement, PoigneeAnnouncement):
                 current_player_hand = self._hand_per_player[self.current_player]
                 n_cards = len(announcement)
-                if count_trumps_and_excuse(announcement) != n_cards:
+                if count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
                     raise ValueError("Invalid cards in poignee")
-                # TODO cleanup
                 if n_cards != PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE \
                         and n_cards != PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE \
                         and n_cards != PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
                     raise ValueError("Invalid poignee size")
                 n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
-                if Card.EXCUSE in announcement and n_trumps_in_hand != n_cards:
+                if Card.EXCUSE in announcement.revealed_cards and n_trumps_in_hand != n_cards:
                     raise ValueError("Excuse can be revealed only if player does not have any other trumps")
-                elif count_trumps_and_excuse(announcement) != n_cards:
+                elif count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
                     raise ValueError("Revealed cards should be only trumps or excuse")
-                elif np.any([card not in current_player_hand for card in announcement]):
+                elif np.any([card not in current_player_hand for card in announcement.revealed_cards]):
                     raise ValueError("Revealed card not owned by player")
             elif isinstance(announcement, ChelemAnnouncement):
                 if len(self._announcements) > 0:
                     raise ValueError("Only taker can announce chelem")
                 self._chelem_announced = True
 
-        if np.any([not isinstance(e, str) and not isinstance(e, list) for e in action]):
-            raise ValueError("Wrong announcement type")
         if np.sum([isinstance(announcement, list) for announcement in action]) > 1:
             raise ValueError("Player tried to announcement more than 1 poignees")
 
@@ -406,7 +403,7 @@ class FrenchTarotEnvironment:
             self._starting_player = -taking_player % self.n_players
             self.taking_player_original_id = taking_player
             if np.max(self._bid_per_player) <= Bid.GARDE:
-                self._hand_per_player[0] = np.concatenate((self._hand_per_player[0], self._original_dog))
+                self._hand_per_player[0] = self._hand_per_player[0] + self._original_dog
                 self._game_phase = GamePhase.DOG
                 self.current_player = self._starting_player
             else:
@@ -421,7 +418,7 @@ class FrenchTarotEnvironment:
 
         return reward, done, info
 
-    def reset(self) -> dict:
+    def reset(self) -> Observation:
         while True:
             try:
                 deck = list(self._random_state.permutation(CARDS))
@@ -446,7 +443,6 @@ class FrenchTarotEnvironment:
         return self._get_observation()
 
     def _deal(self, deck: List[Card]):
-        deck = np.array(deck)
         if len(deck) != len(CARDS):
             raise ValueError("Deck has wrong number of cards")
         self._hand_per_player = [
@@ -476,12 +472,12 @@ class FrenchTarotEnvironment:
             elif self._game_phase == GamePhase.CARD:
                 observation = CardPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
                                                    current_hand, original_dog, self._original_player_ids,
-                                                   self._revealed_cards_in_dog, self._played_cards_in_round,
-                                                   self._past_rounds)
+                                                   self._revealed_cards_in_dog, self._announcements,
+                                                   self._played_cards_in_round, self._past_rounds)
             else:
                 raise RuntimeError("Unknown game phase")
 
-        return observation
+        return copy.deepcopy(observation)
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
@@ -510,7 +506,10 @@ def count_trumps_and_excuse(cards: List[Card]) -> int:
 def get_trumps_and_excuse(cards: List[Card]) -> List[Card]:
     output_as_list = isinstance(cards, list)
     cards = np.array(cards)
-    rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
+    try:
+        rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
+    except:
+        pass
     if output_as_list:
         rval = list(rval)
     else:

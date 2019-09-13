@@ -7,7 +7,8 @@ from torch.nn.modules.loss import BCELoss
 from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import BaseNeuralNetAgent, encode_card_set, Transition
-from french_tarot.environment.common import GamePhase, Bid
+from french_tarot.environment.common import Bid
+from french_tarot.environment.observations import BidPhaseObservation
 
 
 class BidPhaseAgent(BaseNeuralNetAgent):
@@ -17,11 +18,8 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
         self._epoch = 0
 
-    def get_action(self, observation: dict):
-        if observation["game_phase"] != GamePhase.BID:
-            raise ValueError("Invalid game phase")
-
-        state = encode_card_set(observation["hand"])
+    def get_action(self, observation: BidPhaseObservation):
+        state = encode_card_set(observation.hand)
 
         eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
             -1. * self._steps_done / self._eps_decay)
@@ -45,8 +43,8 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         else:
             output = Bid.PASS
 
-        if len(observation["bid_per_player"]) > 0:
-            if np.max(observation["bid_per_player"]) >= output:
+        if len(observation.bid_per_player) > 0:
+            if np.max(observation.bid_per_player) >= output:
                 output = Bid.PASS
         return Bid(output)
 

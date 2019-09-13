@@ -3,8 +3,9 @@ import copy
 import numpy as np
 import pytest
 
-from french_tarot.environment.common import Card, GamePhase, Bid, CARDS
+from french_tarot.environment.common import Card, Bid, CARDS
 from french_tarot.environment.environment import FrenchTarotEnvironment
+from french_tarot.environment.observations import BidPhaseObservation, AnnouncementPhaseObservation
 
 
 @pytest.fixture(scope="module")
@@ -18,10 +19,10 @@ def test_n_cards():
 
 def test_reset_environment(environment):
     observation = environment.reset()
-    assert len(observation["hand"]) == 18
-    for bid in observation["bid_per_player"]:
+    assert len(observation.hand) == 18
+    for bid in observation.bid_per_player:
         assert bid == Bid.NONE
-    assert observation["game_phase"] == GamePhase.BID
+    assert isinstance(observation, BidPhaseObservation)
 
 
 def test_bid_pass(environment):
@@ -84,7 +85,7 @@ def test_bid_completed(environment):
     assert np.all(environment._hand_per_player[2] == original_hands[3])
     assert np.all(environment._hand_per_player[3] == original_hands[0])
     assert environment.current_player == 3
-    assert observation["original_player_ids"] == [1, 2, 3, 0]
+    assert observation.original_player_ids == [1, 2, 3, 0]
 
 
 def test_wrong_action_in_bid(environment):
@@ -99,7 +100,7 @@ def test_bid_greater_than_garde(environment):
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     observation, _, _, _ = environment.step(Bid.GARDE_SANS)
-    assert observation["game_phase"] == GamePhase.ANNOUNCEMENTS
+    assert isinstance(observation, AnnouncementPhaseObservation)
 
 
 def test_five_bids(environment):

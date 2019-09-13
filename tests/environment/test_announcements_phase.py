@@ -1,7 +1,8 @@
 import pytest
 
-from french_tarot.environment.common import Card, GamePhase, Bid, CARDS
-from french_tarot.environment.environment import FrenchTarotEnvironment, CHELEM
+from french_tarot.environment.common import Card, Bid, CARDS, ChelemAnnouncement, PoigneeAnnouncement
+from french_tarot.environment.environment import FrenchTarotEnvironment
+from french_tarot.environment.observations import CardPhaseObservation
 
 
 def setup_environment():
@@ -42,7 +43,7 @@ def get_card_list():
 def test_no_announcements():
     environment = setup_environment()
     observation, reward, done, _ = environment.step([])
-    assert observation["announcements"][0] == []
+    assert observation.announcements[0] == []
     assert reward == 0
     assert not done
 
@@ -53,14 +54,14 @@ def test_complete_announcement_phase():
     environment.step([])
     environment.step([])
     observation = environment.step([])[0]
-    assert observation["game_phase"] == GamePhase.CARD
+    assert isinstance(observation, CardPhaseObservation)
 
 
 def test_announce_chelem_by_non_taking_player():
     environment = setup_environment()
     environment.step([])
     with pytest.raises(ValueError):
-        environment.step([CHELEM])
+        environment.step([ChelemAnnouncement()])
 
 
 def test_announce_simple_poignee_valid():
@@ -71,9 +72,8 @@ def test_announce_simple_poignee_valid():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.GARDE_SANS)
-
-    observation, reward, done, _ = environment.step([list(environment._hand_per_player[0][-10:])])
-    assert isinstance(observation["announcements"][0], list)
+    observation, reward, done, _ = environment.step([PoigneeAnnouncement(list(environment._hand_per_player[0][-10:]))])
+    assert isinstance(observation.announcements[0], list)
     assert reward == 0
     assert not done
 
@@ -87,8 +87,9 @@ def test_announce_chelem_player0():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
 
-    observation, reward, done, _ = environment.step([CHELEM])
-    assert observation["announcements"][0] == [CHELEM]
+    announcements = [ChelemAnnouncement()]
+    observation, reward, done, _ = environment.step(announcements)
+    assert isinstance(observation.announcements[0][0], ChelemAnnouncement)
     assert reward == 0
     assert not done
 
@@ -141,9 +142,9 @@ def test_announce_simple_poignee_excuse_accepted():
     card_list = [Card.TRUMP_1, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_7,
                  Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_10, Card.TRUMP_11, Card.TRUMP_12, Card.TRUMP_13, Card.EXCUSE,
                  Card.TRUMP_16]
-    observation = environment.step([card_list])[0]
-    assert isinstance(observation["announcements"][0], list)
-    assert observation["announcements"][0][0] == card_list
+    observation = environment.step([PoigneeAnnouncement(card_list)])[0]
+    assert isinstance(observation.announcements[0][0], PoigneeAnnouncement)
+    assert observation.announcements[0][0].revealed_cards == card_list
 
 
 def test_announce_simple_poignee_no_trump():
