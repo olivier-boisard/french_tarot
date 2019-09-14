@@ -53,7 +53,7 @@ def _run_game(iteration: int, initial_seed: int = 0) -> np.array:
         if cnt >= 1000:
             raise RuntimeError("Infinite loop")
     offset = iteration % environment.n_players  # first player changes at each turn
-    game_scores = np.roll(np.array(reward)[observation["original_player_ids"]], offset)
+    game_scores = np.roll(np.array(reward)[observation.original_player_ids], offset)
     if np.sum(game_scores) != 0:
         RuntimeError("Scores do not sum up to 0")
     return game_scores

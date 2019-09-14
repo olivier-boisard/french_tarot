@@ -5,6 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, encode_card_set
 from french_tarot.environment.common import CARDS
+from french_tarot.environment.observations import Observation
 
 FEATURE_VECTOR_SIZE = 16
 
@@ -22,8 +23,8 @@ class CardPhaseAgent(BaseNeuralNetAgent):
     def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
         super(CardPhaseAgent, self).__init__(CardPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
-    def get_action(self, observation: dict):
-        hand_vector = encode_card_set(observation["hand"])
+    def get_action(self, observation: Observation):
+        hand_vector = encode_card_set(observation.hand)
         additional_feature_vector = _encode_features(_extract_features(observation))
         output_vector = self._policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
         output_vector[~hand_vector] = -np.inf

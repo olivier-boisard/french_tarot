@@ -27,7 +27,7 @@ def _run_game(environment: FrenchTarotEnvironment, agents: List[BaseNeuralNetAge
     cnt = 0
     reward = None
     while not done:
-        observation, reward, done, _ = environment.step(agents[observation["current_player"]].get_action(observation))
+        observation, reward, done, _ = environment.step(agents[observation.current_player_id].get_action(observation))
         cnt += 1
         if cnt >= 1000:
             raise RuntimeError("Infinite loop")
