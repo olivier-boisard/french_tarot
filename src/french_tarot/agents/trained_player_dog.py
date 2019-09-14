@@ -23,10 +23,11 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     CARDS_OK_IN_DOG = [card for card in CARDS if _card_is_ok_in_dog(card)]
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
 
-    def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
+    def __init__(self, base_card_neural_net, device: str = "cuda", summary_writer: SummaryWriter = None, **kwargs):
         # noinspection PyUnresolvedReferences
         super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
         self._epoch = 0
+        self._summary_writer = summary_writer
 
     def get_action(self, observation: DogPhaseObservation):
         hand = copy.copy(observation.hand)
@@ -68,31 +69,39 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
         return TrainedPlayerDogNeuralNet(base_neural_net)
 
-    def optimize_model(self, tb_writer: SummaryWriter):
+    def optimize_model(self):
         """
         See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         """
         return_scale_factor = 0.001
         if len(self.memory) > self._batch_size:
-            transitions = self.memory.sample(self._batch_size)
-            batch = Transition(*zip(*transitions))
-            state_batch = torch.cat(batch.state).to(self.device)
-            action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
-            return_batch = torch.tensor(batch.reward).float().to(self.device) * return_scale_factor
-
+            state_batch, action_batch, return_batch = self._get_batches(return_scale_factor)
             estimated_return = self._policy_net(state_batch).gather(1, action_batch)
 
-            loss_output = smooth_l1_loss(estimated_return.squeeze(), return_batch)
-            self.loss.append(loss_output.item())
+            loss = smooth_l1_loss(estimated_return.squeeze(), return_batch)
+            self.loss.append(loss.item())
 
-            self._optimizer.zero_grad()
-            loss_output.backward()
-            nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
-            self._optimizer.step()
+            self._train_model(loss)
+            self._log(loss)
 
-            if self._epoch % 1000 == 0:
-                tb_writer.add_scalar("Loss/train/Dog", loss_output.item(), self._epoch)
-            self._epoch += 1
+    def _get_batches(self, return_scale_factor):
+        transitions = self.memory.sample(self._batch_size)
+        batch = Transition(*zip(*transitions))
+        state_batch = torch.cat(batch.state).to(self.device)
+        action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
+        return_batch = torch.tensor(batch.reward).float().to(self.device) * return_scale_factor
+        return state_batch, action_batch, return_batch
+
+    def _train_model(self, loss_output):
+        self._optimizer.zero_grad()
+        loss_output.backward()
+        nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
+        self._optimizer.step()
+
+    def _log(self, loss_output):
+        if self._epoch % 1000 == 0:
+            self._summary_writer.add_scalar("Loss/train/Dog", loss_output.item(), self._epoch)
+        self._epoch += 1
 
 
 class TrainedPlayerDogNeuralNet(nn.Module):

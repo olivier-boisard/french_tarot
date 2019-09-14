@@ -15,21 +15,22 @@ from french_tarot.environment.observations import Observation, BidPhaseObservati
 
 class TrainedPlayer(Agent):
 
-    def __init__(self, bid_phase_agent: torch.nn.Module = None, dog_phase_agent: torch.nn.Module = None):
+    def __init__(self, bid_phase_agent: torch.nn.Module = None, dog_phase_agent: torch.nn.Module = None,
+                 summary_writer: SummaryWriter = None):
         random_agent = RandomPlayer()
         base_card_neural_net = BaseCardNeuralNet()
         self._agents = {
             BidPhaseObservation.__name__: BidPhaseAgent(
-                base_card_neural_net) if bid_phase_agent is None else bid_phase_agent,
+                base_card_neural_net, summary_writer=summary_writer) if bid_phase_agent is None else bid_phase_agent,
             DogPhaseObservation.__name__: DogPhaseAgent(
-                base_card_neural_net) if dog_phase_agent is None else dog_phase_agent,
+                base_card_neural_net, summary_writer=summary_writer) if dog_phase_agent is None else dog_phase_agent,
             AnnouncementPhaseObservation.__name__: random_agent,  # trained agent not implemented yet
             CardPhaseObservation.__name__: random_agent  # trained agent not implemented yet
         }
 
-    def optimize_model(self, tb_writer: SummaryWriter):
+    def optimize_model(self):
         for model in self._agents.values():
-            model.optimize_model(tb_writer)
+            model.optimize_model()
 
     def get_action(self, observation: Observation):
         return self._agents[observation.__class__.__name__].get_action(observation)

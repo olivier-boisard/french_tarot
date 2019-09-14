@@ -1,7 +1,6 @@
 from typing import List
 
 import numpy as np
-from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import Agent
 from french_tarot.agents.meta import singledispatchmethod
@@ -80,5 +79,5 @@ class RandomPlayer(Agent):
         rval = Bid(self._random_state.choice(allowed_bids + [0]))
         return rval
 
-    def optimize_model(self, tb_writer: SummaryWriter):
+    def optimize_model(self):
         pass

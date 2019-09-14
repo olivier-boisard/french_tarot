@@ -13,10 +13,12 @@ from french_tarot.environment.observations import BidPhaseObservation
 
 class BidPhaseAgent(BaseNeuralNetAgent):
 
-    def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", **kwargs):
+    def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", summary_writer: SummaryWriter = None,
+                 **kwargs):
         # noinspection PyUnresolvedReferences
         super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
         self._epoch = 0
+        self._summary_writer = summary_writer
 
     def get_action(self, observation: BidPhaseObservation):
         state = core(observation.hand)
@@ -26,12 +28,20 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         self._steps_done += 1
         if self._random_state.rand() > eps_threshold:
             with torch.no_grad():
-                self._policy_net.eval()
+                self.disable_training()
                 output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
-                self._policy_net.train()  # disable eval mode.
+                self.enable_training()
         else:
             output = self._random_state.rand()
+        output = self._get_bid_value(output)
 
+        if len(observation.bid_per_player) > 0:
+            if np.max(observation.bid_per_player) >= output:
+                output = Bid.PASS
+        return Bid(output)
+
+    @staticmethod
+    def _get_bid_value(output):
         if output >= 0.9:
             output = Bid.GARDE_CONTRE
         elif output >= 0.8:
@@ -42,37 +52,49 @@ class BidPhaseAgent(BaseNeuralNetAgent):
             output = Bid.PETITE
         else:
             output = Bid.PASS
+        return output
 
-        if len(observation.bid_per_player) > 0:
-            if np.max(observation.bid_per_player) >= output:
-                output = Bid.PASS
-        return Bid(output)
+    def enable_training(self):
+        self._policy_net.train()
 
-    def optimize_model(self, tb_writer: SummaryWriter):
+    def disable_training(self):
+        self._policy_net.eval()
+
+    def optimize_model(self):
         """
         See https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         """
         if len(self.memory) > self._batch_size:
-            transitions = self.memory.sample(self._batch_size)
-            batch = Transition(*zip(*transitions))
-            state_batch = torch.cat(batch.state).to(self.device)
-            wins = torch.tensor(batch.reward).float().to(self.device)
-            wins[wins >= 0] = 1.
-            wins[wins < 0.] = 0
+            input_vectors, target_vectors = self._get_input_and_target_tensors()
+            model_output = self._policy_net(input_vectors)
+            loss = self._compute_loss(model_output, target_vectors)
+            self.loss.append(loss.item())
+            self._train_model(loss)
 
-            predicted_win_probability = self._policy_net(state_batch)
-            loss = BCELoss()
-            loss_output = loss(predicted_win_probability.flatten(), wins.flatten())
-            self.loss.append(loss_output.item())
-
-            self._optimizer.zero_grad()
-            loss_output.backward()
-            nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
-            self._optimizer.step()
-
-            if self._epoch % 1000 == 0:
-                tb_writer.add_scalar("Loss/train/Bid", loss_output.item(), self._epoch)
+            if self._epoch % 1000 == 0 and self._summary_writer is not None:
+                self._summary_writer.add_scalar("Loss/train/Bid", loss.item(), self._epoch)
             self._epoch += 1
+
+    def _train_model(self, loss):
+        self._optimizer.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
+        self._optimizer.step()
+
+    @staticmethod
+    def _compute_loss(predicted_win_probability, wins):
+        loss = BCELoss()
+        loss_output = loss(predicted_win_probability.flatten(), wins.flatten())
+        return loss_output
+
+    def _get_input_and_target_tensors(self):
+        transitions = self.memory.sample(self._batch_size)
+        batch = Transition(*zip(*transitions))
+        input_vectors = torch.cat(batch.state).to(self.device)
+        targets = torch.tensor(batch.reward).float().to(self.device)
+        targets[targets >= 0] = 1.
+        targets[targets < 0.] = 0
+        return input_vectors, targets
 
     @property
     def output_dimension(self) -> int:

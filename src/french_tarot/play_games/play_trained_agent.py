@@ -13,7 +13,7 @@ from french_tarot.environment.observations import BidPhaseObservation, DogPhaseO
 def _main(n_episodes_training: int = 200000):
     set_all_seeds()
     writer = SummaryWriter()
-    trained_agent = TrainedPlayer()
+    trained_agent = TrainedPlayer(summary_writer=writer)
     _run_training(trained_agent, n_episodes_training, writer)
 
 
@@ -47,7 +47,7 @@ def _run_training(agent: TrainedPlayer, n_episodes: int, tb_writer: SummaryWrite
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
             agent.push_to_agent_memory(observation, action, reward)
 
-        agent.optimize_model(tb_writer)
+        agent.optimize_model()
 
         if i % 1000 == 0:
             tb_writer.add_scalar("score_diff", compute_diff_score_metric(agent), i)
