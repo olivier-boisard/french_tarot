@@ -25,7 +25,6 @@ class RandomPlayer(Agent):
 
     def get_action(self, observation: Observation):
         # TODO breakdown in some kind of function overloading
-        # TODO remove else pass statements everywhere in whole project
         if isinstance(observation, BidPhaseObservation):
             allowed_bids = list(range(get_minimum_allowed_bid(observation.bid_per_player), np.max(list(Bid)) + 1))
             rval = Bid(self._random_state.choice(allowed_bids + [0]))
@@ -48,8 +47,6 @@ class RandomPlayer(Agent):
             # noinspection PyArgumentList
             if len(observation.announcements) == 0 and self._random_state.rand() < 0.1:
                 announcements.append(ChelemAnnouncement())
-            else:
-                pass  # Nothing to do
 
             trumps_and_excuse = sort_trump_and_excuse(get_trumps_and_excuse(observation.hand))
             if len(trumps_and_excuse) >= PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
@@ -58,8 +55,6 @@ class RandomPlayer(Agent):
                 announcements.append(trumps_and_excuse[:PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE])
             elif len(trumps_and_excuse) >= PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE:
                 announcements.append(trumps_and_excuse[:PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE])
-            else:
-                pass  # Nothing to do
 
             rval = announcements
         elif isinstance(observation, CardPhaseObservation):

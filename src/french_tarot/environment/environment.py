@@ -111,8 +111,6 @@ class FrenchTarotEnvironment:
                 rewards = self._compute_win_loss(is_petit_played_in_round, is_excuse_played_in_round,
                                                  is_taker_win_round)
                 done = True
-            else:
-                pass  # Nothing to do
 
         elif len(self._played_cards_in_round) < self.n_players:
             self.current_player = self._get_next_player()
@@ -163,8 +161,6 @@ class FrenchTarotEnvironment:
         contract_value = int(contract_value * multiplier)
         if taker_points < victory_threshold:
             contract_value *= -1
-        else:
-            pass  # Nothing to do
 
         winners_per_round = self._winners_per_round
         taker_achieved_chelem = self.has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, "taker")
@@ -174,18 +170,12 @@ class FrenchTarotEnvironment:
             contract_value -= 200
         elif not taker_achieved_chelem and self._chelem_announced:
             contract_value -= 200
-        else:
-            pass  # Nothing to do
 
         if is_petit_played_in_round:
             to_add = (10 if not is_taker_win_round else -10) * multiplier
             if taker_points > victory_threshold:
                 to_add *= -1
-            else:
-                pass  # Nothing to do
             contract_value += to_add
-        else:
-            pass  # Nothing to do
 
         rewards = [3 * contract_value, -contract_value, -contract_value, -contract_value]
         rewards = self._update_rewards_with_poignee(rewards)
@@ -269,8 +259,6 @@ class FrenchTarotEnvironment:
                 if winner == 0:
                     self._bonus_points_per_teams["opponents"] -= 0.5
                     self._bonus_points_per_teams["taker"] += 0.5
-        else:
-            pass  # Nothing to do
         if winner == 0:
             self._won_cards_per_teams["taker"] += won_cards
         else:
@@ -489,10 +477,6 @@ def _retrieve_asked_color(played_cards: List[Card]) -> str:
             asked_color = played_cards[0].value.split("_")[0]
         elif len(played_cards) > 1:
             asked_color = played_cards[1].value.split("_")[0]
-        else:
-            pass  # Nothing to do
-    else:
-        pass  # Nothing to do
 
     return asked_color
 
@@ -505,14 +489,9 @@ def count_trumps_and_excuse(cards: List[Card]) -> int:
 def get_trumps_and_excuse(cards: List[Card]) -> List[Card]:
     output_as_list = isinstance(cards, list)
     cards = np.array(cards)
-    try:
-        rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
-    except:
-        pass
+    rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
     if output_as_list:
         rval = list(rval)
-    else:
-        pass  # Nothing to do
     return rval
 
 

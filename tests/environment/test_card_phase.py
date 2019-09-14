@@ -10,8 +10,6 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     if sorted_deck:
         # noinspection PyProtectedMember
         environment._deal(CARDS)
-    else:
-        pass  # Nothing to do
     good = False
     for i in range(environment.n_players):
         if i == taker:
@@ -25,13 +23,9 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     announcements = []
     if chelem:
         announcements.append(ChelemAnnouncement())
-    else:
-        pass
     if poignee:
         # noinspection PyProtectedMember
         announcements.append(PoigneeAnnouncement(list(environment._hand_per_player[0][-11:-1])))
-    else:
-        pass
     environment.step(announcements)
     environment.step([])
     environment.step([])

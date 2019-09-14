@@ -6,7 +6,7 @@ from torch import nn
 from torch.nn.modules.loss import BCELoss
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, encode_card_set, Transition
+from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition
 from french_tarot.environment.common import Bid
 from french_tarot.environment.observations import BidPhaseObservation
 
@@ -19,7 +19,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         self._epoch = 0
 
     def get_action(self, observation: BidPhaseObservation):
-        state = encode_card_set(observation.hand)
+        state = core(observation.hand)
 
         eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
             -1. * self._steps_done / self._eps_decay)

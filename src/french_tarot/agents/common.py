@@ -10,8 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.environment.common import Card, CARDS
 
-Transition = namedtuple('Transition',
-                        ('state', 'action', 'next_state', 'reward'))
+Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
 class ReplayMemory:
@@ -45,28 +44,29 @@ class BaseCardNeuralNet(nn.Module):
 
     def __init__(self):
         super(BaseCardNeuralNet, self).__init__()
+        self._initialize_neural_net()
 
-        nn_width = 64
+    def _initialize_neural_net(self, width=64):
         self.standard_cards_tower = nn.Sequential(
-            nn.Linear(BaseCardNeuralNet.N_CARDS_PER_COLOR, nn_width),
+            nn.Linear(BaseCardNeuralNet.N_CARDS_PER_COLOR, width),
             nn.ReLU(),
-            nn.BatchNorm1d(nn_width),
-            nn.Linear(nn_width, nn_width),
+            nn.BatchNorm1d(width),
+            nn.Linear(width, width),
             nn.ReLU()
         )
         self.trump_tower = nn.Sequential(
-            nn.Linear(BaseCardNeuralNet.N_TRUMPS_AND_EXCUSES, nn_width),
+            nn.Linear(BaseCardNeuralNet.N_TRUMPS_AND_EXCUSES, width),
             nn.ReLU(),
-            nn.BatchNorm1d(nn_width),
-            nn.Linear(nn_width, nn_width),
+            nn.BatchNorm1d(width),
+            nn.Linear(width, width),
             nn.ReLU()
         )
         self.merge_tower = nn.Sequential(
-            nn.BatchNorm1d(5 * nn_width),
-            nn.Linear(5 * nn_width, 8 * nn_width),
+            nn.BatchNorm1d(5 * width),
+            nn.Linear(5 * width, 8 * width),
             nn.ReLU(),
-            nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, 8 * nn_width),
+            nn.BatchNorm1d(8 * width),
+            nn.Linear(8 * width, 8 * width),
             nn.ReLU()
         )
 
@@ -107,17 +107,17 @@ class BaseNeuralNetAgent(Agent):
             replay_memory_size: int = 2000
     ):
         self._policy_net = policy_net
-        self._steps_done = 0
-        self._random_state = np.random.RandomState(1988)
-
-        # Training parameters
         self._eps_start = eps_start
         self._eps_end = eps_end
         self._eps_decay = eps_decay
         self._batch_size = batch_size
         self.memory = ReplayMemory(replay_memory_size)
-        self._optimizer = optim.Adam(self._policy_net.parameters())
+        self._initialize_internals()
 
+    def _initialize_internals(self):
+        self._steps_done = 0
+        self._random_state = np.random.RandomState(1988)
+        self._optimizer = optim.Adam(self._policy_net.parameters())
         self.loss = []
 
     @abstractmethod
@@ -129,7 +129,7 @@ class BaseNeuralNetAgent(Agent):
         return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
 
 
-def encode_card_set(card_set: List[Card]) -> torch.Tensor:
+def core(card_set: List[Card]) -> torch.Tensor:
     return tensor([card in card_set for card in CARDS]).float()
 
 

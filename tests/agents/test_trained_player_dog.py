@@ -1,4 +1,4 @@
-from french_tarot.agents.common import encode_card_set, BaseCardNeuralNet
+from french_tarot.agents.common import core, BaseCardNeuralNet
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.common import Bid
 from french_tarot.environment.environment import FrenchTarotEnvironment
@@ -7,7 +7,7 @@ from french_tarot.environment.observations import Observation
 
 def test_dog_phase_observation_encoder():
     observation = _prepare_environment()
-    state = encode_card_set(observation.hand)
+    state = core(observation.hand)
 
     assert state.shape[0] == 78
     assert state.sum() == 24

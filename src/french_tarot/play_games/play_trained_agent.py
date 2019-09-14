@@ -3,7 +3,7 @@ import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import set_all_seeds
-from french_tarot.agents.performance_evaluation import score_diff
+from french_tarot.agents.performance_evaluation import compute_diff_score_metric
 from french_tarot.agents.trained_player import TrainedPlayer
 from french_tarot.environment.common import Bid
 from french_tarot.environment.environment import FrenchTarotEnvironment, rotate_list
@@ -33,8 +33,6 @@ def _run_training(agent: TrainedPlayer, n_episodes: int, tb_writer: SummaryWrite
             if isinstance(observation, BidPhaseObservation) or isinstance(observation, DogPhaseObservation):
                 early_phases_observations.append(observation)
                 early_phases_actions.append(action)
-            else:
-                pass  # Nothing to do
             observation = new_observation
 
         if rewards is None:
@@ -52,7 +50,7 @@ def _run_training(agent: TrainedPlayer, n_episodes: int, tb_writer: SummaryWrite
         agent.optimize_model(tb_writer)
 
         if i % 1000 == 0:
-            tb_writer.add_scalar("score_diff", score_diff(agent), i)
+            tb_writer.add_scalar("score_diff", compute_diff_score_metric(agent), i)
 
 
 if __name__ == "__main__":

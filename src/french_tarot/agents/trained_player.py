@@ -3,7 +3,7 @@ import itertools
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import encode_card_set, BaseCardNeuralNet, Agent
+from french_tarot.agents.common import core, BaseCardNeuralNet, Agent
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_bid import BidPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
@@ -35,7 +35,7 @@ class TrainedPlayer(Agent):
 
     def push_to_agent_memory(self, observation: dict, action, reward: float):
         if isinstance(observation, BidPhaseObservation):
-            self._agents[BidPhaseObservation.__name__].memory.push(encode_card_set(observation.hand).unsqueeze(0),
+            self._agents[BidPhaseObservation.__name__].memory.push(core(observation.hand).unsqueeze(0),
                                                                    action,
                                                                    None, reward)
         elif isinstance(observation, DogPhaseObservation):
@@ -43,7 +43,7 @@ class TrainedPlayer(Agent):
             for permuted_action in itertools.permutations(action):
                 hand = list(observation.hand)
                 for card in permuted_action:
-                    xx = torch.cat((encode_card_set(hand), selected_cards)).unsqueeze(0)
+                    xx = torch.cat((core(hand), selected_cards)).unsqueeze(0)
                     action_id = DogPhaseAgent.CARDS_OK_IN_DOG.index(card)
                     self._agents[DogPhaseObservation.__name__].memory.push(xx, action_id, None, reward)
 
