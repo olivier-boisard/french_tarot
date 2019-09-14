@@ -1,6 +1,6 @@
 import pytest
 
-from french_tarot.environment.common import Card, Bid, CARDS, ChelemAnnouncement
+from french_tarot.environment.common import Card, Bid, CARDS, ChelemAnnouncement, PoigneeAnnouncement
 from french_tarot.environment.environment import FrenchTarotEnvironment, get_card_set_point
 
 
@@ -29,7 +29,7 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
         pass
     if poignee:
         # noinspection PyProtectedMember
-        announcements.append(list(environment._hand_per_player[0][-11:-1]))
+        announcements.append(PoigneeAnnouncement(list(environment._hand_per_player[0][-11:-1])))
     else:
         pass
     environment.step(announcements)

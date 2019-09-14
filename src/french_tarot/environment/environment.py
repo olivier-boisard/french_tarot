@@ -94,7 +94,7 @@ class FrenchTarotEnvironment:
         self._played_cards_in_round.append(card)
 
         current_hand = self._hand_per_player[self.current_player]
-        current_hand = current_hand[current_hand != card]
+        current_hand = list(np.array(current_hand)[np.array(current_hand) != card])
         rewards = None
         done = False
         if isinstance(current_hand, Card):
@@ -205,7 +205,7 @@ class FrenchTarotEnvironment:
         rewards = copy.copy(rewards)
         for player, announcements_for_player in enumerate(self._announcements):
             for announcement in announcements_for_player:
-                if isinstance(announcement, list):  # if announcement is poignee
+                if isinstance(announcement, PoigneeAnnouncement):
                     poignee_size_to_bonus = {
                         PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE: 20,
                         PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE: 30,
@@ -374,8 +374,7 @@ class FrenchTarotEnvironment:
         self._game_phase = GamePhase.ANNOUNCEMENTS
         self.current_player = 0
         index_to_keep_in_hand = [card not in dog for card in taking_player_hand]
-        self._hand_per_player[0] = taking_player_hand[index_to_keep_in_hand]
-
+        self._hand_per_player[0] = list(np.array(taking_player_hand)[index_to_keep_in_hand])
         reward = get_card_set_point(dog)
         self._made_dog = dog
         done = False
