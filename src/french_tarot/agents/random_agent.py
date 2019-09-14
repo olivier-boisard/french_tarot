@@ -45,8 +45,7 @@ class RandomPlayer(Agent):
     @get_action.register
     def _(self, observation: AnnouncementPhaseObservation):
         announcements = []
-        # noinspection PyArgumentList
-        if len(observation.announcements) == 0 and self._random_state.rand() < 0.1:
+        if len(observation.announcements) == 0 and self._random_state.rand(1, 1) < 0.1:
             announcements.append(ChelemAnnouncement())
         trumps_and_excuse = sort_trump_and_excuse(get_trumps_and_excuse(observation.hand))
         if len(trumps_and_excuse) >= PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
