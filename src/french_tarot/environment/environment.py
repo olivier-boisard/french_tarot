@@ -50,7 +50,6 @@ def check_card_is_allowed(card: Card, played_cards: List[Card], player_hand: Lis
 
 
 class FrenchTarotEnvironment:
-    metadata = {"render.modes": ["human"]}
 
     def __init__(self, seed: int = 1988):
         self._winners_per_round = None

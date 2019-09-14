@@ -36,9 +36,9 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         dog_size = len(observation.original_dog)
         for _ in range(dog_size):
             xx = torch.cat([core(hand), selected_cards]).unsqueeze(0)
-            self._policy_net.eval()
+            self.disable_training()
             xx = self._policy_net(xx.to(self.device)).squeeze()
-            self._policy_net.train()
+            self.enable_training()
 
             xx[DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()
@@ -46,6 +46,12 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             hand.remove(CARDS[selected_card_index])
         assert selected_cards.sum() == dog_size
         return list(np.array(Card)[np.array(selected_cards, dtype=bool)])
+
+    def enable_training(self):
+        self._policy_net.train()
+
+    def disable_training(self):
+        self._policy_net.eval()
 
     @staticmethod
     def _get_card_selection_mask(hand: List[Card]) -> List[bool]:
