@@ -1,18 +1,31 @@
-class singledispatchmethod:
+from functools import update_wrapper
+
+_singledispatch_registry = {}
+
+
+def _get_first_arg_type(func_overload):
+    return list(func_overload.__annotations__.values())[0]
+
+
+def singledispatchmethod(func):
     """Provides method overloading.
 
     Manual implementation as it will be available with Python 3.8.
     """
 
-    def __init__(self, func):
-        self._default_function = func
-        self._singledispatch_registry = {}
+    if func in _singledispatch_registry:
+        raise ValueError("Function already declared as polymorphic")
+    _singledispatch_registry[func] = {_get_first_arg_type(func): func}
 
-    def register(self, func_overload):
-        first_arg_type = list(func_overload.__annotations__.value())[1]
-        self._singledispatch_registry[first_arg_type] = func_overload
-
-    def __call__(self, *args, **kwargs):
-        first_arg_type = args[1]
-        func_to_call = self._singledispatch_registry.get(first_arg_type, self._default_function)
+    def wrapper(*args, **kwargs):
+        first_arg_type = type(args[1])
+        func_to_call = _singledispatch_registry[func][first_arg_type]
         return func_to_call(*args, **kwargs)
+
+    def register(func_overload):
+        first_arg_type = _get_first_arg_type(func_overload)
+        _singledispatch_registry[func][first_arg_type] = func_overload
+
+    wrapper.register = register
+    update_wrapper(wrapper, func)
+    return wrapper
