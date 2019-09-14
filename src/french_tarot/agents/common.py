@@ -126,10 +126,6 @@ class BaseNeuralNetAgent(Agent):
         if self._step % 1000 == 0:
             self._summary_writer.add_scalar("Loss/train/" + self.__class__.__name__, self.loss[-1], self._step)
 
-    @abstractmethod
-    def optimize_model(self):
-        pass
-
     @abstractstaticmethod
     def compute_loss(model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         pass
