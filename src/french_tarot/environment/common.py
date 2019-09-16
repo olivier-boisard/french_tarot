@@ -109,16 +109,24 @@ class ChelemAnnouncement(Announcement):
     pass
 
 
-class PoigneeAnnouncement(Announcement, ABC):
+class PoigneeLength(IntEnum):
     SIMPLE_POIGNEE_SIZE = 10
     DOUBLE_POIGNEE_SIZE = 13
     TRIPLE_POIGNEE_SIZE = 15
 
+
+POIGNEE_SIZE_TO_BONUS_POINTS = {
+    PoigneeLength.SIMPLE_POIGNEE_SIZE: 20,
+    PoigneeLength.DOUBLE_POIGNEE_SIZE: 30,
+    PoigneeLength.TRIPLE_POIGNEE_SIZE: 40
+}
+
+
+class PoigneeAnnouncement(Announcement, ABC):
+
     def __init__(self, revealed_cards):
-        # TODO make line smaller
-        if len(revealed_cards) != PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE and \
-                len(revealed_cards) != PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE and \
-                len(revealed_cards) != PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
+        possible_poignee_lengths = list(map(int, PoigneeLength))
+        if len(revealed_cards) not in possible_poignee_lengths:
             raise ValueError("Invalid number of cards")
         self.revealed_cards = revealed_cards
 

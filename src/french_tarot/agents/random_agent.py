@@ -4,7 +4,7 @@ import numpy as np
 
 from french_tarot.agents.common import Agent
 from french_tarot.agents.meta import singledispatchmethod
-from french_tarot.environment.common import Card, Bid, ChelemAnnouncement, PoigneeAnnouncement
+from french_tarot.environment.common import Card, Bid, ChelemAnnouncement, PoigneeLength
 from french_tarot.environment.environment import get_minimum_allowed_bid, get_trumps_and_excuse, \
     check_card_is_allowed, is_oudler
 from french_tarot.environment.observations import Observation, BidPhaseObservation, DogPhaseObservation, \
@@ -47,12 +47,12 @@ class RandomPlayer(Agent):
         if len(observation.announcements) == 0 and self._random_state.rand(1, 1) < 0.1:
             announcements.append(ChelemAnnouncement())
         trumps_and_excuse = sort_trump_and_excuse(get_trumps_and_excuse(observation.hand))
-        if len(trumps_and_excuse) >= PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
-            announcements.append(trumps_and_excuse[:PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE])
-        elif len(trumps_and_excuse) >= PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE:
-            announcements.append(trumps_and_excuse[:PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE])
-        elif len(trumps_and_excuse) >= PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE:
-            announcements.append(trumps_and_excuse[:PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE])
+        if len(trumps_and_excuse) >= PoigneeLength.TRIPLE_POIGNEE_SIZE:
+            announcements.append(trumps_and_excuse[:PoigneeLength.TRIPLE_POIGNEE_SIZE])
+        elif len(trumps_and_excuse) >= PoigneeLength.DOUBLE_POIGNEE_SIZE:
+            announcements.append(trumps_and_excuse[:PoigneeLength.DOUBLE_POIGNEE_SIZE])
+        elif len(trumps_and_excuse) >= PoigneeLength.SIMPLE_POIGNEE_SIZE:
+            announcements.append(trumps_and_excuse[:PoigneeLength.SIMPLE_POIGNEE_SIZE])
         rval = announcements
         return rval
 

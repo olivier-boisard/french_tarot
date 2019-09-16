@@ -5,7 +5,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from french_tarot.environment.common import Card, GamePhase, Bid, CARDS, PoigneeAnnouncement, Announcement, \
-    ChelemAnnouncement
+    ChelemAnnouncement, POIGNEE_SIZE_TO_BONUS_POINTS
 from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
     AnnouncementPhaseObservation, CardPhaseObservation, Round, Observation
 
@@ -201,12 +201,7 @@ class FrenchTarotEnvironment:
         for player, announcements_for_player in enumerate(self._announcements):
             for announcement in announcements_for_player:
                 if isinstance(announcement, PoigneeAnnouncement):
-                    poignee_size_to_bonus = {
-                        PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE: 20,
-                        PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE: 30,
-                        PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE: 40
-                    }
-                    bonus = poignee_size_to_bonus[len(announcement)]
+                    bonus = POIGNEE_SIZE_TO_BONUS_POINTS[len(announcement)]
                     is_player_won = rewards[player] > 0
                     if player == 0:
                         if is_player_won:
@@ -308,10 +303,6 @@ class FrenchTarotEnvironment:
                 n_cards = len(announcement)
                 if count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
                     raise ValueError("Invalid cards in poignee")
-                if n_cards != PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE \
-                        and n_cards != PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE \
-                        and n_cards != PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:
-                    raise ValueError("Invalid poignee size")
                 n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
                 if Card.EXCUSE in announcement.revealed_cards and n_trumps_in_hand != n_cards:
                     raise ValueError("Excuse can be revealed only if player does not have any other trumps")
