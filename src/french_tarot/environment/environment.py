@@ -49,6 +49,7 @@ def check_card_is_allowed(card: Card, played_cards: List[Card], player_hand: Lis
         check_trump_value_is_allowed(card, played_cards, player_hand)
 
 
+# TODO create smaller classes
 class FrenchTarotEnvironment:
 
     def __init__(self, seed: int = 1988):
@@ -73,6 +74,7 @@ class FrenchTarotEnvironment:
         self._original_player_ids = None
 
     def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
+        # TODO create and use function overloading, or use dictionary
         if self._game_phase == GamePhase.BID:
             reward, done, info = self._bid(action)
         elif self._game_phase == GamePhase.DOG:
@@ -86,6 +88,7 @@ class FrenchTarotEnvironment:
             raise RuntimeError("Unknown game phase")
         return self._get_observation(), reward, done, info
 
+    # TODO create smaller functions
     def _play_card(self, card: Card) -> Tuple[List[float], bool, any]:
         if not isinstance(card, Card):
             raise ValueError("Action must be card")
@@ -122,6 +125,7 @@ class FrenchTarotEnvironment:
     def _get_next_player(self) -> int:
         return (self.current_player + 1) % self.n_players
 
+    # TODO create smaller functions
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
                           is_taker_win_round: bool) -> List[float]:
         dog = self._made_dog if self._made_dog is not None else self._original_dog
@@ -147,6 +151,7 @@ class FrenchTarotEnvironment:
             RuntimeError("Invalid number of oudlers")
         diff = abs(victory_threshold - taker_points)
         contract_value = 25 + diff
+        # TODO use dictionary
         if self._bid_per_player[0] == Bid.PETITE:
             multiplier = 1
         elif self._bid_per_player[0] == Bid.GARDE:
@@ -190,6 +195,7 @@ class FrenchTarotEnvironment:
         is_chelem_achieved = team_won_all or (team_won_all_but_last and is_excuse_played_in_round)
         return is_chelem_achieved
 
+    # TODO create smaller functions
     def _update_rewards_with_poignee(self, rewards: List[float]) -> List[float]:
         rewards = copy.copy(rewards)
         for player, announcements_for_player in enumerate(self._announcements):
@@ -228,6 +234,7 @@ class FrenchTarotEnvironment:
                             rewards[3] += bonus
         return rewards
 
+    # TODO create smaller functions
     def _solve_round(self) -> List[float]:
         starting_player = self._get_next_player()
         winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards_in_round)
@@ -271,6 +278,7 @@ class FrenchTarotEnvironment:
         asked_color = _retrieve_asked_color(played_cards)
         card_strengths = []
         for card in played_cards:
+            # TODO use/create utility functions
             if "trump" in card.value:
                 card_strengths.append(100 + int(card.value.split("_")[1]))
             elif asked_color not in card.value:
@@ -287,10 +295,12 @@ class FrenchTarotEnvironment:
                 card_strengths.append(int(card.value.split("_")[1]))
         return int(np.argmax(card_strengths))
 
+    # TODO create smaller functions
     def _announce(self, action: List[Announcement]) -> Tuple[float, bool, any]:
         if not isinstance(action, list):
             raise ValueError("Input should be list")
         for announcement in action:
+            # TODO use function overloading
             if not isinstance(announcement, Announcement):
                 raise ValueError("Invalid action type")
             elif isinstance(announcement, PoigneeAnnouncement):
@@ -329,6 +339,7 @@ class FrenchTarotEnvironment:
         info = None
         return reward, done, info
 
+    # TODO create smaller functions
     def _make_dog(self, dog: List[Card]) -> Tuple[float, bool, any]:
         taking_player_hand = self._hand_per_player[0]  # At this point, taking player is always player 0
         if type(dog) != list:
@@ -368,6 +379,7 @@ class FrenchTarotEnvironment:
         info = None
         return reward, done, info
 
+    # TODO create smaller functions
     def _bid(self, action: Bid) -> Tuple[float, bool, any]:
         if type(action) != Bid:
             raise ValueError("Wrong type for 'action'")
@@ -443,11 +455,13 @@ class FrenchTarotEnvironment:
                 raise RuntimeError("'Petit sec'. Deal again.")
 
     def _get_observation(self) -> Observation:
+        # TODO fix duplications
         current_hand = self._hand_per_player[self.current_player]
         if self._game_phase == GamePhase.BID:
             observation = BidPhaseObservation(self._game_phase, self._bid_per_player, self.current_player, current_hand)
         else:
             original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
+            # TODO use overloading
             if self._game_phase == GamePhase.DOG:
                 observation = DogPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
                                                   self._hand_per_player[0], original_dog, self._original_player_ids)

@@ -28,6 +28,7 @@ def _main():
     _plot_scores(scores)
 
 
+# TODO create smaller functions
 def _run_game(iteration: int, initial_seed: int = 0) -> np.array:
     environment = FrenchTarotEnvironment(seed=initial_seed + iteration)
     random_agent = RandomPlayer(seed=initial_seed + iteration)

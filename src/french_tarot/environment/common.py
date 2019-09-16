@@ -115,6 +115,7 @@ class PoigneeAnnouncement(Announcement, ABC):
     TRIPLE_POIGNEE_SIZE = 15
 
     def __init__(self, revealed_cards):
+        # TODO make line smaller
         if len(revealed_cards) != PoigneeAnnouncement.SIMPLE_POIGNEE_SIZE and \
                 len(revealed_cards) != PoigneeAnnouncement.DOUBLE_POIGNEE_SIZE and \
                 len(revealed_cards) != PoigneeAnnouncement.TRIPLE_POIGNEE_SIZE:

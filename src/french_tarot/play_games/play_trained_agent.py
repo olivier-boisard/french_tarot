@@ -17,6 +17,7 @@ def _main(n_episodes_training: int = 200000):
     _run_training(trained_agent, n_episodes_training, writer)
 
 
+# TODO create smaller functions
 def _run_training(agent: TrainedPlayer, n_episodes: int, tb_writer: SummaryWriter):
     environment = FrenchTarotEnvironment()
     for i in tqdm.tqdm(range(n_episodes)):
