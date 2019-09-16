@@ -1,3 +1,4 @@
+import functools
 from abc import ABC, abstractstaticmethod
 from enum import Enum, IntEnum
 from typing import List
@@ -131,11 +132,20 @@ class PoigneeAnnouncement(Announcement, ABC):
     @staticmethod
     def largest_possible_poignee_factory(hand):
         trumps_and_excuse = sort_trump_and_excuse(get_trumps_and_excuse(hand))
+        valid_poignees = filter(
+            lambda element: element.expected_length() <= len(trumps_and_excuse),
+            PoigneeAnnouncement.__subclasses__()
+        )
         poignee = None
-        for cls in PoigneeAnnouncement.__subclasses__():
-            if len(trumps_and_excuse) >= cls.expected_length():
-                poignee = trumps_and_excuse[:cls.expected_length()]
-                break
+        cls = next(valid_poignees, None)
+        if cls is not None:
+            cls = functools.reduce(
+                lambda a, b: a if a.expected_length() > b.expected_length() else b,
+                valid_poignees,
+                cls
+            )
+            poignee = cls(trumps_and_excuse[-cls.expected_length():])
+
         return poignee
 
     @abstractstaticmethod
@@ -149,31 +159,31 @@ class PoigneeAnnouncement(Announcement, ABC):
 
 class SimplePoigneeAnnouncement(PoigneeAnnouncement):
 
-    @abstractstaticmethod
+    @staticmethod
     def expected_length():
         return 10
 
-    @abstractstaticmethod
+    @staticmethod
     def bonus_points():
         return 20
 
 
 class DoublePoigneeAnnouncement(PoigneeAnnouncement):
-    @abstractstaticmethod
+    @staticmethod
     def expected_length():
         return 13
 
-    @abstractstaticmethod
+    @staticmethod
     def bonus_points():
         return 30
 
 
 class TriplePoigneeAnnouncement(PoigneeAnnouncement):
-    @abstractstaticmethod
+    @staticmethod
     def expected_length():
         return 15
 
-    @abstractstaticmethod
+    @staticmethod
     def bonus_points():
         return 40
 

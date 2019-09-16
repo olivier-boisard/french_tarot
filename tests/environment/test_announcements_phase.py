@@ -141,9 +141,9 @@ def test_announce_simple_poignee_excuse_accepted():
     environment.step(Bid.GARDE_SANS)
 
     card_list = [Card.TRUMP_1, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_7,
-                 Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_10, Card.TRUMP_11, Card.TRUMP_12, Card.TRUMP_13, Card.EXCUSE,
-                 Card.TRUMP_16]
-    observation = environment.step([PoigneeAnnouncement(card_list)])[0]
+                 Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_10, Card.TRUMP_11, Card.TRUMP_12, Card.TRUMP_13, Card.TRUMP_16,
+                 Card.EXCUSE]
+    observation = environment.step([PoigneeAnnouncement.largest_possible_poignee_factory(card_list)])[0]
     assert isinstance(observation.announcements[0][0], PoigneeAnnouncement)
     assert observation.announcements[0][0].revealed_cards == card_list
 

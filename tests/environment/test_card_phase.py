@@ -25,7 +25,8 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
         announcements.append(ChelemAnnouncement())
     if poignee:
         # noinspection PyProtectedMember
-        announcements.append(PoigneeAnnouncement(list(environment._hand_per_player[0][-11:-1])))
+        card_list = list(environment._hand_per_player[0][-11:-1])
+        announcements.append(PoigneeAnnouncement.largest_possible_poignee_factory(card_list))
     environment.step(announcements)
     environment.step([])
     environment.step([])
