@@ -5,7 +5,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from french_tarot.environment.common import Card, GamePhase, Bid, CARDS, PoigneeAnnouncement, Announcement, \
-    ChelemAnnouncement, POIGNEE_SIZE_TO_BONUS_POINTS
+    ChelemAnnouncement, get_trumps_and_excuse
 from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
     AnnouncementPhaseObservation, CardPhaseObservation, Round, Observation
 
@@ -201,7 +201,7 @@ class FrenchTarotEnvironment:
         for player, announcements_for_player in enumerate(self._announcements):
             for announcement in announcements_for_player:
                 if isinstance(announcement, PoigneeAnnouncement):
-                    bonus = POIGNEE_SIZE_TO_BONUS_POINTS[len(announcement)]
+                    bonus = announcement.bonus_points()
                     is_player_won = rewards[player] > 0
                     if player == 0:
                         if is_player_won:
@@ -488,15 +488,6 @@ def _retrieve_asked_color(played_cards: List[Card]) -> str:
 def count_trumps_and_excuse(cards: List[Card]) -> int:
     trumps_and_excuse = get_trumps_and_excuse(cards)
     return len(trumps_and_excuse)
-
-
-def get_trumps_and_excuse(cards: List[Card]) -> List[Card]:
-    output_as_list = isinstance(cards, list)
-    cards = np.array(cards)
-    rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
-    if output_as_list:
-        rval = list(rval)
-    return rval
 
 
 def is_oudler(card: Card) -> bool:

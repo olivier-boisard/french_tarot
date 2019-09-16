@@ -1,20 +1,11 @@
-from typing import List
-
 import numpy as np
 
 from french_tarot.agents.common import Agent
 from french_tarot.agents.meta import singledispatchmethod
-from french_tarot.environment.common import Card, Bid, ChelemAnnouncement, PoigneeLength
-from french_tarot.environment.environment import get_minimum_allowed_bid, get_trumps_and_excuse, \
-    check_card_is_allowed, is_oudler
+from french_tarot.environment.common import Card, Bid, ChelemAnnouncement, PoigneeAnnouncement
+from french_tarot.environment.environment import get_minimum_allowed_bid, check_card_is_allowed, is_oudler
 from french_tarot.environment.observations import Observation, BidPhaseObservation, DogPhaseObservation, \
     AnnouncementPhaseObservation, CardPhaseObservation
-
-
-def sort_trump_and_excuse(trumps_and_excuse: List[Card]) -> List[Card]:
-    values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 22 for card in trumps_and_excuse]
-    sorted_indexes: np.array = np.argsort(values)
-    return list(np.array(trumps_and_excuse)[sorted_indexes])
 
 
 class RandomPlayer(Agent):
@@ -46,15 +37,11 @@ class RandomPlayer(Agent):
         announcements = []
         if len(observation.announcements) == 0 and self._random_state.rand(1, 1) < 0.1:
             announcements.append(ChelemAnnouncement())
-        trumps_and_excuse = sort_trump_and_excuse(get_trumps_and_excuse(observation.hand))
-        if len(trumps_and_excuse) >= PoigneeLength.TRIPLE_POIGNEE_SIZE:
-            announcements.append(trumps_and_excuse[:PoigneeLength.TRIPLE_POIGNEE_SIZE])
-        elif len(trumps_and_excuse) >= PoigneeLength.DOUBLE_POIGNEE_SIZE:
-            announcements.append(trumps_and_excuse[:PoigneeLength.DOUBLE_POIGNEE_SIZE])
-        elif len(trumps_and_excuse) >= PoigneeLength.SIMPLE_POIGNEE_SIZE:
-            announcements.append(trumps_and_excuse[:PoigneeLength.SIMPLE_POIGNEE_SIZE])
-        rval = announcements
-        return rval
+        hand = observation.hand
+        poignee = PoigneeAnnouncement.largest_possible_poignee_factory(hand)
+        if poignee is not None:
+            announcements.append(poignee)
+        return announcements
 
     @get_action.register
     def _(self, observation: DogPhaseObservation):

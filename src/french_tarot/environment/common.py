@@ -1,5 +1,8 @@
-from abc import ABC
+from abc import ABC, abstractstaticmethod
 from enum import Enum, IntEnum
+from typing import List
+
+import numpy as np
 
 
 class Card(Enum):
@@ -109,26 +112,82 @@ class ChelemAnnouncement(Announcement):
     pass
 
 
-class PoigneeLength(IntEnum):
+class Poignee:
     SIMPLE_POIGNEE_SIZE = 10
     DOUBLE_POIGNEE_SIZE = 13
     TRIPLE_POIGNEE_SIZE = 15
 
 
-POIGNEE_SIZE_TO_BONUS_POINTS = {
-    PoigneeLength.SIMPLE_POIGNEE_SIZE: 20,
-    PoigneeLength.DOUBLE_POIGNEE_SIZE: 30,
-    PoigneeLength.TRIPLE_POIGNEE_SIZE: 40
-}
-
-
 class PoigneeAnnouncement(Announcement, ABC):
 
-    def __init__(self, revealed_cards):
-        possible_poignee_lengths = list(map(int, PoigneeLength))
-        if len(revealed_cards) not in possible_poignee_lengths:
+    def __init__(self, revealed_cards: List[Card]):
+        if len(revealed_cards) != self.expected_length():
             raise ValueError("Invalid number of cards")
         self.revealed_cards = revealed_cards
 
     def __len__(self):
         return len(self.revealed_cards)
+
+    @staticmethod
+    def largest_possible_poignee_factory(hand):
+        trumps_and_excuse = sort_trump_and_excuse(get_trumps_and_excuse(hand))
+        poignee = None
+        for cls in PoigneeAnnouncement.__subclasses__():
+            if len(trumps_and_excuse) >= cls.expected_length():
+                poignee = trumps_and_excuse[:cls.expected_length()]
+                break
+        return poignee
+
+    @abstractstaticmethod
+    def expected_length():
+        pass
+
+    @abstractstaticmethod
+    def bonus_points():
+        pass
+
+
+class SimplePoigneeAnnouncement(PoigneeAnnouncement):
+
+    @abstractstaticmethod
+    def expected_length():
+        return 10
+
+    @abstractstaticmethod
+    def bonus_points():
+        return 20
+
+
+class DoublePoigneeAnnouncement(PoigneeAnnouncement):
+    @abstractstaticmethod
+    def expected_length():
+        return 13
+
+    @abstractstaticmethod
+    def bonus_points():
+        return 30
+
+
+class TriplePoigneeAnnouncement(PoigneeAnnouncement):
+    @abstractstaticmethod
+    def expected_length():
+        return 15
+
+    @abstractstaticmethod
+    def bonus_points():
+        return 40
+
+
+def sort_trump_and_excuse(trumps_and_excuse: List[Card]) -> List[Card]:
+    values = [int(card.value.split("_")[1]) if card != Card.EXCUSE else 22 for card in trumps_and_excuse]
+    sorted_indexes: np.array = np.argsort(values)
+    return list(np.array(trumps_and_excuse)[sorted_indexes])
+
+
+def get_trumps_and_excuse(cards: List[Card]) -> List[Card]:
+    output_as_list = isinstance(cards, list)
+    cards = np.array(cards)
+    rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
+    if output_as_list:
+        rval = list(rval)
+    return rval

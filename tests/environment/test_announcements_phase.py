@@ -72,7 +72,8 @@ def test_announce_simple_poignee_valid():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.GARDE_SANS)
-    observation, reward, done, _ = environment.step([PoigneeAnnouncement(list(environment._hand_per_player[0][-10:]))])
+    poignee = PoigneeAnnouncement.largest_possible_poignee_factory(environment._hand_per_player[0])
+    observation, reward, done, _ = environment.step([poignee])
     assert isinstance(observation.announcements[0], list)
     assert reward == 0
     assert not done
