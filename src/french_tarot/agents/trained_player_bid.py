@@ -43,19 +43,18 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         return Bid(output)
 
     @staticmethod
-    def _get_bid_value(output):
-        # TODO remove magic numbers
-        if output >= 0.9:
-            output = Bid.GARDE_CONTRE
-        elif output >= 0.8:
-            output = Bid.GARDE_SANS
-        elif output >= 0.6:
-            output = Bid.GARDE
-        elif output >= 0.5:
-            output = Bid.PETITE
+    def _get_bid_value(estimated_win_probability):
+        if estimated_win_probability >= 0.9:
+            bid_value = Bid.GARDE_CONTRE
+        elif estimated_win_probability >= 0.8:
+            bid_value = Bid.GARDE_SANS
+        elif estimated_win_probability >= 0.6:
+            bid_value = Bid.GARDE
+        elif estimated_win_probability >= 0.5:
+            bid_value = Bid.PETITE
         else:
-            output = Bid.PASS
-        return output
+            bid_value = Bid.PASS
+        return bid_value
 
     def enable_training(self):
         self._policy_net.train()
