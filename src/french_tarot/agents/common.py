@@ -1,5 +1,5 @@
 import random
-from abc import abstractmethod, ABC, abstractstaticmethod
+from abc import abstractmethod, ABC
 from collections import namedtuple
 from typing import List, Tuple
 
@@ -126,7 +126,8 @@ class BaseNeuralNetAgent(Agent):
         if self._step % 1000 == 0:
             self._summary_writer.add_scalar("Loss/train/" + self.__class__.__name__, self.loss[-1], self._step)
 
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def compute_loss(model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         pass
 

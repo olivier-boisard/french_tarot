@@ -1,5 +1,5 @@
 import functools
-from abc import ABC, abstractstaticmethod
+from abc import ABC, abstractmethod
 from enum import Enum, IntEnum
 from typing import List
 
@@ -148,11 +148,13 @@ class PoigneeAnnouncement(Announcement, ABC):
 
         return poignee
 
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def expected_length():
         pass
 
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def bonus_points():
         pass
 
