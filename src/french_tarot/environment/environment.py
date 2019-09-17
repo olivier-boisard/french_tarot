@@ -61,7 +61,7 @@ class FrenchTarotEnvironment:
         self._game_phase = None
         self._bid_per_player = None
         self.n_players = 4
-        self._n_cards_per_player = int((len(CARDS) - self._n_cards_in_dog) / self.n_players)
+        self._n_cards_per_player = int(np.round((len(CARDS) - self._n_cards_in_dog) / self.n_players))
         self._revealed_cards_in_dog = None
         self._announcements = None
         self._chelem_announced = None
@@ -149,6 +149,7 @@ class FrenchTarotEnvironment:
             victory_threshold = 56
         else:
             RuntimeError("Invalid number of oudlers")
+        # noinspection PyTypeChecker
         diff = abs(victory_threshold - taker_points)
         contract_value = 25 + diff
         # TODO use dictionary
@@ -288,6 +289,7 @@ class FrenchTarotEnvironment:
                 card_strengths.append(14)
             else:
                 card_strengths.append(int(card.value.split("_")[1]))
+        # noinspection PyTypeChecker
         return int(np.argmax(card_strengths))
 
     # TODO create smaller functions
@@ -383,6 +385,7 @@ class FrenchTarotEnvironment:
         reward = 0
         if len(self._bid_per_player) == self.n_players:
             done = np.all(np.array(self._bid_per_player) == Bid.PASS)
+            # noinspection PyTypeChecker
             taking_player = int(np.argmax(self._bid_per_player))
             original_player_ids = np.arange(taking_player, taking_player + self.n_players) % self.n_players
             self._original_player_ids = list(original_player_ids)
@@ -496,17 +499,18 @@ def is_oudler(card: Card) -> bool:
 
 def get_card_point(card: Card) -> float:
     if is_oudler(card) or "king" in card.value:
-        rval = 4.5
+        points = 4.5
     elif "queen" in card.value:
-        rval = 3.5
+        points = 3.5
     elif "rider" in card.value:
-        rval = 2.5
+        points = 2.5
     elif "jack" in card.value:
-        rval = 1.5
+        points = 1.5
     else:
-        rval = 0.5
-    return rval
+        points = 0.5
+    return points
 
 
 def get_card_set_point(card_list: List[Card]) -> float:
+    # noinspection PyTypeChecker
     return float(np.sum([get_card_point(card) for card in card_list]))

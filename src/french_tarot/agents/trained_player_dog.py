@@ -75,6 +75,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
 class DogPhaseAgentTrainer(Trainer):
 
     def __init__(self, *args, **kwargs):
+        # noinspection PyArgumentList
         super().__init__(*args, **kwargs)
         self._return_scale_factor = 0.001
 

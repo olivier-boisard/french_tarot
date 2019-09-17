@@ -20,6 +20,7 @@ def singledispatchmethod(func):
     def wrapper(*args, **kwargs):
         first_arg_type = type(args[1])
         func_to_call = _singledispatch_registry[func][first_arg_type]
+        # noinspection PyArgumentList
         return func_to_call(*args, **kwargs)
 
     def register(func_overload):

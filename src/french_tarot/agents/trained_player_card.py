@@ -7,7 +7,7 @@ from torch.nn.functional import smooth_l1_loss
 
 from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, encode_cards, Trainer
 from french_tarot.environment.common import CARDS
-from french_tarot.environment.observations import Observation
+from french_tarot.environment.observations import Observation, CardPhaseObservation
 
 FEATURE_VECTOR_SIZE = 16
 
@@ -22,6 +22,9 @@ def _encode_features(observation: dict) -> torch.Tensor:
 
 class CardPhaseTrainer(Trainer):
 
+    def push_to_memory(self, observation: CardPhaseObservation, action, reward):
+        raise NotImplementedError()
+
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
         raise NotImplementedError()
 
@@ -32,6 +35,7 @@ class CardPhaseTrainer(Trainer):
 class CardPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net, device: str = "cuda"):
+        # noinspection PyUnresolvedReferences
         net = CardPhaseAgent._create_dqn(base_card_neural_net).to(device)
         super().__init__(net)
 

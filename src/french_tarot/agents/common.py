@@ -106,7 +106,7 @@ class CoreCardNeuralNet(nn.Module):
 class Agent(ABC):
 
     @abstractmethod
-    def get_action(self, observation: dict):
+    def get_action(self, observation: Observation):
         pass
 
 

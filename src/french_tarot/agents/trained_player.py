@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Union
+from typing import Union, Dict
 
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
@@ -43,8 +43,8 @@ class DogPhaseAgentWithTrainer(AgentWithTrainer):
         super().__init__(agent, trainer)
 
 
-# TODO finish
 class AllPhasePlayerTrainer(Agent):
+    _agents_with_trainers: Dict[type, AgentWithTrainer]
 
     def __init__(self, summary_writer: SummaryWriter = None, **kwargs):
         super().__init__(**kwargs)
@@ -65,3 +65,6 @@ class AllPhasePlayerTrainer(Agent):
 
     def get_action(self, observation: Observation):
         return self._agents_with_trainers[observation.__class__].agent.get_action(observation)
+
+    def push_to_agent_memory(self, observation: Observation, action, reward):
+        self._agents_with_trainers[observation.__class__].trainer.push_to_memory(observation, action, reward)

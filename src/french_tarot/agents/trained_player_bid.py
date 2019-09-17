@@ -14,8 +14,8 @@ from french_tarot.environment.observations import BidPhaseObservation
 class BidPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", seed: int = 1988):
-        net = BidPhaseAgent._create_dqn(base_card_neural_net).to(device)
         # noinspection PyUnresolvedReferences
+        net = BidPhaseAgent._create_dqn(base_card_neural_net).to(device)
         super().__init__(net)
         self._epoch = 0
         self._random_state = RandomState(seed)
@@ -25,7 +25,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         self._step += 1
         output = self.policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
         bid = self._get_bid_value(output, observation.bid_per_player)
-        return Bid(bid)
+        return bid
 
     def get_random_action(self, observation: BidPhaseObservation):
         output = self._random_state.rand(1, 1)
@@ -47,7 +47,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
 
         if len(bid_per_player) > 0:
             if np.max(bid_per_player) >= bid_value:
-                output = Bid.PASS
+                bid_value = Bid.PASS
         return bid_value
 
     @property
