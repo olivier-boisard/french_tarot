@@ -12,7 +12,6 @@ from french_tarot.environment.common import Bid
 from french_tarot.environment.observations import BidPhaseObservation
 
 
-# TODO create smaller classes
 class BidPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", summary_writer: SummaryWriter = None,
