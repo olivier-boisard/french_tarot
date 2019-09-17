@@ -1,8 +1,9 @@
+from typing import Tuple
+
 import numpy as np
 import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
-from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, core, OptimizerWrapper
 from french_tarot.environment.common import CARDS
@@ -26,6 +27,9 @@ class CardPhaseOptimizer(OptimizerWrapper):
 
 class CardPhaseAgent(BaseNeuralNetAgent):
 
+    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        raise NotImplementedError()
+
     def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
         net = CardPhaseAgent._create_dqn(base_card_neural_net).to(device)
         super().__init__(net, CardPhaseOptimizer(net), **kwargs)
@@ -36,9 +40,6 @@ class CardPhaseAgent(BaseNeuralNetAgent):
         output_vector = self._policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
         output_vector[~hand_vector] = -np.inf
         return CARDS[output_vector.argmax()]
-
-    def optimize_model(self, tb_writer: SummaryWriter):
-        raise NotImplementedError()
 
     @staticmethod
     def _create_dqn(base_card_neural_net: torch.nn.Module) -> torch.nn.Module:
