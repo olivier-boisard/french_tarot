@@ -22,7 +22,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         self._epoch = 0
         self._summary_writer = summary_writer
 
-    def get_action(self, observation: BidPhaseObservation):
+    def get_action_wrapped(self, observation: BidPhaseObservation):
         state = core(observation.hand)
 
         eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
@@ -55,12 +55,6 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         else:
             bid_value = Bid.PASS
         return bid_value
-
-    def enable_training(self):
-        self._policy_net.train()
-
-    def disable_training(self):
-        self._policy_net.eval()
 
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
         input_vectors, target = self._get_input_and_target_tensors()

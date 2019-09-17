@@ -12,7 +12,7 @@ from french_tarot.environment.observations import Observation
 FEATURE_VECTOR_SIZE = 16
 
 
-def _extract_features(observation: dict) -> dict:
+def _extract_features(observation: Observation) -> dict:
     raise NotImplementedError()
 
 
@@ -34,7 +34,7 @@ class CardPhaseAgent(BaseNeuralNetAgent):
         net = CardPhaseAgent._create_dqn(base_card_neural_net).to(device)
         super().__init__(net, CardPhaseOptimizer(net), **kwargs)
 
-    def get_action(self, observation: Observation):
+    def get_action_wrapped(self, observation: Observation):
         hand_vector = core(observation.hand)
         additional_feature_vector = _encode_features(_extract_features(observation))
         output_vector = self._policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))

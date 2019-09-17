@@ -10,6 +10,7 @@ from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.environment.common import Card, CARDS
+from french_tarot.environment.observations import Observation
 
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
@@ -137,13 +138,16 @@ class OptimizerWrapper(ABC):
             self._summary_writer.add_scalar("Loss/train/" + self._name, self.loss[-1], self._step)
 
 
+# TODO use class for eps
 class BaseNeuralNetAgent(Agent, ABC):
     def __init__(
             self,
             policy_net: nn.Module,
             optimizer: OptimizerWrapper,
             eps_start: float = 0.9,
-            eps_end: float = 0.05, eps_decay: int = 500, batch_size: int = 64,
+            eps_end: float = 0.05,
+            eps_decay: int = 500,
+            batch_size: int = 64,
             replay_memory_size: int = 2000,
     ):
         self._policy_net = policy_net
@@ -163,6 +167,16 @@ class BaseNeuralNetAgent(Agent, ABC):
 
     @abstractmethod
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        pass
+
+    def get_action(self, observation: Observation):
+        self._policy_net.eval()
+        action = self.get_action_wrapped(observation)
+        self._policy_net.train()
+        return action
+
+    @abstractmethod
+    def get_action_wrapped(self, observation: Observation):
         pass
 
     def optimize_model(self):
