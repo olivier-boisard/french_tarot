@@ -16,7 +16,6 @@ def _card_is_ok_in_dog(card: Card) -> bool:
     return "trump" not in card.value and "king" not in card.value and "excuse" not in card.value
 
 
-# TODO create smaller classes
 class DogPhaseAgent(BaseNeuralNetAgent):
     """
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
