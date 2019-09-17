@@ -6,7 +6,7 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
-from torch import nn, optim, tensor
+from torch import nn, tensor
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
@@ -23,7 +23,7 @@ class Policy:
         self._eps_decay = eps_decay
         self._random_state = np.random.RandomState(random_seed)
 
-    def __call__(self, step):
+    def should_play_randomly(self, step):
         threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(-1. * step / self._eps_decay)
         plays_at_random = self._random_state.rand() > threshold
         return plays_at_random
@@ -168,7 +168,6 @@ class BaseNeuralNetAgent(Agent, ABC):
 
     def _initialize_internals(self):
         self._step = 0
-        self._optimizer = optim.Adam(self._policy_net.parameters())
         self.loss = []
         self._random_action_policy = Policy()
 
@@ -177,10 +176,13 @@ class BaseNeuralNetAgent(Agent, ABC):
         pass
 
     def get_action(self, observation: Observation):
-        self._policy_net.eval()
-        with torch.no_grad():
-            action = self.get_max_return_action(observation)
-        self._policy_net.train()
+        if not self._random_action_policy.should_play_randomly(self._step):
+            self._policy_net.eval()
+            with torch.no_grad():
+                action = self.get_max_return_action(observation)
+            self._policy_net.train()
+        else:
+            action = self.get_random_action()
         return action
 
     @abstractmethod
