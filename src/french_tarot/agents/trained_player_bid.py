@@ -18,7 +18,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
     def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", summary_writer: SummaryWriter = None,
                  **kwargs):
         # noinspection PyUnresolvedReferences
-        super(BidPhaseAgent, self).__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
+        super().__init__(BidPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
         self._epoch = 0
         self._summary_writer = summary_writer
 

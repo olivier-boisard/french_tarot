@@ -1,4 +1,4 @@
-from french_tarot.agents.common import core, BaseCardNeuralNet
+from french_tarot.agents.common import core, CoreCardNeuralNet
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.common import Bid
 from french_tarot.environment.environment import FrenchTarotEnvironment
@@ -14,7 +14,7 @@ def test_dog_phase_observation_encoder():
 
 
 def test_create_dog_phase_player():
-    player = DogPhaseAgent(BaseCardNeuralNet(), device="cpu")
+    player = DogPhaseAgent(CoreCardNeuralNet(), device="cpu")
     observation = _prepare_environment()
     action = player.get_action(observation)
     assert isinstance(action, list)

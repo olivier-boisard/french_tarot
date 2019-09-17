@@ -3,7 +3,7 @@ import itertools
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import core, BaseCardNeuralNet, Agent
+from french_tarot.agents.common import core, CoreCardNeuralNet, Agent
 from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_bid import BidPhaseAgent
@@ -18,7 +18,7 @@ class TrainedPlayer(Agent):
     def __init__(self, bid_phase_agent: torch.nn.Module = None, dog_phase_agent: torch.nn.Module = None,
                  summary_writer: SummaryWriter = None):
         random_agent = RandomPlayer()
-        base_card_neural_net = BaseCardNeuralNet()
+        base_card_neural_net = CoreCardNeuralNet()
         self._agents = {
             BidPhaseObservation.__name__: BidPhaseAgent(
                 base_card_neural_net, summary_writer=summary_writer) if bid_phase_agent is None else bid_phase_agent,

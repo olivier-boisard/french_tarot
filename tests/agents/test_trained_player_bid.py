@@ -1,4 +1,4 @@
-from french_tarot.agents.common import core, BaseCardNeuralNet
+from french_tarot.agents.common import core, CoreCardNeuralNet
 from french_tarot.agents.trained_player_bid import BidPhaseAgent
 from french_tarot.environment.common import Bid
 from french_tarot.environment.environment import FrenchTarotEnvironment
@@ -13,7 +13,7 @@ def test_bid_phase_observation_encoder():
 
 
 def test_create_bid_phase_player():
-    player = BidPhaseAgent(BaseCardNeuralNet(), device="cpu")
+    player = BidPhaseAgent(CoreCardNeuralNet(), device="cpu")
     observation = FrenchTarotEnvironment().reset()
     action = player.get_action(observation)
     assert isinstance(action, Bid)

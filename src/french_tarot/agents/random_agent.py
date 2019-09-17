@@ -11,7 +11,7 @@ from french_tarot.environment.observations import Observation, BidPhaseObservati
 class RandomPlayer(Agent):
 
     def __init__(self, seed: int = 1988):
-        super(RandomPlayer, self).__init__()
+        super().__init__()
         self._random_state = np.random.RandomState(seed)
 
     @singledispatchmethod

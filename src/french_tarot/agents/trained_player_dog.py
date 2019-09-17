@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn.functional import smooth_l1_loss
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, BaseCardNeuralNet
+from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, CoreCardNeuralNet
 from french_tarot.environment.common import Card, CARDS
 from french_tarot.environment.observations import DogPhaseObservation
 
@@ -26,7 +26,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net, device: str = "cuda", summary_writer: SummaryWriter = None, **kwargs):
         # noinspection PyUnresolvedReferences
-        super(DogPhaseAgent, self).__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
+        super().__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
         self._epoch = 0
         self._summary_writer = summary_writer
         self._return_scale_factor = 0.001
@@ -99,8 +99,8 @@ class DogPhaseAgent(BaseNeuralNetAgent):
 
 class TrainedPlayerDogNeuralNet(nn.Module):
 
-    def __init__(self, base_card_neural_net: BaseCardNeuralNet):
-        super(TrainedPlayerDogNeuralNet, self).__init__()
+    def __init__(self, base_card_neural_net: CoreCardNeuralNet):
+        super().__init__()
         self.base_card_neural_net = base_card_neural_net
         nn_width = base_card_neural_net.output_dimensions
         self.merge_tower = nn.Sequential(

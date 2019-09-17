@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, BaseCardNeuralNet, core
+from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, core
 from french_tarot.environment.common import CARDS
 from french_tarot.environment.observations import Observation
 
@@ -21,7 +21,7 @@ def _encode_features(observation: dict) -> torch.Tensor:
 class CardPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
-        super(CardPhaseAgent, self).__init__(CardPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
+        super().__init__(CardPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
 
     def get_action(self, observation: Observation):
         hand_vector = core(observation.hand)
@@ -40,8 +40,8 @@ class CardPhaseAgent(BaseNeuralNetAgent):
 
 class CardPhaseNeuralNet(torch.nn.Module):
 
-    def __init__(self, base_card_neural_net: BaseCardNeuralNet, n_additional_features: int):
-        super(CardPhaseNeuralNet, self).__init__()
+    def __init__(self, base_card_neural_net: CoreCardNeuralNet, n_additional_features: int):
+        super().__init__()
         self._base_card_neural_net = base_card_neural_net
         n_inputs = base_card_neural_net.output_dimensions + n_additional_features
         nn_width = 256

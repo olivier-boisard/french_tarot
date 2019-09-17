@@ -23,7 +23,7 @@ class _AfterBidPhaseObservation(Observation):
             original_dog: List[Card],
             original_player_ids: List[int]
     ):
-        super(_AfterBidPhaseObservation, self).__init__(game_phase, bid_per_player, current_player_id, hand)
+        super().__init__(game_phase, bid_per_player, current_player_id, hand)
         self.original_dog = original_dog
         self.original_player_ids = original_player_ids
 
@@ -40,7 +40,7 @@ class _AfterDogPhaseObservation(_AfterBidPhaseObservation):
             revealed_cards_in_new_dog: List[Card],
             announcements: List[Announcement]
     ):
-        super(_AfterBidPhaseObservation, self).__init__(game_phase, bid_per_player, current_player_id, hand)
+        super().__init__(game_phase, bid_per_player, current_player_id, hand, original_dog, original_player_ids)
         self.original_dog = original_dog
         self.original_player_ids = original_player_ids
         self.revealed_cards_in_new_dog = revealed_cards_in_new_dog
@@ -80,8 +80,8 @@ class CardPhaseObservation(_AfterDogPhaseObservation):
             played_cards_in_round: List[Card],
             past_rounds: List[Round]
     ):
-        super(CardPhaseObservation, self).__init__(game_phase, bid_per_player, current_player_id, hand,
-                                                   original_dog, original_player_ids,
-                                                   revealed_cards_in_new_dog, announcements)
+        super().__init__(game_phase, bid_per_player, current_player_id, hand,
+                         original_dog, original_player_ids,
+                         revealed_cards_in_new_dog, announcements)
         self.played_cards_in_round = played_cards_in_round
         self.past_rounds = past_rounds

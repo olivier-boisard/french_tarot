@@ -38,24 +38,24 @@ class ReplayMemory:
         return len(self.memory)
 
 
-class BaseCardNeuralNet(nn.Module):
+class CoreCardNeuralNet(nn.Module):
     N_CARDS_PER_COLOR = 14
     N_TRUMPS_AND_EXCUSES = 22
 
     def __init__(self):
-        super(BaseCardNeuralNet, self).__init__()
+        super().__init__()
         self._initialize_neural_net()
 
     def _initialize_neural_net(self, width=64):
         self.standard_cards_tower = nn.Sequential(
-            nn.Linear(BaseCardNeuralNet.N_CARDS_PER_COLOR, width),
+            nn.Linear(CoreCardNeuralNet.N_CARDS_PER_COLOR, width),
             nn.ReLU(),
             nn.BatchNorm1d(width),
             nn.Linear(width, width),
             nn.ReLU()
         )
         self.trump_tower = nn.Sequential(
-            nn.Linear(BaseCardNeuralNet.N_TRUMPS_AND_EXCUSES, width),
+            nn.Linear(CoreCardNeuralNet.N_TRUMPS_AND_EXCUSES, width),
             nn.ReLU(),
             nn.BatchNorm1d(width),
             nn.Linear(width, width),
@@ -76,7 +76,7 @@ class BaseCardNeuralNet(nn.Module):
         return self.merge_tower[-2].out_features
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        n = BaseCardNeuralNet.N_CARDS_PER_COLOR
+        n = CoreCardNeuralNet.N_CARDS_PER_COLOR
         x_color_1 = self.standard_cards_tower(x[:, :n])
         x_color_2 = self.standard_cards_tower(x[:, n:2 * n])
         x_color_3 = self.standard_cards_tower(x[:, 2 * n:3 * n])
