@@ -152,17 +152,8 @@ class FrenchTarotEnvironment:
         # noinspection PyTypeChecker
         diff = abs(victory_threshold - taker_points)
         contract_value = 25 + diff
-        # TODO use dictionary
-        if self._bid_per_player[0] == Bid.PETITE:
-            multiplier = 1
-        elif self._bid_per_player[0] == Bid.GARDE:
-            multiplier = 2
-        elif self._bid_per_player[0] == Bid.GARDE_SANS:
-            multiplier = 4
-        elif self._bid_per_player[0] == Bid.GARDE_CONTRE:
-            multiplier = 6
-        else:
-            raise RuntimeError("Invalid contract value")
+        bid_to_multiplier_map = {Bid.PETITE: 1, Bid.GARDE: 2, Bid.GARDE_SANS: 4, Bid.GARDE_CONTRE: 6}
+        multiplier = bid_to_multiplier_map[self._bid_per_player[0]]
         contract_value = int(contract_value * multiplier)
         if taker_points < victory_threshold:
             contract_value *= -1
