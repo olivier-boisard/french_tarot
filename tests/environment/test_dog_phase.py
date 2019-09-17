@@ -4,6 +4,7 @@ import pytest
 from french_tarot.environment.common import Card, Bid, CARDS
 from french_tarot.environment.environment import FrenchTarotEnvironment
 from french_tarot.environment.observations import AnnouncementPhaseObservation
+from french_tarot.exceptions import FrenchTarotException
 
 
 def setup_environment():
@@ -48,28 +49,28 @@ def test_make_dog():
 def test_make_dog_with_duplicated_card():
     dog = [Card.SPADES_1, Card.SPADES_1, Card.SPADES_3, Card.SPADES_4, Card.SPADES_5, Card.SPADES_6]
     environment = setup_environment()
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(dog)
 
 
 def test_make_dog_with_king():
     dog = [Card.SPADES_1, Card.SPADES_2, Card.SPADES_3, Card.SPADES_4, Card.SPADES_5, Card.SPADES_KING]
     environment = setup_environment()
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(dog)
 
 
 def test_make_dog_with_oudler():
     dog = [Card.SPADES_1, Card.SPADES_2, Card.SPADES_3, Card.SPADES_4, Card.SPADES_5, Card.EXCUSE]
     environment = setup_environment()
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(dog)
 
 
 def test_make_dog_with_trump_invalid():
     dog = [Card.TRUMP_1, Card.SPADES_1, Card.SPADES_3, Card.SPADES_4, Card.SPADES_5, Card.SPADES_6]
     environment = setup_environment()
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(dog)
 
 
@@ -100,7 +101,7 @@ def test_make_dog_without_trump():
 def test_dog_with_card_not_in_players_hand():
     environment = prepare_environment_sorted_deck()
     dog = list(environment._hand_per_player[0][:6])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(dog)
 
 
@@ -113,5 +114,5 @@ def test_dog_has_wrong_number_of_cards():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     dog = list(environment._hand_per_player[0][:5])  # taking player is always player 0
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(dog)

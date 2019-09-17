@@ -1,5 +1,7 @@
 from functools import update_wrapper
 
+from french_tarot.exceptions import FrenchTarotException
+
 _singledispatch_registry = {}
 
 
@@ -14,7 +16,7 @@ def singledispatchmethod(func):
     """
 
     if func in _singledispatch_registry:
-        raise ValueError("Function already declared as polymorphic")
+        raise FrenchTarotException("Function already declared as polymorphic")
     _singledispatch_registry[func] = {_get_first_arg_type(func): func}
 
     def wrapper(*args, **kwargs):

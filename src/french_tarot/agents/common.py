@@ -12,6 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.environment.common import Card, CARDS
 from french_tarot.environment.observations import Observation
+from french_tarot.exceptions import FrenchTarotException
 
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
@@ -135,7 +136,7 @@ class Trainer(ABC):
 
     def _check_parameters(self):
         if self._summary_writer is not None and self._name is None:
-            raise ValueError("name should not be None if summary_writer is not None")
+            raise FrenchTarotException("name should not be None if summary_writer is not None")
 
     @abstractmethod
     def push_to_memory(self, observation: Observation, action, reward):

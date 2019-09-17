@@ -1,0 +1,2 @@
+class FrenchTarotException(Exception):
+    pass

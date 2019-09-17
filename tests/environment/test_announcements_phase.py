@@ -3,6 +3,7 @@ import pytest
 from french_tarot.environment.common import Card, Bid, CARDS, ChelemAnnouncement, PoigneeAnnouncement
 from french_tarot.environment.environment import FrenchTarotEnvironment
 from french_tarot.environment.observations import CardPhaseObservation
+from french_tarot.exceptions import FrenchTarotException
 
 
 def setup_environment():
@@ -17,20 +18,20 @@ def setup_environment():
 
 def test_invalid_action():
     environment = setup_environment()
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.SPADES_1)
 
 
 def test_invalid_action_list():
     environment = setup_environment()
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([Card.SPADES_1])
 
 
 def test_invalid_two_poignees():
     environment = setup_environment()
     cards_list = get_card_list()[:10]
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([cards_list, cards_list])
 
 
@@ -60,7 +61,7 @@ def test_complete_announcement_phase():
 def test_announce_chelem_by_non_taking_player():
     environment = setup_environment()
     environment.step([])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([ChelemAnnouncement()])
 
 
@@ -104,7 +105,7 @@ def test_announce_chelem_wrong_string():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(["test"])
 
 
@@ -122,7 +123,7 @@ def test_announce_simple_poignee_excuse_refused():
     environment.step([])
     environment.step([])
     environment.step([])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([environment._hand_per_player[-1][-10:]])
 
 
@@ -160,7 +161,7 @@ def test_announce_simple_poignee_no_trump():
     environment.step([])
     environment.step([])
     environment.step([])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([environment._hand_per_player[0][-10:]])
 
 
@@ -176,7 +177,7 @@ def test_announce_simple_poignee_no_such_cards_in_hand():
     environment.step([])
     environment.step([])
     environment.step([])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         card_list = [Card.TRUMP_1, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_7,
                      Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_21]
         environment.step([card_list])
@@ -188,11 +189,11 @@ def test_announce_poignee_invalid():
     environment.step([])
     environment.step([])
     environment.step([])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([get_card_list()[:9]])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([get_card_list()[:11]])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([get_card_list()[:14]])
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step([get_card_list()[:16]])

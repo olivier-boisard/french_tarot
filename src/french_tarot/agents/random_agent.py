@@ -6,6 +6,7 @@ from french_tarot.environment.common import Card, Bid, ChelemAnnouncement, Poign
 from french_tarot.environment.environment import get_minimum_allowed_bid, check_card_is_allowed, is_oudler
 from french_tarot.environment.observations import Observation, BidPhaseObservation, DogPhaseObservation, \
     AnnouncementPhaseObservation, CardPhaseObservation
+from french_tarot.exceptions import FrenchTarotException
 
 
 class RandomPlayer(Agent):
@@ -16,7 +17,7 @@ class RandomPlayer(Agent):
 
     @singledispatchmethod
     def get_action(self, observation: Observation):
-        raise ValueError("Unhandled game phase")
+        raise FrenchTarotException("Unhandled game phase")
 
     @get_action.register
     def _(self, observation: CardPhaseObservation):
@@ -26,7 +27,7 @@ class RandomPlayer(Agent):
             try:
                 check_card_is_allowed(card, observation.played_cards_in_round, observation.hand)
                 allowed_cards.append(True)
-            except ValueError:
+            except FrenchTarotException:
                 allowed_cards.append(False)
         assert 1 <= np.sum(allowed_cards) <= len(observation.hand)
         rval = self._random_state.choice(card_list[allowed_cards])

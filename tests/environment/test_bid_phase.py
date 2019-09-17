@@ -6,6 +6,7 @@ import pytest
 from french_tarot.environment.common import Card, Bid, CARDS
 from french_tarot.environment.environment import FrenchTarotEnvironment
 from french_tarot.environment.observations import BidPhaseObservation, AnnouncementPhaseObservation
+from french_tarot.exceptions import FrenchTarotException
 
 
 @pytest.fixture(scope="module")
@@ -50,7 +51,7 @@ def test_bid_petite_after_pass(environment):
 def test_bid_petite_after_garde(environment):
     environment.reset()
     environment.step(Bid.GARDE)
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Bid.PETITE)
 
 
@@ -90,7 +91,7 @@ def test_bid_completed(environment):
 
 def test_wrong_action_in_bid(environment):
     environment.reset()
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.SPADES_1)
 
 
@@ -109,5 +110,5 @@ def test_five_bids(environment):
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Bid.PASS)

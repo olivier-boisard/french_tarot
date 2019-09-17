@@ -123,7 +123,7 @@ class PoigneeAnnouncement(Announcement, ABC):
 
     def __init__(self, revealed_cards: List[Card]):
         if len(revealed_cards) != self.expected_length():
-            raise ValueError("Invalid number of cards")
+            raise FrenchTarotException("Invalid number of cards")
         self.revealed_cards = revealed_cards
 
     def __len__(self):

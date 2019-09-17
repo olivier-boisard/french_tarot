@@ -8,6 +8,7 @@ from french_tarot.environment.common import Card, GamePhase, Bid, CARDS, Poignee
     ChelemAnnouncement, get_trumps_and_excuse
 from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
     AnnouncementPhaseObservation, CardPhaseObservation, Round, Observation
+from french_tarot.exceptions import FrenchTarotException
 
 
 def rotate_list(input_list: List, n: int) -> List:
@@ -25,7 +26,7 @@ def check_trump_or_pee_is_allowed(played_card: Card, played_cards_before: List[C
     if asked_color is not None:
         for card in player_hand:
             if asked_color in card.value or ("trump" in card.value and "trump" not in played_card.value):
-                raise ValueError("Trump or pee unallowed")
+                raise FrenchTarotException("Trump or pee unallowed")
 
 
 def check_trump_value_is_allowed(card: Card, played_cards_before: List[Card], current_player_hand: List[Card]):
@@ -35,12 +36,12 @@ def check_trump_value_is_allowed(card: Card, played_cards_before: List[Card], cu
     max_played_trump = np.max(played_trump) if len(played_trump) > 0 else 0
     card_strength = int(card.value.split("_")[1])
     if max_trump_in_hand > max_played_trump > card_strength:
-        raise ValueError("Higher trump value must be played when possible")
+        raise FrenchTarotException("Higher trump value must be played when possible")
 
 
 def check_card_is_allowed(card: Card, played_cards: List[Card], player_hand: List[Card]):
     if card not in player_hand:
-        raise ValueError("Card not in current player's hand")
+        raise FrenchTarotException("Card not in current player's hand")
     card_color = card.value.split("_")[0]
     asked_color = _retrieve_asked_color(played_cards)
     if card_color != asked_color and card != Card.EXCUSE and len(played_cards) > 0:
@@ -91,7 +92,7 @@ class FrenchTarotEnvironment:
     # TODO create smaller functions
     def _play_card(self, card: Card) -> Tuple[List[float], bool, any]:
         if not isinstance(card, Card):
-            raise ValueError("Action must be card")
+            raise FrenchTarotException("Action must be card")
         check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player])
         self._played_cards_in_round.append(card)
 
@@ -286,30 +287,30 @@ class FrenchTarotEnvironment:
     # TODO create smaller functions
     def _announce(self, action: List[Announcement]) -> Tuple[float, bool, any]:
         if not isinstance(action, list):
-            raise ValueError("Input should be list")
+            raise FrenchTarotException("Input should be list")
         for announcement in action:
             # TODO use function overloading
             if not isinstance(announcement, Announcement):
-                raise ValueError("Invalid action type")
+                raise FrenchTarotException("Invalid action type")
             elif isinstance(announcement, PoigneeAnnouncement):
                 current_player_hand = self._hand_per_player[self.current_player]
                 n_cards = len(announcement)
                 if count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
-                    raise ValueError("Invalid cards in poignee")
+                    raise FrenchTarotException("Invalid cards in poignee")
                 n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
                 if Card.EXCUSE in announcement.revealed_cards and n_trumps_in_hand != n_cards:
-                    raise ValueError("Excuse can be revealed only if player does not have any other trumps")
+                    raise FrenchTarotException("Excuse can be revealed only if player does not have any other trumps")
                 elif count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
-                    raise ValueError("Revealed cards should be only trumps or excuse")
+                    raise FrenchTarotException("Revealed cards should be only trumps or excuse")
                 elif np.any([card not in current_player_hand for card in announcement.revealed_cards]):
-                    raise ValueError("Revealed card not owned by player")
+                    raise FrenchTarotException("Revealed card not owned by player")
             elif isinstance(announcement, ChelemAnnouncement):
                 if len(self._announcements) > 0:
-                    raise ValueError("Only taker can announce chelem")
+                    raise FrenchTarotException("Only taker can announce chelem")
                 self._chelem_announced = True
 
         if np.sum([isinstance(announcement, list) for announcement in action]) > 1:
-            raise ValueError("Player tried to announcement more than 1 poignees")
+            raise FrenchTarotException("Player tried to announcement more than 1 poignees")
 
         self._announcements.append(action)
         if len(self._announcements) == self.n_players:
@@ -327,17 +328,17 @@ class FrenchTarotEnvironment:
     def _make_dog(self, dog: List[Card]) -> Tuple[float, bool, any]:
         taking_player_hand = self._hand_per_player[0]  # At this point, taking player is always player 0
         if type(dog) != list:
-            raise ValueError("Wrong type for 'action'")
+            raise FrenchTarotException("Wrong type for 'action'")
         if len(set(dog)) != len(dog):
-            raise ValueError("Duplicated cards in dog")
+            raise FrenchTarotException("Duplicated cards in dog")
         if np.any(["king" in card.value for card in dog]):
-            raise ValueError("There should be no king in dog")
+            raise FrenchTarotException("There should be no king in dog")
         if np.any([is_oudler(card) for card in dog]):
-            raise ValueError("There should be no oudler in dog")
+            raise FrenchTarotException("There should be no oudler in dog")
         if np.any([card not in taking_player_hand for card in dog]):
-            raise ValueError("Card in dog not in taking player's hand")
+            raise FrenchTarotException("Card in dog not in taking player's hand")
         if len(dog) != self._n_cards_in_dog:
-            raise ValueError("Wrong number of cards in dog")
+            raise FrenchTarotException("Wrong number of cards in dog")
 
         n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
         if n_trumps_in_dog > 0:
@@ -346,7 +347,7 @@ class FrenchTarotEnvironment:
             allowed_trumps_in_dog = self._n_cards_in_dog - (
                     len(taking_player_hand) - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
             if n_trumps_in_dog != allowed_trumps_in_dog:
-                raise ValueError("There should be no more trumps in dog than needed")
+                raise FrenchTarotException("There should be no more trumps in dog than needed")
 
             card_in_dog_is_trump = np.array(["trump" in card.value for card in dog])
             self._revealed_cards_in_dog = list(np.array(dog)[card_in_dog_is_trump])
@@ -366,10 +367,10 @@ class FrenchTarotEnvironment:
     # TODO create smaller functions
     def _bid(self, action: Bid) -> Tuple[float, bool, any]:
         if type(action) != Bid:
-            raise ValueError("Wrong type for 'action'")
+            raise FrenchTarotException("Wrong type for 'action'")
 
         if action != Bid.PASS and action < get_minimum_allowed_bid(self._bid_per_player):
-            raise ValueError("Action is not pass and is lower than highest bid")
+            raise FrenchTarotException("Action is not pass and is lower than highest bid")
 
         self._bid_per_player.append(action)
         self.current_player = len(self._bid_per_player)
@@ -427,7 +428,7 @@ class FrenchTarotEnvironment:
 
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):
-            raise ValueError("Deck has wrong number of cards")
+            raise FrenchTarotException("Deck has wrong number of cards")
         self._hand_per_player = [
             deck[:self._n_cards_per_player],
             deck[self._n_cards_per_player:2 * self._n_cards_per_player],

@@ -11,6 +11,7 @@ from joblib import Parallel, delayed
 
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.environment.environment import FrenchTarotEnvironment
+from french_tarot.exceptions import FrenchTarotException
 
 N_ITERATIONS = 1000
 
@@ -41,7 +42,7 @@ def _run_game(iteration: int, initial_seed: int = 0) -> np.array:
         random_agent_copy = copy.deepcopy(random_agent)
         try:
             observation, reward, done, _ = environment.step(random_agent.get_action(observation))
-        except ValueError as e:
+        except FrenchTarotException as e:
             obj = {"agent": random_agent_copy, "environment": environment_copy, "observation": observation,
                    "done": done}
             timestamp = str(datetime.datetime.now()).replace(" ", "_").replace(":", "-").replace(".", "-")

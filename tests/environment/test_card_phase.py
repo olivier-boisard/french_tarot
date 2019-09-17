@@ -2,6 +2,7 @@ import pytest
 
 from french_tarot.environment.common import Card, Bid, CARDS, ChelemAnnouncement, PoigneeAnnouncement
 from french_tarot.environment.environment import FrenchTarotEnvironment, get_card_set_point
+from french_tarot.exceptions import FrenchTarotException
 
 
 def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
@@ -18,7 +19,7 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
         else:
             environment.step(Bid.PASS)
     if not good:
-        raise ValueError("No taking player")
+        raise FrenchTarotException("No taking player")
 
     announcements = []
     if chelem:
@@ -45,14 +46,14 @@ def test_start_valid_card():
 
 def test_start_invalid_action():
     environment = setup_environment()[0]
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(ChelemAnnouncement())
 
 
 def test_start_invalid_card_not_in_hand():
     environment = setup_environment()[0]
     played_card = environment._hand_per_player[1][0]
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(played_card)
 
 
@@ -135,7 +136,7 @@ def test_play_trump_invalid():
     environment._hand_per_player = [[Card.SPADES_1, Card.SPADES_2], [Card.SPADES_3, Card.TRUMP_1],
                                     [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
     environment.step(Card.SPADES_1)
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.TRUMP_1)
 
 
@@ -144,7 +145,7 @@ def test_play_trump_below_trump_unallowed():
     environment._hand_per_player = [[Card.TRUMP_10, Card.TRUMP_11], [Card.TRUMP_1, Card.TRUMP_12],
                                     [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
     environment.step(Card.TRUMP_10)
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.TRUMP_1)
 
 
@@ -153,14 +154,14 @@ def test_pee_not_allowed():
     environment._hand_per_player = [[Card.SPADES_1, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
                                     [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
     environment.step(Card.SPADES_1)
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.HEART_4)
 
 
 def test_play_card_not_in_hand():
     environment = setup_environment()[0]
     environment._hand_per_player = [[Card.SPADES_1], [Card.SPADES_7], [Card.SPADES_3], [Card.SPADES_2]]
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.HEART_4)
 
 
@@ -172,7 +173,7 @@ def test_play_twice_same_card():
     environment.step(Card.SPADES_3)
     environment.step(Card.SPADES_4)
     environment.step(Card.SPADES_7)
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.SPADES_10)
 
 
@@ -675,7 +676,7 @@ def test_pee_unallowed():
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
-    with pytest.raises(ValueError):
+    with pytest.raises(FrenchTarotException):
         environment.step(Card.DIAMOND_QUEEN)
 
 
