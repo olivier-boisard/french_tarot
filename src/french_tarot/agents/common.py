@@ -109,15 +109,20 @@ class Agent(ABC):
     def get_action(self, observation: dict):
         pass
 
-    @abstractmethod
-    def optimize_model(self):
-        pass
-
 
 class Trainer(ABC):
 
-    def __init__(self, net: nn.Module, summary_writer: SummaryWriter = None, name=None):
+    def __init__(
+            self,
+            net: nn.Module,
+            batch_size: int = 64,
+            replay_memory_size: int = 20000,
+            summary_writer: SummaryWriter = None,
+            name=None
+    ):
         self._net = net
+        self._batch_size = batch_size
+        self.memory = ReplayMemory(replay_memory_size)
         self._summary_writer = summary_writer
         self._name = name
         self._optimizer = Adam(net.parameters())
@@ -133,10 +138,23 @@ class Trainer(ABC):
             raise ValueError("name should not be None if summary_writer is not None")
 
     @abstractmethod
+    def push_to_memory(self, observation: Observation, action, reward):
+        pass
+
+    @abstractmethod
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         pass
 
-    def train_model_one_step(self, model_output: torch.Tensor, target: torch.Tensor):
+    @abstractmethod
+    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        pass
+
+    def optimize_model(self):
+        if len(self.memory) > self._batch_size:
+            model_output, target = self.get_model_output_and_target()
+            self._train_model_one_step(model_output, target)
+
+    def _train_model_one_step(self, model_output: torch.Tensor, target: torch.Tensor):
         self._step += 1
         loss = self.compute_loss(model_output, target)
         self.loss.append(loss.item())
@@ -145,44 +163,35 @@ class Trainer(ABC):
         loss.backward()
         nn.utils.clip_grad_norm_(self._net.parameters(), 0.1)
         self._optimizer.step()
-        self.log()
+        self._log()
 
-    def log(self):
-        if self._step % 1000 == 0:
+    def _log(self):
+        if self._step % 1000 == 0 and self._summary_writer is not None:
             self._summary_writer.add_scalar("Loss/train/" + self._name, self.loss[-1], self._step)
+
+    @property
+    def device(self) -> str:
+        return "cuda" if next(self._net.parameters()).is_cuda else "cpu"
 
 
 class BaseNeuralNetAgent(Agent, ABC):
-    def __init__(
-            self,
-            policy_net: nn.Module,
-            optimizer: Trainer,
-            batch_size: int = 64,
-            replay_memory_size: int = 2000
-    ):
-        self._policy_net = policy_net
-        self._optimizer = optimizer
-        self._batch_size = batch_size
-        self.memory = ReplayMemory(replay_memory_size)
+    def __init__(self, policy_net: nn.Module):
+        self.policy_net = policy_net
         self._initialize_internals()
 
     def _initialize_internals(self):
         self._step = 0
-        self.loss = []
         self._random_action_policy = Policy()
 
-    @abstractmethod
-    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        pass
-
     def get_action(self, observation: Observation):
+        self._step += 1
         if not self._random_action_policy.should_play_randomly(self._step):
-            self._policy_net.eval()
+            self.policy_net.eval()
             with torch.no_grad():
                 action = self.get_max_return_action(observation)
-            self._policy_net.train()
+            self.policy_net.train()
         else:
-            action = self.get_random_action()
+            action = self.get_random_action(observation)
         return action
 
     @abstractmethod
@@ -193,18 +202,13 @@ class BaseNeuralNetAgent(Agent, ABC):
     def get_random_action(self, observation: Observation):
         pass
 
-    def optimize_model(self):
-        if len(self.memory) > self._batch_size:
-            model_output, target = self.get_model_output_and_target()
-            self._optimizer.train_model_one_step(model_output, target)
-
     @property
     def device(self) -> str:
-        return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
+        return "cuda" if next(self.policy_net.parameters()).is_cuda else "cpu"
 
 
-def core(card_set: List[Card]) -> torch.Tensor:
-    return tensor([card in card_set for card in CARDS]).float()
+def encode_cards(cards: List[Card]) -> torch.Tensor:
+    return tensor([card in cards for card in CARDS]).float()
 
 
 def set_all_seeds(seed: int = 1988):

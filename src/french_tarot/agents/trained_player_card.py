@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
-from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, core, Trainer
+from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, encode_cards, Trainer
 from french_tarot.environment.common import CARDS
 from french_tarot.environment.observations import Observation
 
@@ -21,23 +21,24 @@ def _encode_features(observation: dict) -> torch.Tensor:
 
 
 class CardPhaseTrainer(Trainer):
+
+    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        raise NotImplementedError()
+
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         return smooth_l1_loss(model_output, target)
 
 
 class CardPhaseAgent(BaseNeuralNetAgent):
 
-    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        raise NotImplementedError()
-
-    def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
+    def __init__(self, base_card_neural_net, device: str = "cuda"):
         net = CardPhaseAgent._create_dqn(base_card_neural_net).to(device)
-        super().__init__(net, CardPhaseTrainer(net), **kwargs)
+        super().__init__(net)
 
     def get_max_return_action(self, observation: Observation):
-        hand_vector = core(observation.hand)
+        hand_vector = encode_cards(observation.hand)
         additional_feature_vector = _encode_features(_extract_features(observation))
-        output_vector = self._policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
+        output_vector = self.policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
         output_vector[~hand_vector] = -np.inf
         return CARDS[output_vector.argmax()]
 

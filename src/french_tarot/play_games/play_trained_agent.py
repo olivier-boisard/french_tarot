@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import set_all_seeds
 from french_tarot.agents.performance_evaluation import compute_diff_score_metric
-from french_tarot.agents.trained_player import TrainedPlayer
+from french_tarot.agents.trained_player import AllPhasePlayerTrainer
 from french_tarot.environment.common import Bid
 from french_tarot.environment.environment import FrenchTarotEnvironment, rotate_list
 from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation
@@ -13,12 +13,12 @@ from french_tarot.environment.observations import BidPhaseObservation, DogPhaseO
 def _main(n_episodes_training: int = 200000):
     set_all_seeds()
     writer = SummaryWriter()
-    trained_agent = TrainedPlayer(summary_writer=writer)
+    trained_agent = AllPhasePlayerTrainer(summary_writer=writer)
     _run_training(trained_agent, n_episodes_training, writer)
 
 
 # TODO create smaller functions
-def _run_training(agent: TrainedPlayer, n_episodes: int, tb_writer: SummaryWriter):
+def _run_training(agent: AllPhasePlayerTrainer, n_episodes: int, tb_writer: SummaryWriter):
     environment = FrenchTarotEnvironment()
     for i in tqdm.tqdm(range(n_episodes)):
         observation = environment.reset()

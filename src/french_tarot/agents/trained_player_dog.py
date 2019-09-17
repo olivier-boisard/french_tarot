@@ -1,13 +1,13 @@
 import copy
+import itertools
 from typing import List, Tuple
 
 import numpy as np
 import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
-from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, CoreCardNeuralNet, Trainer
+from french_tarot.agents.common import BaseNeuralNetAgent, encode_cards, CoreCardNeuralNet, Trainer, Transition
 from french_tarot.environment.common import Card, CARDS
 from french_tarot.environment.observations import DogPhaseObservation, Observation
 
@@ -25,21 +25,18 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     CARDS_OK_IN_DOG = [card for card in CARDS if _card_is_ok_in_dog(card)]
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
 
-    def __init__(self, base_card_neural_net, device: str = "cuda", summary_writer: SummaryWriter = None, **kwargs):
-        net = DogPhaseAgent._create_dqn(base_card_neural_net).to(device)
+    def __init__(self, base_card_neural_net, device: str = "cuda"):
         # noinspection PyUnresolvedReferences
-        super().__init__(net, DogPhaseAgentTrainer(net), **kwargs)
-        self._epoch = 0
-        self._summary_writer = summary_writer
-        self._return_scale_factor = 0.001
+        net = DogPhaseAgent._create_dqn(base_card_neural_net).to(device)
+        super().__init__(net)
 
     def get_max_return_action(self, observation: DogPhaseObservation):
         hand = copy.copy(observation.hand)
         selected_cards = torch.zeros(len(CARDS))
         dog_size = len(observation.original_dog)
         for _ in range(dog_size):
-            xx = torch.cat([core(hand), selected_cards]).unsqueeze(0)
-            xx = self._policy_net(xx.to(self.device)).squeeze()
+            xx = torch.cat([encode_cards(hand), selected_cards]).unsqueeze(0)
+            xx = self.policy_net(xx.to(self.device)).squeeze()
 
             xx[DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()
@@ -74,10 +71,33 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
         return TrainedPlayerDogNeuralNet(base_neural_net)
 
+
+class DogPhaseAgentTrainer(Trainer):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._return_scale_factor = 0.001
+
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
         state_batch, action_batch, target = self._get_batches()
-        model_output = self._policy_net(state_batch).gather(1, action_batch)
+        model_output = self._net(state_batch).gather(1, action_batch)
         return model_output, target
+
+    def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        loss = smooth_l1_loss(model_output.squeeze(), target)
+        return loss
+
+    def push_to_memory(self, observation: DogPhaseObservation, action, reward):
+        selected_cards = torch.zeros(len(CARDS))
+        for permuted_action in itertools.permutations(action):
+            hand = list(observation.hand)
+            for card in permuted_action:
+                xx = torch.cat((encode_cards(hand), selected_cards)).unsqueeze(0)
+                action_id = DogPhaseAgent.CARDS_OK_IN_DOG.index(card)
+                self.memory.push(xx, action_id, None, reward)
+
+                selected_cards[action_id] = 1
+                hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[action_id])
 
     def _get_batches(self):
         transitions = self.memory.sample(self._batch_size)
@@ -86,13 +106,6 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
         return_batch = torch.tensor(batch.reward).float().to(self.device) * self._return_scale_factor
         return state_batch, action_batch, return_batch
-
-
-class DogPhaseAgentTrainer(Trainer):
-
-    def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss = smooth_l1_loss(model_output.squeeze(), target)
-        return loss
 
 
 class TrainedPlayerDogNeuralNet(nn.Module):

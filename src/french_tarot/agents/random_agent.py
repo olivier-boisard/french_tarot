@@ -65,6 +65,3 @@ class RandomPlayer(Agent):
         allowed_bids = list(range(get_minimum_allowed_bid(observation.bid_per_player), np.max(list(Bid)) + 1))
         rval = Bid(self._random_state.choice(allowed_bids + [0]))
         return rval
-
-    def optimize_model(self):
-        pass

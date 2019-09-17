@@ -5,28 +5,25 @@ import torch
 from numpy.random.mtrand import RandomState
 from torch import nn
 from torch.nn.modules.loss import BCELoss
-from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, Trainer
+from french_tarot.agents.common import BaseNeuralNetAgent, encode_cards, Transition, Trainer
 from french_tarot.environment.common import Bid
 from french_tarot.environment.observations import BidPhaseObservation
 
 
 class BidPhaseAgent(BaseNeuralNetAgent):
 
-    def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", summary_writer: SummaryWriter = None,
-                 seed: int = 1988, **kwargs):
+    def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", seed: int = 1988):
         net = BidPhaseAgent._create_dqn(base_card_neural_net).to(device)
         # noinspection PyUnresolvedReferences
-        super().__init__(net, BidPhaseAgentTrainer(net), **kwargs)
+        super().__init__(net)
         self._epoch = 0
-        self._summary_writer = summary_writer
         self._random_state = RandomState(seed)
 
     def get_max_return_action(self, observation: BidPhaseObservation):
-        state = core(observation.hand)
+        state = encode_cards(observation.hand)
         self._step += 1
-        output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
+        output = self.policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
         bid = self._get_bid_value(output, observation.bid_per_player)
         return Bid(bid)
 
@@ -53,23 +50,9 @@ class BidPhaseAgent(BaseNeuralNetAgent):
                 output = Bid.PASS
         return bid_value
 
-    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        input_vectors, target = self._get_input_and_target_tensors()
-        model_output = self._policy_net(input_vectors)
-        return model_output, target
-
-    def _get_input_and_target_tensors(self):
-        transitions = self.memory.sample(self._batch_size)
-        batch = Transition(*zip(*transitions))
-        input_vectors = torch.cat(batch.state).to(self.device)
-        targets = torch.tensor(batch.reward).float().to(self.device)
-        targets[targets >= 0] = 1.
-        targets[targets < 0.] = 0
-        return input_vectors, targets
-
     @property
     def output_dimension(self) -> int:
-        return self._policy_net.output_layer[-2].out_features
+        return self.policy_net.output_layer[-2].out_features
 
     @staticmethod
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
@@ -98,6 +81,23 @@ class BidPhaseAgent(BaseNeuralNetAgent):
 
 class BidPhaseAgentTrainer(Trainer):
 
+    def _get_input_and_target_tensors(self):
+        transitions = self.memory.sample(self._batch_size)
+        batch = Transition(*zip(*transitions))
+        input_vectors = torch.cat(batch.state).to(self.device)
+        targets = torch.tensor(batch.reward).float().to(self.device)
+        targets[targets >= 0] = 1.
+        targets[targets < 0.] = 0
+        return input_vectors, targets
+
+    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        input_vectors, target = self._get_input_and_target_tensors()
+        model_output = self._net(input_vectors)
+        return model_output, target
+
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         loss = BCELoss()(model_output.flatten(), target.flatten())
         return loss
+
+    def push_to_memory(self, observation: BidPhaseObservation, action, reward):
+        self.memory.push(encode_cards(observation.hand).unsqueeze(0), action, None, reward)
