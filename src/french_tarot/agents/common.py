@@ -98,7 +98,7 @@ class Agent(ABC):
         pass
 
 
-class BaseNeuralNetAgent(Agent):
+class BaseNeuralNetAgent(Agent, ABC):
     def __init__(
             self,
             policy_net: nn.Module,
