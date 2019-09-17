@@ -1,3 +1,4 @@
+import math
 import random
 from abc import abstractmethod, ABC
 from collections import namedtuple
@@ -15,16 +16,30 @@ from french_tarot.environment.observations import Observation
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
+class Policy:
+    def __init__(self, eps_start: float = 0.9, eps_end: float = 0.05, eps_decay: int = 500, random_seed: int = 1988):
+        self._eps_start = eps_start
+        self._eps_end = eps_end
+        self._eps_decay = eps_decay
+        self._random_state = np.random.RandomState(random_seed)
+
+    def __call__(self, step):
+        threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(-1. * step / self._eps_decay)
+        plays_at_random = self._random_state.rand() > threshold
+        return plays_at_random
+
+
+
 class ReplayMemory:
     """
     Got from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
     """
 
-    def __init__(self, capacity: int):
+    def __init__(self, capacity: int, random_seed: int = 1988):
         self.capacity = capacity
         self.memory = []
         self.position = 0
-        self._random_state = random.Random(1988)
+        self._random_state = random.Random(random_seed)
 
     def push(self, state: torch.Tensor, action: int, next_state: torch.Tensor, reward: float):
         """Saves a transition."""
@@ -144,26 +159,20 @@ class BaseNeuralNetAgent(Agent, ABC):
             self,
             policy_net: nn.Module,
             optimizer: OptimizerWrapper,
-            eps_start: float = 0.9,
-            eps_end: float = 0.05,
-            eps_decay: int = 500,
             batch_size: int = 64,
-            replay_memory_size: int = 2000,
+            replay_memory_size: int = 2000
     ):
         self._policy_net = policy_net
         self._optimizer = optimizer
-        self._eps_start = eps_start
-        self._eps_end = eps_end
-        self._eps_decay = eps_decay
         self._batch_size = batch_size
         self.memory = ReplayMemory(replay_memory_size)
         self._initialize_internals()
 
     def _initialize_internals(self):
         self._step = 0
-        self._random_state = np.random.RandomState(1988)
         self._optimizer = optim.Adam(self._policy_net.parameters())
         self.loss = []
+        self._random_action_policy = Policy()
 
     @abstractmethod
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -171,12 +180,17 @@ class BaseNeuralNetAgent(Agent, ABC):
 
     def get_action(self, observation: Observation):
         self._policy_net.eval()
-        action = self.get_action_wrapped(observation)
+        with torch.no_grad():
+            action = self.get_max_return_action(observation)
         self._policy_net.train()
         return action
 
     @abstractmethod
-    def get_action_wrapped(self, observation: Observation):
+    def get_max_return_action(self, observation: Observation):
+        pass
+
+    @abstractmethod
+    def get_random_action(self, observation: Observation):
         pass
 
     def optimize_model(self):

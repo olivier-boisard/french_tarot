@@ -1,8 +1,8 @@
-import math
 from typing import Tuple
 
 import numpy as np
 import torch
+from numpy.random.mtrand import RandomState
 from torch import nn
 from torch.nn.modules.loss import BCELoss
 from torch.utils.tensorboard import SummaryWriter
@@ -15,35 +15,28 @@ from french_tarot.environment.observations import BidPhaseObservation
 class BidPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", summary_writer: SummaryWriter = None,
-                 **kwargs):
+                 seed: int = 1988, **kwargs):
         net = BidPhaseAgent._create_dqn(base_card_neural_net).to(device)
         # noinspection PyUnresolvedReferences
         super().__init__(net, BidPhaseAgentOptimizer(net), **kwargs)
         self._epoch = 0
         self._summary_writer = summary_writer
+        self._random_state = RandomState(seed)
 
-    def get_action_wrapped(self, observation: BidPhaseObservation):
+    def get_max_return_action(self, observation: BidPhaseObservation):
         state = core(observation.hand)
-
-        eps_threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(
-            -1. * self._step / self._eps_decay)
         self._step += 1
-        if self._random_state.rand() > eps_threshold:
-            with torch.no_grad():
-                self.disable_training()
-                output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
-                self.enable_training()
-        else:
-            output = self._random_state.rand()
-        output = self._get_bid_value(output)
+        output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
+        bid = self._get_bid_value(output, observation.bid_per_player)
+        return Bid(bid)
 
-        if len(observation.bid_per_player) > 0:
-            if np.max(observation.bid_per_player) >= output:
-                output = Bid.PASS
-        return Bid(output)
+    def get_random_action(self, observation: BidPhaseObservation):
+        output = self._random_state.rand(1, 1)
+        bid = self._get_bid_value(output, observation.bid_per_player)
+        return bid
 
     @staticmethod
-    def _get_bid_value(estimated_win_probability):
+    def _get_bid_value(estimated_win_probability, bid_per_player):
         if estimated_win_probability >= 0.9:
             bid_value = Bid.GARDE_CONTRE
         elif estimated_win_probability >= 0.8:
@@ -54,6 +47,10 @@ class BidPhaseAgent(BaseNeuralNetAgent):
             bid_value = Bid.PETITE
         else:
             bid_value = Bid.PASS
+
+        if len(bid_per_player) > 0:
+            if np.max(bid_per_player) >= bid_value:
+                output = Bid.PASS
         return bid_value
 
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:

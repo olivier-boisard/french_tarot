@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, CoreCardNeuralNet, OptimizerWrapper
 from french_tarot.environment.common import Card, CARDS
-from french_tarot.environment.observations import DogPhaseObservation
+from french_tarot.environment.observations import DogPhaseObservation, Observation
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:
@@ -21,6 +21,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     """
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
     """
+
     CARDS_OK_IN_DOG = [card for card in CARDS if _card_is_ok_in_dog(card)]
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
 
@@ -32,11 +33,10 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         self._summary_writer = summary_writer
         self._return_scale_factor = 0.001
 
-    def get_action_wrapped(self, observation: DogPhaseObservation):
+    def get_max_return_action(self, observation: DogPhaseObservation):
         hand = copy.copy(observation.hand)
         selected_cards = torch.zeros(len(CARDS))
         dog_size = len(observation.original_dog)
-        # TODO EPS threshold
         for _ in range(dog_size):
             xx = torch.cat([core(hand), selected_cards]).unsqueeze(0)
             xx = self._policy_net(xx.to(self.device)).squeeze()
@@ -47,6 +47,9 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             hand.remove(CARDS[selected_card_index])
         assert selected_cards.sum() == dog_size
         return list(np.array(Card)[np.array(selected_cards, dtype=bool)])
+
+    def get_random_action(self, observation: Observation):
+        pass
 
     @staticmethod
     def _get_card_selection_mask(hand: List[Card]) -> List[bool]:
