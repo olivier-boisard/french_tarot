@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn.modules.loss import BCELoss
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, OptimizerWrapper
+from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, Trainer
 from french_tarot.environment.common import Bid
 from french_tarot.environment.observations import BidPhaseObservation
 
@@ -18,7 +18,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
                  seed: int = 1988, **kwargs):
         net = BidPhaseAgent._create_dqn(base_card_neural_net).to(device)
         # noinspection PyUnresolvedReferences
-        super().__init__(net, BidPhaseAgentOptimizer(net), **kwargs)
+        super().__init__(net, BidPhaseAgentTrainer(net), **kwargs)
         self._epoch = 0
         self._summary_writer = summary_writer
         self._random_state = RandomState(seed)
@@ -96,7 +96,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         return nn.Sequential(base_neural_net, output_layer)
 
 
-class BidPhaseAgentOptimizer(OptimizerWrapper):
+class BidPhaseAgentTrainer(Trainer):
 
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         loss = BCELoss()(model_output.flatten(), target.flatten())

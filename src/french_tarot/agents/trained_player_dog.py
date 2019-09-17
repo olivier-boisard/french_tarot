@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn.functional import smooth_l1_loss
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, CoreCardNeuralNet, OptimizerWrapper
+from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, CoreCardNeuralNet, Trainer
 from french_tarot.environment.common import Card, CARDS
 from french_tarot.environment.observations import DogPhaseObservation, Observation
 
@@ -28,7 +28,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     def __init__(self, base_card_neural_net, device: str = "cuda", summary_writer: SummaryWriter = None, **kwargs):
         net = DogPhaseAgent._create_dqn(base_card_neural_net).to(device)
         # noinspection PyUnresolvedReferences
-        super().__init__(net, DogPhaseAgentOptimizer(net), **kwargs)
+        super().__init__(net, DogPhaseAgentTrainer(net), **kwargs)
         self._epoch = 0
         self._summary_writer = summary_writer
         self._return_scale_factor = 0.001
@@ -88,7 +88,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         return state_batch, action_batch, return_batch
 
 
-class DogPhaseAgentOptimizer(OptimizerWrapper):
+class DogPhaseAgentTrainer(Trainer):
 
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         loss = smooth_l1_loss(model_output.squeeze(), target)

@@ -29,7 +29,6 @@ class Policy:
         return plays_at_random
 
 
-
 class ReplayMemory:
     """
     Got from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
@@ -115,7 +114,7 @@ class Agent(ABC):
         pass
 
 
-class OptimizerWrapper(ABC):
+class Trainer(ABC):
 
     def __init__(self, net: nn.Module, summary_writer: SummaryWriter = None, name=None):
         self._net = net
@@ -153,12 +152,11 @@ class OptimizerWrapper(ABC):
             self._summary_writer.add_scalar("Loss/train/" + self._name, self.loss[-1], self._step)
 
 
-# TODO use class for eps
 class BaseNeuralNetAgent(Agent, ABC):
     def __init__(
             self,
             policy_net: nn.Module,
-            optimizer: OptimizerWrapper,
+            optimizer: Trainer,
             batch_size: int = 64,
             replay_memory_size: int = 2000
     ):

@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
-from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, core, OptimizerWrapper
+from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, core, Trainer
 from french_tarot.environment.common import CARDS
 from french_tarot.environment.observations import Observation
 
@@ -20,7 +20,7 @@ def _encode_features(observation: dict) -> torch.Tensor:
     raise NotImplementedError()
 
 
-class CardPhaseOptimizer(OptimizerWrapper):
+class CardPhaseTrainer(Trainer):
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         return smooth_l1_loss(model_output, target)
 
@@ -32,7 +32,7 @@ class CardPhaseAgent(BaseNeuralNetAgent):
 
     def __init__(self, base_card_neural_net, device: str = "cuda", **kwargs):
         net = CardPhaseAgent._create_dqn(base_card_neural_net).to(device)
-        super().__init__(net, CardPhaseOptimizer(net), **kwargs)
+        super().__init__(net, CardPhaseTrainer(net), **kwargs)
 
     def get_max_return_action(self, observation: Observation):
         hand_vector = core(observation.hand)
