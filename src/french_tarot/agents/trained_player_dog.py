@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn.functional import smooth_l1_loss
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, CoreCardNeuralNet
+from french_tarot.agents.common import BaseNeuralNetAgent, core, Transition, CoreCardNeuralNet, OptimizerWrapper
 from french_tarot.environment.common import Card, CARDS
 from french_tarot.environment.observations import DogPhaseObservation
 
@@ -25,8 +25,9 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
 
     def __init__(self, base_card_neural_net, device: str = "cuda", summary_writer: SummaryWriter = None, **kwargs):
+        net = DogPhaseAgent._create_dqn(base_card_neural_net).to(device)
         # noinspection PyUnresolvedReferences
-        super().__init__(DogPhaseAgent._create_dqn(base_card_neural_net).to(device), **kwargs)
+        super().__init__(net, DogPhaseAgentOptimizer(net), **kwargs)
         self._epoch = 0
         self._summary_writer = summary_writer
         self._return_scale_factor = 0.001
@@ -83,11 +84,6 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         model_output = self._policy_net(state_batch).gather(1, action_batch)
         return model_output, target
 
-    @staticmethod
-    def compute_loss(model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss = smooth_l1_loss(model_output.squeeze(), target)
-        return loss
-
     def _get_batches(self):
         transitions = self.memory.sample(self._batch_size)
         batch = Transition(*zip(*transitions))
@@ -95,6 +91,13 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
         return_batch = torch.tensor(batch.reward).float().to(self.device) * self._return_scale_factor
         return state_batch, action_batch, return_batch
+
+
+class DogPhaseAgentOptimizer(OptimizerWrapper):
+
+    def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        loss = smooth_l1_loss(model_output.squeeze(), target)
+        return loss
 
 
 class TrainedPlayerDogNeuralNet(nn.Module):

@@ -6,6 +6,7 @@ from typing import List, Tuple
 import numpy as np
 import torch
 from torch import nn, optim, tensor
+from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.environment.common import Card, CARDS
@@ -98,21 +99,59 @@ class Agent(ABC):
         pass
 
 
+class OptimizerWrapper(ABC):
+
+    def __init__(self, net: nn.Module, summary_writer: SummaryWriter = None, name=None):
+        self._net = net
+        self._summary_writer = summary_writer
+        self._name = name
+        self._optimizer = Adam(net.parameters())
+        self._initialize_inner_attribute()
+        self._check_parameters()
+
+    def _initialize_inner_attribute(self):
+        self._step = 0
+        self.loss = []
+
+    def _check_parameters(self):
+        if self._summary_writer is not None and self._name is None:
+            raise ValueError("name should not be None if summary_writer is not None")
+
+    @abstractmethod
+    def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        pass
+
+    def train_model_one_step(self, model_output: torch.Tensor, target: torch.Tensor):
+        self._step += 1
+        loss = self.compute_loss(model_output, target)
+        self.loss.append(loss.item())
+
+        self._optimizer.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(self._net.parameters(), 0.1)
+        self._optimizer.step()
+        self.log()
+
+    def log(self):
+        if self._step % 1000 == 0:
+            self._summary_writer.add_scalar("Loss/train/" + self._name, self.loss[-1], self._step)
+
+
 class BaseNeuralNetAgent(Agent, ABC):
     def __init__(
             self,
             policy_net: nn.Module,
+            optimizer: OptimizerWrapper,
             eps_start: float = 0.9,
             eps_end: float = 0.05, eps_decay: int = 500, batch_size: int = 64,
             replay_memory_size: int = 2000,
-            summary_writer: SummaryWriter = None
     ):
         self._policy_net = policy_net
+        self._optimizer = optimizer
         self._eps_start = eps_start
         self._eps_end = eps_end
         self._eps_decay = eps_decay
         self._batch_size = batch_size
-        self._summary_writer = summary_writer
         self.memory = ReplayMemory(replay_memory_size)
         self._initialize_internals()
 
@@ -122,25 +161,6 @@ class BaseNeuralNetAgent(Agent, ABC):
         self._optimizer = optim.Adam(self._policy_net.parameters())
         self.loss = []
 
-    def log(self):
-        if self._step % 1000 == 0:
-            self._summary_writer.add_scalar("Loss/train/" + self.__class__.__name__, self.loss[-1], self._step)
-
-    @staticmethod
-    @abstractmethod
-    def compute_loss(model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        pass
-
-    def train_model_one_step(self, model_output: torch.Tensor, target: torch.Tensor):
-        loss = self.compute_loss(model_output, target)
-        self.loss.append(loss.item())
-
-        self._optimizer.zero_grad()
-        loss.backward()
-        nn.utils.clip_grad_norm_(self._policy_net.parameters(), 0.1)
-        self._optimizer.step()
-        self.log()
-
     @abstractmethod
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
         pass
@@ -148,7 +168,7 @@ class BaseNeuralNetAgent(Agent, ABC):
     def optimize_model(self):
         if len(self.memory) > self._batch_size:
             model_output, target = self.get_model_output_and_target()
-            self.train_model_one_step(model_output, target)
+            self._optimizer.train_model_one_step(model_output, target)
 
     @property
     def device(self) -> str:
