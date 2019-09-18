@@ -5,6 +5,8 @@ from typing import List
 
 import numpy as np
 
+from french_tarot.exceptions import FrenchTarotException
+
 
 class Card(Enum):
     SPADES_1 = "spades_1"

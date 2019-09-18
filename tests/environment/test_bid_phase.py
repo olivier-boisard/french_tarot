@@ -70,7 +70,7 @@ def test_reward_zero(environment):
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     _, reward, _, _ = environment.step(Bid.PASS)
-    assert reward == [0, 0, 0, 0]
+    assert reward == 0
 
 
 def test_bid_completed(environment):

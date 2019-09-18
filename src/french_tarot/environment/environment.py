@@ -52,7 +52,7 @@ def check_card_is_allowed(card: Card, played_cards: List[Card], player_hand: Lis
 
 class BidPhaseEnvironment:
 
-    def __init__(self, hand_per_player: List[List[Card]], original_dog=List[Card]):
+    def __init__(self, hand_per_player: List[List[Card]], original_dog: List[Card]):
         self._hand_per_player = hand_per_player
         self._original_dog = original_dog
         self._original_player_ids = None
@@ -60,16 +60,17 @@ class BidPhaseEnvironment:
         self._starting_player = None
         self.taking_player_original_id = None
         self.current_player = None
-        self._game_phase = None
+        self.game_phase = GamePhase.BID
 
     @property
     def n_players(self):
         return len(self._hand_per_player)
 
     # TODO create smaller functions
-    def bid(self, action: Bid) -> Tuple[float, bool, any]:
+    def step(self, action: Bid) -> Tuple[float, bool, any]:
         self._check_input(action)
         self._bid_per_player.append(action)
+        self.current_player = len(self._bid_per_player)
 
         if len(self._bid_per_player) == self.n_players:
             everybody_passed = np.all(np.array(self._bid_per_player) == Bid.PASS)
@@ -77,28 +78,28 @@ class BidPhaseEnvironment:
             taking_player = int(np.argmax(self._bid_per_player))
             self._shift_taking_player_to_id_0(taking_player)
             self._check_state_consistency()
-            if not self.dog_phase_should_be_skipped():
+            if not self._dog_phase_should_be_skipped():
                 self._prepare_for_dog_phase()
             else:
                 self._prepare_for_announcement_phase()
         else:
             everybody_passed = False
-            
+
         info = None
         reward = 0
         return reward, everybody_passed, info
 
-    def dog_phase_should_be_skipped(self):
+    def _dog_phase_should_be_skipped(self):
         skip_dog_phase = np.max(self._bid_per_player) > Bid.GARDE
         return skip_dog_phase
 
     def _prepare_for_announcement_phase(self):
-        self._game_phase = GamePhase.ANNOUNCEMENTS
+        self.game_phase = GamePhase.ANNOUNCEMENTS
         self.current_player = 0  # taker makes announcements first
 
     def _prepare_for_dog_phase(self):
         self._hand_per_player[0] = self._hand_per_player[0] + self._original_dog
-        self._game_phase = GamePhase.DOG
+        self.game_phase = GamePhase.DOG
         self.current_player = self._starting_player
 
     def _shift_taking_player_to_id_0(self, taking_player):
@@ -138,8 +139,8 @@ class FrenchTarotEnvironment:
         self._winners_per_round = None
         self._random_state = np.random.RandomState(seed)
         self._n_cards_in_dog = 6
-        self._hand_per_player = None
-        self._original_dog = None
+        self._hand_per_player = []
+        self._original_dog = []
         self._game_phase = None
         self._bid_per_player = None
         self.n_players = 4
@@ -154,11 +155,21 @@ class FrenchTarotEnvironment:
         self._bonus_points_per_teams = None
         self._made_dog = None
         self._original_player_ids = None
+        self._bid_phase_environment = None
+        self.taking_player_original_id = None
 
     def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
         # TODO create and use function overloading, or use dictionary
         if self._game_phase == GamePhase.BID:
-            reward, done, info = self._bid(action)
+            reward, done, info = self._bid_phase_environment.step(action)
+            self._hand_per_player = self._bid_phase_environment._hand_per_player
+            self._original_dog = self._bid_phase_environment._original_dog
+            self._original_player_ids = self._bid_phase_environment._original_player_ids
+            self._bid_per_player = self._bid_phase_environment._bid_per_player
+            self._starting_player = self._bid_phase_environment._starting_player
+            self.taking_player_original_id = self._bid_phase_environment.taking_player_original_id
+            self.current_player = self._bid_phase_environment.current_player
+            self._game_phase = self._bid_phase_environment.game_phase
         elif self._game_phase == GamePhase.DOG:
             reward, done, info = self._make_dog(action)
             self.current_player = self._starting_player
@@ -467,25 +478,31 @@ class FrenchTarotEnvironment:
         self._winners_per_round = []
         self._original_player_ids = []
 
+        self._bid_phase_environment = BidPhaseEnvironment(self._hand_per_player, self._original_dog)
+
         return self._get_observation()
 
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):
             raise FrenchTarotException("Deck has wrong number of cards")
-        self._hand_per_player = [
-            deck[:self._n_cards_per_player],
-            deck[self._n_cards_per_player:2 * self._n_cards_per_player],
-            deck[2 * self._n_cards_per_player:3 * self._n_cards_per_player],
-            deck[3 * self._n_cards_per_player:4 * self._n_cards_per_player],
-        ]
-        self._original_dog = deck[-self._n_cards_in_dog:]
+        del self._hand_per_player[:]
+        self._hand_per_player.append(deck[:self._n_cards_per_player])
+        self._hand_per_player.append(deck[self._n_cards_per_player:2 * self._n_cards_per_player])
+        self._hand_per_player.append(deck[2 * self._n_cards_per_player:3 * self._n_cards_per_player])
+        self._hand_per_player.append(deck[3 * self._n_cards_per_player:4 * self._n_cards_per_player])
+
+        del self._original_dog[:]
+        self._original_dog.extend(deck[-self._n_cards_in_dog:])
         for hand in self._hand_per_player:
             if Card.TRUMP_1 in hand and count_trumps_and_excuse(hand) == 1:
                 raise RuntimeError("'Petit sec'. Deal again.")
 
     def _get_observation(self) -> Observation:
         # TODO fix duplications
-        current_hand = self._hand_per_player[self.current_player]
+        try:
+            current_hand = self._hand_per_player[self.current_player]
+        except:
+            pass
         if self._game_phase == GamePhase.BID:
             observation = BidPhaseObservation(self._game_phase, self._bid_per_player, self.current_player, current_hand)
         else:
