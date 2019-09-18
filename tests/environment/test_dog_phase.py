@@ -36,7 +36,7 @@ def test_make_dog():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    dog = list(environment._hand_per_player[0][2:8])  # player 0 is always the taking player
+    dog = list(environment._hand_per_player[0][2:8])
     observation, reward, done, _ = environment.step(dog)
     assert not done
     assert reward > 0

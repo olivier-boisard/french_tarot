@@ -125,7 +125,6 @@ class BidPhaseEnvironment(SubEnvironment):
         self.current_player = 0  # taker makes announcements first
 
     def _prepare_for_dog_phase(self):
-        self._hand_per_player[0] = self._hand_per_player[0] + self._original_dog
         self.next_game_phase = GamePhase.DOG
         self.current_player = self.next_phase_starting_player
 
@@ -147,8 +146,47 @@ class BidPhaseEnvironment(SubEnvironment):
             raise FrenchTarotException("Action is not pass and is lower than highest bid")
 
 
-class DogPhaseEnvironment:
-    pass  # TODO
+class DogPhaseEnvironment(SubEnvironment):
+
+    def __init__(self, hand: List[Card], original_dog: List[Card]):
+        self.hand = hand + original_dog
+        self._n_cards_in_dog = len(original_dog)
+        self.made_dog = []
+
+    @property
+    def observation(self) -> DogPhaseObservation:
+        return DogPhaseObservation(self.hand, self._n_cards_in_dog)
+
+    def step(self, dog: List[Card]) -> Tuple[float, bool, any]:
+        if type(dog) != list:
+            raise FrenchTarotException("Wrong type for 'action'")
+        if len(set(dog)) != len(dog):
+            raise FrenchTarotException("Duplicated cards in dog")
+        if np.any(["king" in card.value for card in dog]):
+            raise FrenchTarotException("There should be no king in dog")
+        if np.any([is_oudler(card) for card in dog]):
+            raise FrenchTarotException("There should be no oudler in dog")
+        if np.any([card not in self.hand for card in dog]):
+            raise FrenchTarotException("Card in dog not in taking player's hand")
+        if len(dog) != self._n_cards_in_dog:
+            raise FrenchTarotException("Wrong number of cards in dog")
+
+        n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
+        if n_trumps_in_dog > 0:
+            n_trumps_in_taking_player_hand = count_trumps_and_excuse(self.hand)
+            n_kings_in_taking_player_hand = np.sum(["king" in card.value for card in self.hand])
+            allowed_trumps_in_dog = self._n_cards_in_dog - (
+                    len(self.hand) - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
+            if n_trumps_in_dog != allowed_trumps_in_dog:
+                raise FrenchTarotException("There should be no more trumps in dog than needed")
+
+        index_to_keep_in_hand = [card not in dog for card in self.hand]
+        self.hand = list(np.array(self.hand)[index_to_keep_in_hand])
+        reward = get_card_set_point(dog)
+        self.made_dog = dog
+        done = False
+        info = None
+        return reward, done, info
 
 
 class AnnouncementPhaseEnvironment:
@@ -231,8 +269,12 @@ class FrenchTarotEnvironment:
             else:
                 done = False
         elif self._game_phase == GamePhase.DOG:
-            reward, done, info = self._make_dog(action)
+            self._current_phase_environment = DogPhaseEnvironment(self._hand_per_player[0], self._original_dog)
+            reward, done, info = self._current_phase_environment.step(action)
             self.current_player = self._starting_player
+            self._hand_per_player[0] = self._current_phase_environment.hand
+            self._made_dog = self._current_phase_environment.made_dog
+            self._game_phase = GamePhase.ANNOUNCEMENTS
         elif self._game_phase == GamePhase.ANNOUNCEMENTS:
             reward, done, info = self._announce(action)
         elif self._game_phase == GamePhase.CARD:
@@ -249,7 +291,7 @@ class FrenchTarotEnvironment:
             original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
             # TODO use overloading
             if self._game_phase == GamePhase.DOG:
-                observation = DogPhaseObservation(self._hand_per_player[0], len(original_dog))
+                observation = DogPhaseObservation(self._hand_per_player[0] + original_dog, len(original_dog))
             elif self._game_phase == GamePhase.ANNOUNCEMENTS:
                 observation = AnnouncementPhaseObservation(len(self._announcements), self.current_hand)
             elif self._game_phase == GamePhase.CARD:
@@ -501,45 +543,6 @@ class FrenchTarotEnvironment:
             self.current_player = self._get_next_player()
 
         reward = 0
-        done = False
-        info = None
-        return reward, done, info
-
-    def _make_dog(self, dog: List[Card]) -> Tuple[float, bool, any]:
-        taking_player_hand = self._hand_per_player[0]  # At this point, taking player is always player 0
-        if type(dog) != list:
-            raise FrenchTarotException("Wrong type for 'action'")
-        if len(set(dog)) != len(dog):
-            raise FrenchTarotException("Duplicated cards in dog")
-        if np.any(["king" in card.value for card in dog]):
-            raise FrenchTarotException("There should be no king in dog")
-        if np.any([is_oudler(card) for card in dog]):
-            raise FrenchTarotException("There should be no oudler in dog")
-        if np.any([card not in taking_player_hand for card in dog]):
-            raise FrenchTarotException("Card in dog not in taking player's hand")
-        if len(dog) != self._n_cards_in_dog:
-            raise FrenchTarotException("Wrong number of cards in dog")
-
-        n_trumps_in_dog = np.sum(["trump" in card.value for card in dog])
-        if n_trumps_in_dog > 0:
-            n_trumps_in_taking_player_hand = count_trumps_and_excuse(taking_player_hand)
-            n_kings_in_taking_player_hand = np.sum(["king" in card.value for card in taking_player_hand])
-            allowed_trumps_in_dog = self._n_cards_in_dog - (
-                    len(taking_player_hand) - n_trumps_in_taking_player_hand - n_kings_in_taking_player_hand)
-            if n_trumps_in_dog != allowed_trumps_in_dog:
-                raise FrenchTarotException("There should be no more trumps in dog than needed")
-
-            card_in_dog_is_trump = np.array(["trump" in card.value for card in dog])
-            self._revealed_cards_in_dog = list(np.array(dog)[card_in_dog_is_trump])
-        else:
-            self._revealed_cards_in_dog = []
-
-        self._game_phase = GamePhase.ANNOUNCEMENTS
-        self.current_player = 0
-        index_to_keep_in_hand = [card not in dog for card in taking_player_hand]
-        self._hand_per_player[0] = list(np.array(taking_player_hand)[index_to_keep_in_hand])
-        reward = get_card_set_point(dog)
-        self._made_dog = dog
         done = False
         info = None
         return reward, done, info
