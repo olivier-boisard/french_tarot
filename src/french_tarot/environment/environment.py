@@ -499,10 +499,7 @@ class FrenchTarotEnvironment:
 
     def _get_observation(self) -> Observation:
         # TODO fix duplications
-        try:
-            current_hand = self._hand_per_player[self.current_player]
-        except:
-            pass
+        current_hand = self._hand_per_player[self.current_player]
         if self._game_phase == GamePhase.BID:
             observation = BidPhaseObservation(self._game_phase, self._bid_per_player, self.current_player, current_hand)
         else:
