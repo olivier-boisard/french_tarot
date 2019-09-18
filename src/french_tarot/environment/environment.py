@@ -60,11 +60,14 @@ class BidPhaseEnvironment:
         self._starting_player = None
         self.taking_player_original_id = None
         self.current_player = None
-        self.game_phase = GamePhase.BID
 
     @property
     def n_players(self):
         return len(self._hand_per_player)
+
+    @property
+    def all_players_passed(self):
+        return np.all(np.array(self._bid_per_player) == Bid.PASS)
 
     # TODO create smaller functions
     def step(self, action: Bid) -> Tuple[float, bool, any]:
@@ -73,7 +76,7 @@ class BidPhaseEnvironment:
         self.current_player = len(self._bid_per_player)
 
         if len(self._bid_per_player) == self.n_players:
-            everybody_passed = np.all(np.array(self._bid_per_player) == Bid.PASS)
+            done = True
             # noinspection PyTypeChecker
             taking_player = int(np.argmax(self._bid_per_player))
             self._shift_taking_player_to_id_0(taking_player)
@@ -83,23 +86,23 @@ class BidPhaseEnvironment:
             else:
                 self._prepare_for_announcement_phase()
         else:
-            everybody_passed = False
+            done = False
 
         info = None
         reward = 0
-        return reward, everybody_passed, info
+        return reward, done, info
 
     def _dog_phase_should_be_skipped(self):
         skip_dog_phase = np.max(self._bid_per_player) > Bid.GARDE
         return skip_dog_phase
 
     def _prepare_for_announcement_phase(self):
-        self.game_phase = GamePhase.ANNOUNCEMENTS
+        self.next_game_phase = GamePhase.ANNOUNCEMENTS
         self.current_player = 0  # taker makes announcements first
 
     def _prepare_for_dog_phase(self):
         self._hand_per_player[0] = self._hand_per_player[0] + self._original_dog
-        self.game_phase = GamePhase.DOG
+        self.next_game_phase = GamePhase.DOG
         self.current_player = self._starting_player
 
     def _shift_taking_player_to_id_0(self, taking_player):
@@ -155,21 +158,28 @@ class FrenchTarotEnvironment:
         self._bonus_points_per_teams = None
         self._made_dog = None
         self._original_player_ids = None
-        self._bid_phase_environment = None
+        self._current_phase_environment = None
         self.taking_player_original_id = None
 
     def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
         # TODO create and use function overloading, or use dictionary
         if self._game_phase == GamePhase.BID:
-            reward, done, info = self._bid_phase_environment.step(action)
-            self._hand_per_player = self._bid_phase_environment._hand_per_player
-            self._original_dog = self._bid_phase_environment._original_dog
-            self._original_player_ids = self._bid_phase_environment._original_player_ids
-            self._bid_per_player = self._bid_phase_environment._bid_per_player
-            self._starting_player = self._bid_phase_environment._starting_player
-            self.taking_player_original_id = self._bid_phase_environment.taking_player_original_id
-            self.current_player = self._bid_phase_environment.current_player
-            self._game_phase = self._bid_phase_environment.game_phase
+            reward, bid_phase_done, info = self._current_phase_environment.step(action)
+            self._hand_per_player = self._current_phase_environment._hand_per_player
+            self._original_dog = self._current_phase_environment._original_dog
+            self._original_player_ids = self._current_phase_environment._original_player_ids
+            self._bid_per_player = self._current_phase_environment._bid_per_player
+            self._starting_player = self._current_phase_environment._starting_player
+            self.taking_player_original_id = self._current_phase_environment.taking_player_original_id
+            self.current_player = self._current_phase_environment.current_player
+            if bid_phase_done:
+                done = self._current_phase_environment.all_players_passed
+                if done:
+                    reward = [0, 0, 0, 0]
+                else:
+                    self._game_phase = self._current_phase_environment.next_game_phase
+            else:
+                done = False
         elif self._game_phase == GamePhase.DOG:
             reward, done, info = self._make_dog(action)
             self.current_player = self._starting_player
@@ -478,7 +488,7 @@ class FrenchTarotEnvironment:
         self._winners_per_round = []
         self._original_player_ids = []
 
-        self._bid_phase_environment = BidPhaseEnvironment(self._hand_per_player, self._original_dog)
+        self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player, self._original_dog)
 
         return self._get_observation()
 

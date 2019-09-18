@@ -7,4 +7,4 @@ def test_play_random_games(mocker):
     mocker.patch('french_tarot.play_games.play_random_games._print_final_scores')
     mocker.patch('french_tarot.play_games.play_random_games._plot_scores')
     mocker.patch('torch.utils.tensorboard.SummaryWriter')
-    play_random_games._main()
+    play_random_games._main(n_jobs=1)

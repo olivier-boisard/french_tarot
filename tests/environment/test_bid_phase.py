@@ -70,7 +70,7 @@ def test_reward_zero(environment):
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     _, reward, _, _ = environment.step(Bid.PASS)
-    assert reward == 0
+    assert reward == [0, 0, 0, 0]
 
 
 def test_bid_completed(environment):
@@ -80,7 +80,7 @@ def test_bid_completed(environment):
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
     observation, _, done, _ = environment.step(Bid.PASS)
-    assert not done
+    assert not environment._current_phase_environment.all_players_passed
     assert np.all(environment._hand_per_player[0] == np.hstack((original_hands[1], environment._original_dog)))
     assert np.all(environment._hand_per_player[1] == original_hands[2])
     assert np.all(environment._hand_per_player[2] == original_hands[3])
@@ -109,6 +109,6 @@ def test_five_bids(environment):
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    environment.step(Bid.PASS)
+    environment.step(Bid.PETITE)
     with pytest.raises(FrenchTarotException):
         environment.step(Bid.PASS)

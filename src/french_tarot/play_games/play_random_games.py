@@ -16,12 +16,12 @@ from french_tarot.exceptions import FrenchTarotException
 N_ITERATIONS = 1000
 
 
-def _main():
+def _main(n_jobs=-1):
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial-seed", default=0, type=int)
     args = parser.parse_args()
 
-    scores = Parallel(n_jobs=-1, verbose=1)(
+    scores = Parallel(n_jobs=n_jobs, verbose=1)(
         delayed(_run_game)(i, initial_seed=args.initial_seed) for i in range(N_ITERATIONS)
     )
 
