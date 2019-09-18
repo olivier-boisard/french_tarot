@@ -8,7 +8,7 @@ from french_tarot.agents.common import CoreCardNeuralNet, Agent, Trainer
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
-from french_tarot.environment.observations import Observation, BidPhaseObservation, DogPhaseObservation, \
+from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
     AnnouncementPhaseObservation, CardPhaseObservation
 
 
@@ -63,8 +63,8 @@ class AllPhasePlayerTrainer(Agent):
         for model in self._agents_with_trainers.values():
             model.optimize_model()
 
-    def get_action(self, observation: Observation):
+    def get_action(self, observation):
         return self._agents_with_trainers[observation.__class__].agent.get_action(observation)
 
-    def push_to_agent_memory(self, observation: Observation, action, reward):
+    def push_to_agent_memory(self, observation, action, reward):
         self._agents_with_trainers[observation.__class__].trainer.push_to_memory(observation, action, reward)

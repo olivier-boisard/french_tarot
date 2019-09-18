@@ -44,7 +44,7 @@ def get_card_list():
 def test_no_announcements():
     environment = setup_environment()
     observation, reward, done, _ = environment.step([])
-    assert observation.announcements[0] == []
+    assert environment._announcements[0] == []
     assert reward == 0
     assert not done
 
@@ -75,7 +75,7 @@ def test_announce_simple_poignee_valid():
     environment.step(Bid.GARDE_SANS)
     poignee = PoigneeAnnouncement.largest_possible_poignee_factory(environment._hand_per_player[0])
     observation, reward, done, _ = environment.step([poignee])
-    assert isinstance(observation.announcements[0], list)
+    assert isinstance(environment._announcements[0], list)
     assert reward == 0
     assert not done
 
@@ -91,7 +91,7 @@ def test_announce_chelem_player0():
 
     announcements = [ChelemAnnouncement()]
     observation, reward, done, _ = environment.step(announcements)
-    assert isinstance(observation.announcements[0][0], ChelemAnnouncement)
+    assert isinstance(environment._announcements[0][0], ChelemAnnouncement)
     assert reward == 0
     assert not done
 
@@ -144,9 +144,9 @@ def test_announce_simple_poignee_excuse_accepted():
     card_list = [Card.TRUMP_1, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_7,
                  Card.TRUMP_8, Card.TRUMP_9, Card.TRUMP_10, Card.TRUMP_11, Card.TRUMP_12, Card.TRUMP_13, Card.TRUMP_16,
                  Card.EXCUSE]
-    observation = environment.step([PoigneeAnnouncement.largest_possible_poignee_factory(card_list)])[0]
-    assert isinstance(observation.announcements[0][0], PoigneeAnnouncement)
-    assert observation.announcements[0][0].revealed_cards == card_list
+    environment.step([PoigneeAnnouncement.largest_possible_poignee_factory(card_list)])
+    assert isinstance(environment._announcements[0][0], PoigneeAnnouncement)
+    assert environment._announcements[0][0].revealed_cards == card_list
 
 
 def test_announce_simple_poignee_no_trump():

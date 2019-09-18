@@ -9,7 +9,7 @@ from torch.nn.functional import smooth_l1_loss
 
 from french_tarot.agents.common import BaseNeuralNetAgent, encode_cards, CoreCardNeuralNet, Trainer, Transition
 from french_tarot.environment.common import Card, CARDS
-from french_tarot.environment.observations import DogPhaseObservation, Observation
+from french_tarot.environment.observations import DogPhaseObservation
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:
@@ -32,8 +32,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     def get_max_return_action(self, observation: DogPhaseObservation):
         hand = copy.copy(observation.hand)
         selected_cards = torch.zeros(len(CARDS))
-        dog_size = len(observation.original_dog)
-        for _ in range(dog_size):
+        for _ in range(observation.dog_size):
             xx = torch.cat([encode_cards(hand), selected_cards]).unsqueeze(0)
             xx = self.policy_net(xx.to(self.device)).squeeze()
 
@@ -41,10 +40,10 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             selected_card_index = xx.argmax()
             selected_cards[selected_card_index] = 1
             hand.remove(CARDS[selected_card_index])
-        assert selected_cards.sum() == dog_size
+        assert selected_cards.sum() == observation.dog_size
         return list(np.array(Card)[np.array(selected_cards, dtype=bool)])
 
-    def get_random_action(self, observation: Observation):
+    def get_random_action(self, observation):
         pass
 
     @staticmethod

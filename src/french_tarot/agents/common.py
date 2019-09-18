@@ -6,12 +6,12 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
+from attr import dataclass
 from torch import nn, tensor
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.environment.common import Card, CARDS
-from french_tarot.environment.observations import Observation
 from french_tarot.exceptions import FrenchTarotException
 
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
@@ -107,7 +107,7 @@ class CoreCardNeuralNet(nn.Module):
 class Agent(ABC):
 
     @abstractmethod
-    def get_action(self, observation: Observation):
+    def get_action(self, observation):
         pass
 
 
@@ -139,7 +139,7 @@ class Trainer(ABC):
             raise FrenchTarotException("name should not be None if summary_writer is not None")
 
     @abstractmethod
-    def push_to_memory(self, observation: Observation, action, reward):
+    def push_to_memory(self, observation, action, reward):
         pass
 
     @abstractmethod
@@ -184,7 +184,7 @@ class BaseNeuralNetAgent(Agent, ABC):
         self._step = 0
         self._random_action_policy = Policy()
 
-    def get_action(self, observation: Observation):
+    def get_action(self, observation):
         self._step += 1
         if not self._random_action_policy.should_play_randomly(self._step):
             self.policy_net.eval()
@@ -196,11 +196,11 @@ class BaseNeuralNetAgent(Agent, ABC):
         return action
 
     @abstractmethod
-    def get_max_return_action(self, observation: Observation):
+    def get_max_return_action(self, observation):
         pass
 
     @abstractmethod
-    def get_random_action(self, observation: Observation):
+    def get_random_action(self, observation):
         pass
 
     @property
@@ -216,3 +216,9 @@ def set_all_seeds(seed: int = 1988):
     torch.manual_seed(seed)
     # noinspection PyUnresolvedReferences
     torch.cuda.manual_seed_all(seed)
+
+
+@dataclass
+class Round:
+    starting_player_id: int
+    played_cards: List[Card]

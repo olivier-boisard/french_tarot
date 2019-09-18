@@ -2,7 +2,6 @@ from french_tarot.agents.common import encode_cards, CoreCardNeuralNet
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.common import Bid
 from french_tarot.environment.environment import FrenchTarotEnvironment
-from french_tarot.environment.observations import Observation
 
 
 def test_dog_phase_observation_encoder():
@@ -21,7 +20,7 @@ def test_create_dog_phase_player():
     assert len(action) == 6
 
 
-def _prepare_environment() -> Observation:
+def _prepare_environment():
     environment = FrenchTarotEnvironment()
     environment.reset()
     environment.step(Bid.PETITE)

@@ -64,13 +64,12 @@ def test_play_complete_round_valid_last_player_team_wins():
     environment.step(Card.HEART_4)
     observation, reward, done, _ = environment.step(Card.HEART_2)
 
-    expected_values = [Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation.past_rounds[0].played_cards == expected_values
+    expected_reward = get_card_set_point([Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2])
     assert environment.current_player == 1
     assert reward[0] == 0
-    assert reward[1] == get_card_set_point(expected_values)
-    assert reward[2] == get_card_set_point(expected_values)
-    assert reward[3] == get_card_set_point(expected_values)
+    assert reward[1] == expected_reward
+    assert reward[2] == expected_reward
+    assert reward[3] == expected_reward
     assert observation.played_cards_in_round == []
     assert environment.current_player == 1
     assert not done
@@ -86,8 +85,8 @@ def test_play_complete_round_valid_last_player_team_loses():
     observation, reward, done, _ = environment.step(Card.HEART_1)
 
     expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2, Card.HEART_1]
-    assert observation.past_rounds[0].played_cards == expected_values
-    assert observation.past_rounds[0].starting_player_id == starting_player
+    assert environment._past_rounds[0].played_cards == expected_values
+    assert environment._past_rounds[0].starting_player_id == starting_player
     assert environment.current_player == 0
     assert reward[0] == get_card_set_point(expected_values)
     assert reward[1] == 0
@@ -109,8 +108,8 @@ def test_play_excuse_in_round():
     assert observation_2.played_cards_in_round == [Card.HEART_4, Card.HEART_2]
     assert observation_3.played_cards_in_round == [Card.HEART_4, Card.HEART_2, Card.EXCUSE]
 
-    assert observation_4.past_rounds[0].played_cards == [Card.HEART_4, Card.HEART_2, Card.EXCUSE, Card.HEART_KING]
-    assert observation_4.played_cards_in_round == []
+    assert environment._past_rounds[0].played_cards == [Card.HEART_4, Card.HEART_2, Card.EXCUSE, Card.HEART_KING]
+    assert environment._played_cards_in_round == []
     assert environment.current_player == 1
     expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2, Card.EXCUSE]
     assert reward[-1] == get_card_set_point(expected_values)  # last player's team won this round
@@ -125,7 +124,7 @@ def test_play_excuse_first():
     observation, reward, done, _ = environment.step(Card.HEART_2)
 
     expected_values = [Card.EXCUSE, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert observation.past_rounds[0].played_cards == expected_values
+    assert environment._past_rounds[0].played_cards == expected_values
     assert environment.current_player == 1
     assert reward[-1] == get_card_set_point(expected_values)  # last player's team won this round
     assert not done
