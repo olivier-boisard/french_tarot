@@ -1,4 +1,5 @@
 import copy
+from abc import ABC, abstractmethod
 from collections import deque
 from typing import List, Tuple, Union
 
@@ -56,7 +57,14 @@ def check_card_is_allowed(card: Card, played_cards: List[Card], player_hand: Lis
         check_trump_value_is_allowed(card, played_cards, player_hand)
 
 
-class BidPhaseEnvironment:
+class Environment(ABC):
+
+    @abstractmethod
+    def step(self, action: Bid) -> Tuple[Observation, float, bool, any]:
+        pass
+
+
+class BidPhaseEnvironment(Environment):
 
     def __init__(self, hand_per_player: List[List[Card]], original_dog: List[Card]):
         self._hand_per_player = hand_per_player
@@ -76,7 +84,7 @@ class BidPhaseEnvironment:
         return np.all(np.array(self.bid_per_player) == Bid.PASS)
 
     # TODO create smaller functions
-    def step(self, action: Bid) -> Tuple[float, bool, any]:
+    def step(self, action: Bid) -> Tuple[Observation, float, bool, any]:
         self._check_input(action)
         self.bid_per_player.append(action)
         self.current_player = len(self.bid_per_player)
@@ -96,10 +104,10 @@ class BidPhaseEnvironment:
 
         info = None
         reward = 0
-        return reward, done, info
+        return self.observation, reward, done, info
 
     @property
-    def observation(self):
+    def observation(self) -> BidPhaseObservation:
         return BidPhaseObservation(
             self.bid_per_player,
             self.current_player,
@@ -206,7 +214,7 @@ class FrenchTarotEnvironment:
     def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
         # TODO create and use function overloading, or use dictionary
         if self._game_phase == GamePhase.BID:
-            reward, bid_phase_done, info = self._current_phase_environment.step(action)
+            _, reward, bid_phase_done, info = self._current_phase_environment.step(action)
             self._original_player_ids = self._current_phase_environment.original_player_ids
             self._bid_per_player = self._current_phase_environment.bid_per_player
             self._starting_player = self._current_phase_environment.next_phase_starting_player
