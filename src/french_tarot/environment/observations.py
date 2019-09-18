@@ -1,13 +1,12 @@
 from abc import ABC
 from typing import List
 
-from french_tarot.environment.common import Card, GamePhase, Bid, Announcement
+from french_tarot.environment.common import Card, Bid, Announcement
 
 
 class Observation(ABC):
 
-    def __init__(self, game_phase: GamePhase, bid_per_player: List[Bid], current_player_id: int, hand: List[Card]):
-        self.game_phase = game_phase
+    def __init__(self, bid_per_player: List[Bid], current_player_id: int, hand: List[Card]):
         self.bid_per_player = bid_per_player
         self.current_player_id = current_player_id
         self.hand = hand
@@ -16,14 +15,13 @@ class Observation(ABC):
 class _AfterBidPhaseObservation(Observation):
     def __init__(
             self,
-            game_phase: GamePhase,
             bid_per_player: List[Bid],
             current_player_id: int,
             hand: List[Card],
             original_dog: List[Card],
             original_player_ids: List[int]
     ):
-        super().__init__(game_phase, bid_per_player, current_player_id, hand)
+        super().__init__(bid_per_player, current_player_id, hand)
         self.original_dog = original_dog
         self.original_player_ids = original_player_ids
 
@@ -31,7 +29,6 @@ class _AfterBidPhaseObservation(Observation):
 class _AfterDogPhaseObservation(_AfterBidPhaseObservation):
     def __init__(
             self,
-            game_phase: GamePhase,
             bid_per_player: List[Bid],
             current_player_id: int,
             hand: List[Card],
@@ -40,7 +37,7 @@ class _AfterDogPhaseObservation(_AfterBidPhaseObservation):
             revealed_cards_in_new_dog: List[Card],
             announcements: List[Announcement]
     ):
-        super().__init__(game_phase, bid_per_player, current_player_id, hand, original_dog, original_player_ids)
+        super().__init__(bid_per_player, current_player_id, hand, original_dog, original_player_ids)
         self.original_dog = original_dog
         self.original_player_ids = original_player_ids
         self.revealed_cards_in_new_dog = revealed_cards_in_new_dog
@@ -69,7 +66,6 @@ class AnnouncementPhaseObservation(_AfterDogPhaseObservation):
 class CardPhaseObservation(_AfterDogPhaseObservation):
     def __init__(
             self,
-            game_phase: GamePhase,
             bid_per_player: List[Bid],
             current_player_id: int,
             hand: List[Card],
@@ -80,7 +76,7 @@ class CardPhaseObservation(_AfterDogPhaseObservation):
             played_cards_in_round: List[Card],
             past_rounds: List[Round]
     ):
-        super().__init__(game_phase, bid_per_player, current_player_id, hand,
+        super().__init__(bid_per_player, current_player_id, hand,
                          original_dog, original_player_ids,
                          revealed_cards_in_new_dog, announcements)
         self.played_cards_in_round = played_cards_in_round

@@ -17,6 +17,12 @@ def rotate_list(input_list: List, n: int) -> List:
     return list(hand_per_player_deque)
 
 
+def rotate_list_in_place(input_list: List, n: int):
+    new_list = rotate_list(input_list, n)
+    del input_list[:]
+    input_list.extend(new_list)
+
+
 def get_minimum_allowed_bid(bid_per_player: List[Bid]) -> Bid:
     return Bid.PETITE if len(bid_per_player) == 0 else np.max(bid_per_player) + 1
 
@@ -92,6 +98,9 @@ class BidPhaseEnvironment:
         reward = 0
         return reward, done, info
 
+    def get_observation(self):
+        BidPhaseObservation(self._bid_per_player, self.current_player, current_hand)
+
     def _dog_phase_should_be_skipped(self):
         skip_dog_phase = np.max(self._bid_per_player) > Bid.GARDE
         return skip_dog_phase
@@ -109,7 +118,7 @@ class BidPhaseEnvironment:
         original_player_ids = np.arange(taking_player, taking_player + self.n_players) % self.n_players
         self._original_player_ids = list(original_player_ids)
         self._bid_per_player = rotate_list(self._bid_per_player, -taking_player)
-        self._hand_per_player = rotate_list(self._hand_per_player, -taking_player)
+        rotate_list_in_place(self._hand_per_player, -taking_player)
         self._starting_player = -taking_player % self.n_players
         self.taking_player_original_id = taking_player
 
@@ -161,11 +170,37 @@ class FrenchTarotEnvironment:
         self._current_phase_environment = None
         self.taking_player_original_id = None
 
+    def reset(self) -> Observation:
+        while True:
+            try:
+                deck = list(self._random_state.permutation(CARDS))
+                self._deal(deck)
+                break
+            except RuntimeError as e:
+                print(e)
+        self._game_phase = GamePhase.BID
+        self._bid_per_player = []
+        self.n_players = 4
+        self._announcements = []
+        self._chelem_announced = False
+        self.current_player = 0
+        self._played_cards_in_round = []
+        self._past_rounds = []
+        self._won_cards_per_teams = {"taker": [], "opponents": []}
+        self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
+        self._made_dog = None
+        self._winners_per_round = []
+        self._original_player_ids = []
+
+        self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player, self._original_dog)
+
+        return self._get_observation()
+
+    # TODO create smaller functions
     def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
         # TODO create and use function overloading, or use dictionary
         if self._game_phase == GamePhase.BID:
             reward, bid_phase_done, info = self._current_phase_environment.step(action)
-            self._hand_per_player = self._current_phase_environment._hand_per_player
             self._original_player_ids = self._current_phase_environment._original_player_ids
             self._bid_per_player = self._current_phase_environment._bid_per_player
             self._starting_player = self._current_phase_environment._starting_player
@@ -190,7 +225,31 @@ class FrenchTarotEnvironment:
             raise RuntimeError("Unknown game phase")
         return self._get_observation(), reward, done, info
 
-    # TODO create smaller functions
+    def _get_observation(self) -> Observation:
+        # TODO fix duplications
+        current_hand = self._hand_per_player[self.current_player]
+        if self._game_phase == GamePhase.BID:
+            observation = BidPhaseObservation(self._bid_per_player, self.current_player, current_hand)
+        else:
+            original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
+            # TODO use overloading
+            if self._game_phase == GamePhase.DOG:
+                observation = DogPhaseObservation(self._bid_per_player, self.current_player,
+                                                  self._hand_per_player[0], original_dog, self._original_player_ids)
+            elif self._game_phase == GamePhase.ANNOUNCEMENTS:
+                observation = AnnouncementPhaseObservation(self._bid_per_player, self.current_player,
+                                                           current_hand, original_dog, self._original_player_ids,
+                                                           self._revealed_cards_in_dog, self._announcements)
+            elif self._game_phase == GamePhase.CARD:
+                observation = CardPhaseObservation(self._bid_per_player, self.current_player,
+                                                   current_hand, original_dog, self._original_player_ids,
+                                                   self._revealed_cards_in_dog, self._announcements,
+                                                   self._played_cards_in_round, self._past_rounds)
+            else:
+                raise RuntimeError("Unknown game phase")
+
+        return copy.deepcopy(observation)
+
     def _play_card(self, card: Card) -> Tuple[List[float], bool, any]:
         if not isinstance(card, Card):
             raise FrenchTarotException("Action must be card")
@@ -224,10 +283,11 @@ class FrenchTarotEnvironment:
         info = None
         return rewards, done, info
 
+    # TODO create smaller functions
+
     def _get_next_player(self) -> int:
         return (self.current_player + 1) % self.n_players
 
-    # TODO create smaller functions
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
                           is_taker_win_round: bool) -> List[float]:
         dog = self._made_dog if self._made_dog is not None else self._original_dog
@@ -281,6 +341,8 @@ class FrenchTarotEnvironment:
         assert np.sum(rewards) == 0
         return rewards
 
+    # TODO create smaller functions
+
     @staticmethod
     def has_team_achieved_chelem(winners_per_round: List[str], is_excuse_played_in_round: bool, team: str) -> bool:
         winners_per_round = np.array(winners_per_round)
@@ -290,6 +352,7 @@ class FrenchTarotEnvironment:
         return is_chelem_achieved
 
     # TODO create smaller functions
+
     def _update_rewards_with_poignee(self, rewards: List[float]) -> List[float]:
         rewards = copy.copy(rewards)
         for player, announcements_for_player in enumerate(self._announcements):
@@ -323,7 +386,6 @@ class FrenchTarotEnvironment:
                             rewards[3] += bonus
         return rewards
 
-    # TODO create smaller functions
     def _solve_round(self) -> List[float]:
         starting_player = self._get_next_player()
         winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards_in_round)
@@ -362,6 +424,8 @@ class FrenchTarotEnvironment:
         self._played_cards_in_round = []
         return rewards
 
+    # TODO create smaller functions
+
     @staticmethod
     def _get_winning_card_index(played_cards: List[Card]) -> int:
         asked_color = _retrieve_asked_color(played_cards)
@@ -386,6 +450,7 @@ class FrenchTarotEnvironment:
         return int(np.argmax(card_strengths))
 
     # TODO create smaller functions
+
     def _announce(self, action: List[Announcement]) -> Tuple[float, bool, any]:
         if not isinstance(action, list):
             raise FrenchTarotException("Input should be list")
@@ -425,7 +490,6 @@ class FrenchTarotEnvironment:
         info = None
         return reward, done, info
 
-    # TODO create smaller functions
     def _make_dog(self, dog: List[Card]) -> Tuple[float, bool, any]:
         taking_player_hand = self._hand_per_player[0]  # At this point, taking player is always player 0
         if type(dog) != list:
@@ -465,32 +529,6 @@ class FrenchTarotEnvironment:
         info = None
         return reward, done, info
 
-    def reset(self) -> Observation:
-        while True:
-            try:
-                deck = list(self._random_state.permutation(CARDS))
-                self._deal(deck)
-                break
-            except RuntimeError as e:
-                print(e)
-        self._game_phase = GamePhase.BID
-        self._bid_per_player = []
-        self.n_players = 4
-        self._announcements = []
-        self._chelem_announced = False
-        self.current_player = 0
-        self._played_cards_in_round = []
-        self._past_rounds = []
-        self._won_cards_per_teams = {"taker": [], "opponents": []}
-        self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
-        self._made_dog = None
-        self._winners_per_round = []
-        self._original_player_ids = []
-
-        self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player, self._original_dog)
-
-        return self._get_observation()
-
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):
             raise FrenchTarotException("Deck has wrong number of cards")
@@ -505,31 +543,6 @@ class FrenchTarotEnvironment:
         for hand in self._hand_per_player:
             if Card.TRUMP_1 in hand and count_trumps_and_excuse(hand) == 1:
                 raise RuntimeError("'Petit sec'. Deal again.")
-
-    def _get_observation(self) -> Observation:
-        # TODO fix duplications
-        current_hand = self._hand_per_player[self.current_player]
-        if self._game_phase == GamePhase.BID:
-            observation = BidPhaseObservation(self._game_phase, self._bid_per_player, self.current_player, current_hand)
-        else:
-            original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
-            # TODO use overloading
-            if self._game_phase == GamePhase.DOG:
-                observation = DogPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
-                                                  self._hand_per_player[0], original_dog, self._original_player_ids)
-            elif self._game_phase == GamePhase.ANNOUNCEMENTS:
-                observation = AnnouncementPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
-                                                           current_hand, original_dog, self._original_player_ids,
-                                                           self._revealed_cards_in_dog, self._announcements)
-            elif self._game_phase == GamePhase.CARD:
-                observation = CardPhaseObservation(self._game_phase, self._bid_per_player, self.current_player,
-                                                   current_hand, original_dog, self._original_player_ids,
-                                                   self._revealed_cards_in_dog, self._announcements,
-                                                   self._played_cards_in_round, self._past_rounds)
-            else:
-                raise RuntimeError("Unknown game phase")
-
-        return copy.deepcopy(observation)
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
