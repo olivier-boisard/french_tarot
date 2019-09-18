@@ -61,11 +61,11 @@ class BidPhaseEnvironment:
     def __init__(self, hand_per_player: List[List[Card]], original_dog: List[Card]):
         self._hand_per_player = hand_per_player
         self._original_dog = original_dog
-        self._original_player_ids = None
-        self._bid_per_player = []
-        self._starting_player = None
+        self.original_player_ids = None
+        self.bid_per_player = []
+        self.next_phase_starting_player = None
         self.taking_player_original_id = None
-        self.current_player = None
+        self.current_player = 0
 
     @property
     def n_players(self):
@@ -73,18 +73,18 @@ class BidPhaseEnvironment:
 
     @property
     def all_players_passed(self):
-        return np.all(np.array(self._bid_per_player) == Bid.PASS)
+        return np.all(np.array(self.bid_per_player) == Bid.PASS)
 
     # TODO create smaller functions
     def step(self, action: Bid) -> Tuple[float, bool, any]:
         self._check_input(action)
-        self._bid_per_player.append(action)
-        self.current_player = len(self._bid_per_player)
+        self.bid_per_player.append(action)
+        self.current_player = len(self.bid_per_player)
 
-        if len(self._bid_per_player) == self.n_players:
+        if len(self.bid_per_player) == self.n_players:
             done = True
             # noinspection PyTypeChecker
-            taking_player = int(np.argmax(self._bid_per_player))
+            taking_player = int(np.argmax(self.bid_per_player))
             self._shift_taking_player_to_id_0(taking_player)
             self._check_state_consistency()
             if not self._dog_phase_should_be_skipped():
@@ -98,11 +98,16 @@ class BidPhaseEnvironment:
         reward = 0
         return reward, done, info
 
-    def get_observation(self):
-        BidPhaseObservation(self._bid_per_player, self.current_player, current_hand)
+    @property
+    def observation(self):
+        return BidPhaseObservation(
+            self.bid_per_player,
+            self.current_player,
+            self._hand_per_player[self.current_player]
+        )
 
     def _dog_phase_should_be_skipped(self):
-        skip_dog_phase = np.max(self._bid_per_player) > Bid.GARDE
+        skip_dog_phase = np.max(self.bid_per_player) > Bid.GARDE
         return skip_dog_phase
 
     def _prepare_for_announcement_phase(self):
@@ -112,23 +117,23 @@ class BidPhaseEnvironment:
     def _prepare_for_dog_phase(self):
         self._hand_per_player[0] = self._hand_per_player[0] + self._original_dog
         self.next_game_phase = GamePhase.DOG
-        self.current_player = self._starting_player
+        self.current_player = self.next_phase_starting_player
 
     def _shift_taking_player_to_id_0(self, taking_player):
         original_player_ids = np.arange(taking_player, taking_player + self.n_players) % self.n_players
-        self._original_player_ids = list(original_player_ids)
-        self._bid_per_player = rotate_list(self._bid_per_player, -taking_player)
+        self.original_player_ids = list(original_player_ids)
+        self.bid_per_player = rotate_list(self.bid_per_player, -taking_player)
         rotate_list_in_place(self._hand_per_player, -taking_player)
-        self._starting_player = -taking_player % self.n_players
+        self.next_phase_starting_player = -taking_player % self.n_players
         self.taking_player_original_id = taking_player
 
     def _check_state_consistency(self):
-        assert np.argmax(self._bid_per_player) == 0
+        assert np.argmax(self.bid_per_player) == 0
 
     def _check_input(self, action):
         if type(action) != Bid:
             raise FrenchTarotException("Wrong type for 'action'")
-        if action != Bid.PASS and action < get_minimum_allowed_bid(self._bid_per_player):
+        if action != Bid.PASS and action < get_minimum_allowed_bid(self.bid_per_player):
             raise FrenchTarotException("Action is not pass and is lower than highest bid")
 
 
@@ -169,6 +174,7 @@ class FrenchTarotEnvironment:
         self._original_player_ids = None
         self._current_phase_environment = None
         self.taking_player_original_id = None
+        self._starting_player = None
 
     def reset(self) -> Observation:
         while True:
@@ -201,9 +207,9 @@ class FrenchTarotEnvironment:
         # TODO create and use function overloading, or use dictionary
         if self._game_phase == GamePhase.BID:
             reward, bid_phase_done, info = self._current_phase_environment.step(action)
-            self._original_player_ids = self._current_phase_environment._original_player_ids
-            self._bid_per_player = self._current_phase_environment._bid_per_player
-            self._starting_player = self._current_phase_environment._starting_player
+            self._original_player_ids = self._current_phase_environment.original_player_ids
+            self._bid_per_player = self._current_phase_environment.bid_per_player
+            self._starting_player = self._current_phase_environment.next_phase_starting_player
             self.taking_player_original_id = self._current_phase_environment.taking_player_original_id
             self.current_player = self._current_phase_environment.current_player
             if bid_phase_done:
@@ -229,7 +235,7 @@ class FrenchTarotEnvironment:
         # TODO fix duplications
         current_hand = self._hand_per_player[self.current_player]
         if self._game_phase == GamePhase.BID:
-            observation = BidPhaseObservation(self._bid_per_player, self.current_player, current_hand)
+            observation = self._current_phase_environment.observation
         else:
             original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
             # TODO use overloading
