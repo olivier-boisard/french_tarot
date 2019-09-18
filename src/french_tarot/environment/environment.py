@@ -166,7 +166,6 @@ class FrenchTarotEnvironment:
         if self._game_phase == GamePhase.BID:
             reward, bid_phase_done, info = self._current_phase_environment.step(action)
             self._hand_per_player = self._current_phase_environment._hand_per_player
-            self._original_dog = self._current_phase_environment._original_dog
             self._original_player_ids = self._current_phase_environment._original_player_ids
             self._bid_per_player = self._current_phase_environment._bid_per_player
             self._starting_player = self._current_phase_environment._starting_player
