@@ -189,6 +189,7 @@ class DogPhaseEnvironment(SubEnvironment):
         return reward, done, info
 
 
+# TODO subclass of SubEnvironment
 class AnnouncementPhaseEnvironment:
 
     def __init__(self, hand_per_player: List[List[Card]], starting_player: int):
@@ -244,135 +245,37 @@ class AnnouncementPhaseEnvironment:
         return (self.current_player + 1) % self.n_players
 
 
+# TODO subclass of SubEnvironment
+# TODO use mixin for current_hand
+# TODO use mixin for current_player and next player
 class CardPhaseEnvironment:
-    pass  # TODO
 
-
-# TODO create smaller classes
-class FrenchTarotEnvironment:
-
-    def __init__(self, seed: int = 1988):
-        self._winners_per_round = None
-        self._random_state = np.random.RandomState(seed)
-        self._n_cards_in_dog = 6
-        self._hand_per_player = []
-        self._original_dog = []
-        self._game_phase = None
-        self._bid_per_player = None
-        self.n_players = 4
-        self._n_cards_per_player = int(np.round((len(CARDS) - self._n_cards_in_dog) / self.n_players))
-        self._revealed_cards_in_dog = None
-        self._announcements = None
-        self.current_player = None
-        self._played_cards_in_round = None
-        self._won_cards_per_teams = None
-        self._bonus_points_per_teams = None
-        self._made_dog = None
-        self.original_player_ids = None
-        self._current_phase_environment = None
-        self.taking_player_original_id = None
-        self._starting_player = None
-        self._past_rounds = []
-
-    def reset(self):
-        while True:
-            try:
-                deck = list(self._random_state.permutation(CARDS))
-                self._deal(deck)
-                break
-            except RuntimeError as e:
-                print(e)
-        self._game_phase = GamePhase.BID
-        self._bid_per_player = []
-        self.n_players = 4
-        self._announcements = []
-        self.current_player = 0
+    def __init__(self, hand_per_player, starting_player, made_dog, original_dog, bid_per_player, announcements):
+        self._hand_per_player = hand_per_player
         self._played_cards_in_round = []
+        self._past_rounds = []
+        self.current_player = starting_player
+        self._made_dog = made_dog
+        self._original_dog = original_dog
+        self._winners_per_round = []
+        self._bid_per_player = bid_per_player
         self._won_cards_per_teams = {"taker": [], "opponents": []}
         self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
-        self._made_dog = None
-        self._winners_per_round = []
-        self.original_player_ids = []
-        self._past_rounds = []
-
-        self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player, self._original_dog)
-
-        return self._get_observation()
-
-    # TODO create smaller functions
-    def step(self, action) -> Tuple[any, Union[float, List[float]], bool, any]:
-        # TODO create and use function overloading, or use dictionary
-        done = False
-        if self._game_phase == GamePhase.BID:
-            reward, bid_phase_done, info = self._current_phase_environment.step(action)
-            self.original_player_ids = self._current_phase_environment.original_player_ids
-            self._bid_per_player = self._current_phase_environment.bid_per_player
-            self._starting_player = self._current_phase_environment.next_phase_starting_player
-            self.taking_player_original_id = self._current_phase_environment.taking_player_original_id
-            self.current_player = self._current_phase_environment.current_player
-            if bid_phase_done:
-                done = self._current_phase_environment.all_players_passed
-                if done:
-                    reward = [0, 0, 0, 0]
-                else:
-                    self._game_phase = self._current_phase_environment.next_game_phase
-                    if self._game_phase == GamePhase.ANNOUNCEMENTS:
-                        self._current_phase_environment = AnnouncementPhaseEnvironment(
-                            self._hand_per_player,
-                            self._starting_player
-                        )
-            else:
-                done = False
-        elif self._game_phase == GamePhase.DOG:
-            self._current_phase_environment = DogPhaseEnvironment(self._hand_per_player[0], self._original_dog)
-            reward, done, info = self._current_phase_environment.step(action)
-            self.current_player = self._starting_player
-            self._hand_per_player[0] = self._current_phase_environment.hand
-            self._made_dog = self._current_phase_environment.made_dog
-            self._game_phase = GamePhase.ANNOUNCEMENTS
-            self._current_phase_environment = AnnouncementPhaseEnvironment(self._hand_per_player, self._starting_player)
-        elif self._game_phase == GamePhase.ANNOUNCEMENTS:
-            reward, announcement_phase_done, info = self._current_phase_environment.step(action)
-            self._announcements = self._current_phase_environment.announcements
-            if announcement_phase_done:
-                self._game_phase = GamePhase.CARD
-                self.current_player = self._starting_player if not self.chelem_announced else 0
-        elif self._game_phase == GamePhase.CARD:
-            reward, done, info = self._play_card(action)
-        else:
-            raise RuntimeError("Unknown game phase")
-        return self._get_observation(), reward, done, info
+        self._announcements = announcements
 
     @property
     def chelem_announced(self):
         return np.any([isinstance(announcement, ChelemAnnouncement) for announcement in self._announcements[0]])
 
-    def _get_observation(self):
-        # TODO fix duplications
-        if self._game_phase == GamePhase.BID:
-            observation = self._current_phase_environment.observation
-        else:
-            original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
-            # TODO use overloading
-            if self._game_phase == GamePhase.DOG:
-                observation = DogPhaseObservation(self._hand_per_player[0] + original_dog, len(original_dog))
-            elif self._game_phase == GamePhase.ANNOUNCEMENTS:
-                observation = AnnouncementPhaseObservation(len(self._announcements), self.current_hand)
-            elif self._game_phase == GamePhase.CARD:
-                observation = CardPhaseObservation(self.current_hand, self._played_cards_in_round)
-            else:
-                raise RuntimeError("Unknown game phase")
-        return copy.deepcopy(observation)
+    @property
+    def n_players(self):
+        return len(self._hand_per_player)
 
     @property
     def current_hand(self):
         return self._hand_per_player[self.current_player]
 
-    @current_hand.setter
-    def current_hand(self, hand):
-        self._hand_per_player[self.current_player] = hand
-
-    def _play_card(self, card: Card) -> Tuple[List[float], bool, any]:
+    def step(self, card: Card) -> Tuple[List[float], bool, any]:
         if not isinstance(card, Card):
             raise FrenchTarotException("Action must be card")
         check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player])
@@ -387,7 +290,7 @@ class FrenchTarotEnvironment:
             self._hand_per_player[self.current_player] = current_hand
 
         if len(self._played_cards_in_round) == self.n_players:
-            self._past_rounds.append(Round(self._get_next_player(), self._played_cards_in_round))
+            self._past_rounds.append(Round(self.next_player, self._played_cards_in_round))
             is_petit_played_in_round = Card.TRUMP_1 in self._played_cards_in_round
             is_excuse_played_in_round = Card.EXCUSE in self._played_cards_in_round
             rewards = self._solve_round()
@@ -398,17 +301,12 @@ class FrenchTarotEnvironment:
                 done = True
 
         elif len(self._played_cards_in_round) < self.n_players:
-            self.current_player = self._get_next_player()
+            self.current_player = self.next_player
         else:
             raise RuntimeError("Wrong number of played cards")
 
         info = None
         return rewards, done, info
-
-    # TODO create smaller functions
-
-    def _get_next_player(self) -> int:
-        return (self.current_player + 1) % self.n_players
 
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
                           is_taker_win_round: bool) -> List[float]:
@@ -463,54 +361,36 @@ class FrenchTarotEnvironment:
         assert np.sum(rewards) == 0
         return rewards
 
-    # TODO create smaller functions
+    @property
+    def next_player(self) -> int:
+        return (self.current_player + 1) % self.n_players
 
     @staticmethod
-    def has_team_achieved_chelem(winners_per_round: List[str], is_excuse_played_in_round: bool, team: str) -> bool:
-        winners_per_round = np.array(winners_per_round)
-        team_won_all = np.all(winners_per_round == team)
-        team_won_all_but_last = np.all(winners_per_round[:-1] == team)
-        is_chelem_achieved = team_won_all or (team_won_all_but_last and is_excuse_played_in_round)
-        return is_chelem_achieved
-
-    # TODO create smaller functions
-
-    def _update_rewards_with_poignee(self, rewards: List[float]) -> List[float]:
-        rewards = copy.copy(rewards)
-        for player, announcements_for_player in enumerate(self._announcements):
-            for announcement in announcements_for_player:
-                if isinstance(announcement, PoigneeAnnouncement):
-                    bonus = announcement.bonus_points()
-                    is_player_won = rewards[player] > 0
-                    if player == 0:
-                        if is_player_won:
-                            rewards[0] += 3 * bonus
-                            rewards[1] -= bonus
-                            rewards[2] -= bonus
-                            rewards[3] -= bonus
-                        else:
-                            rewards[0] -= 3 * bonus
-                            rewards[1] += bonus
-                            rewards[2] += bonus
-                            rewards[3] += bonus
-                    else:
-                        is_taker_won = rewards[0] > 0
-                        if is_taker_won:
-                            for i in range(1, len(rewards)):
-                                if i == player:
-                                    rewards[i] += 2 * bonus
-                                else:
-                                    rewards[i] -= bonus
-                        else:
-                            rewards[0] -= 3 * bonus
-                            rewards[1] += bonus
-                            rewards[2] += bonus
-                            rewards[3] += bonus
-        return rewards
+    def _get_winning_card_index(played_cards: List[Card]) -> int:
+        asked_color = _retrieve_asked_color(played_cards)
+        card_strengths = []
+        for card in played_cards:
+            # TODO use/create utility functions
+            if "trump" in card.value:
+                card_strengths.append(100 + int(card.value.split("_")[1]))
+            elif asked_color not in card.value:
+                card_strengths.append(0)
+            elif "jack" in card.value:
+                card_strengths.append(11)
+            elif "rider" in card.value:
+                card_strengths.append(12)
+            elif "queen" in card.value:
+                card_strengths.append(13)
+            elif "king" in card.value:
+                card_strengths.append(14)
+            else:
+                card_strengths.append(int(card.value.split("_")[1]))
+        # noinspection PyTypeChecker
+        return int(np.argmax(card_strengths))
 
     def _solve_round(self) -> List[float]:
-        starting_player = self._get_next_player()
-        winning_card_index = FrenchTarotEnvironment._get_winning_card_index(self._played_cards_in_round)
+        starting_player = self.next_player
+        winning_card_index = self._get_winning_card_index(self._played_cards_in_round)
         play_order = np.arange(starting_player, starting_player + self.n_players) % self.n_players
         winner = play_order[winning_card_index]
         reward_for_winner = get_card_set_point(self._played_cards_in_round)
@@ -545,30 +425,188 @@ class FrenchTarotEnvironment:
         self._played_cards_in_round = []
         return rewards
 
+    @staticmethod
+    def has_team_achieved_chelem(winners_per_round: List[str], is_excuse_played_in_round: bool, team: str) -> bool:
+        winners_per_round = np.array(winners_per_round)
+        team_won_all = np.all(winners_per_round == team)
+        team_won_all_but_last = np.all(winners_per_round[:-1] == team)
+        is_chelem_achieved = team_won_all or (team_won_all_but_last and is_excuse_played_in_round)
+        return is_chelem_achieved
+
+    def _update_rewards_with_poignee(self, rewards: List[float]) -> List[float]:
+        rewards = copy.copy(rewards)
+        for player, announcements_for_player in enumerate(self._announcements):
+            for announcement in announcements_for_player:
+                if isinstance(announcement, PoigneeAnnouncement):
+                    bonus = announcement.bonus_points()
+                    is_player_won = rewards[player] > 0
+                    if player == 0:
+                        if is_player_won:
+                            rewards[0] += 3 * bonus
+                            rewards[1] -= bonus
+                            rewards[2] -= bonus
+                            rewards[3] -= bonus
+                        else:
+                            rewards[0] -= 3 * bonus
+                            rewards[1] += bonus
+                            rewards[2] += bonus
+                            rewards[3] += bonus
+                    else:
+                        is_taker_won = rewards[0] > 0
+                        if is_taker_won:
+                            for i in range(1, len(rewards)):
+                                if i == player:
+                                    rewards[i] += 2 * bonus
+                                else:
+                                    rewards[i] -= bonus
+                        else:
+                            rewards[0] -= 3 * bonus
+                            rewards[1] += bonus
+                            rewards[2] += bonus
+                            rewards[3] += bonus
+        return rewards
+
+
+# TODO create smaller classes
+class FrenchTarotEnvironment:
+
+    def __init__(self, seed: int = 1988):
+        self._winners_per_round = None
+        self._random_state = np.random.RandomState(seed)
+        self._n_cards_in_dog = 6
+        self._hand_per_player = []
+        self._original_dog = []
+        self._game_phase = None
+        self._bid_per_player = None
+        self.n_players = 4
+        self._n_cards_per_player = int(np.round((len(CARDS) - self._n_cards_in_dog) / self.n_players))
+        self._revealed_cards_in_dog = None
+        self._announcements = None
+        self.current_player = None
+        self._played_cards_in_round = None
+        self._won_cards_per_teams = None
+        self._bonus_points_per_teams = None
+        self._made_dog = None
+        self.original_player_ids = None
+        self._current_phase_environment = None
+        self.taking_player_original_id = None
+        self._starting_player = None
+        self._past_rounds = []
+
+    def reset(self):
+        while True:
+            try:
+                deck = list(self._random_state.permutation(CARDS))
+                self._deal(deck)
+                break
+            except RuntimeError as e:
+                print(e)
+        self._game_phase = GamePhase.BID
+        self._bid_per_player = []
+        self.n_players = 4
+        self._announcements = []
+        self.current_player = 0
+        self._played_cards_in_round = []
+        self._made_dog = None
+        self._winners_per_round = []
+        self.original_player_ids = []
+        self._past_rounds = []
+
+        self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player, self._original_dog)
+
+        return self._get_observation()
+
+    # TODO create smaller functions
+    def step(self, action) -> Tuple[any, Union[float, List[float]], bool, any]:
+        # TODO create and use function overloading, or use dictionary
+        done = False
+        if self._game_phase == GamePhase.BID:
+            reward, bid_phase_done, info = self._current_phase_environment.step(action)
+            self.original_player_ids = self._current_phase_environment.original_player_ids
+            self._bid_per_player = self._current_phase_environment.bid_per_player
+            self._starting_player = self._current_phase_environment.next_phase_starting_player
+            self.taking_player_original_id = self._current_phase_environment.taking_player_original_id
+            self.current_player = self._current_phase_environment.current_player
+            if bid_phase_done:
+                done = self._current_phase_environment.all_players_passed
+                if done:
+                    reward = [0, 0, 0, 0]
+                else:
+                    self._game_phase = self._current_phase_environment.next_game_phase
+                    if self._game_phase == GamePhase.ANNOUNCEMENTS:
+                        self._current_phase_environment = AnnouncementPhaseEnvironment(
+                            self._hand_per_player,
+                            self._starting_player
+                        )
+            else:
+                done = False
+        elif self._game_phase == GamePhase.DOG:
+            self._current_phase_environment = DogPhaseEnvironment(self._hand_per_player[0], self._original_dog)
+            reward, done, info = self._current_phase_environment.step(action)
+            self.current_player = self._starting_player
+            self._hand_per_player[0] = self._current_phase_environment.hand
+            self._made_dog = self._current_phase_environment.made_dog
+            self._game_phase = GamePhase.ANNOUNCEMENTS
+            self._current_phase_environment = AnnouncementPhaseEnvironment(self._hand_per_player, self._starting_player)
+        elif self._game_phase == GamePhase.ANNOUNCEMENTS:
+            reward, announcement_phase_done, info = self._current_phase_environment.step(action)
+            self._announcements = self._current_phase_environment.announcements
+            if announcement_phase_done:
+                self._game_phase = GamePhase.CARD
+                self.current_player = self._starting_player if not self.chelem_announced else 0
+                self._current_phase_environment = CardPhaseEnvironment(
+                    self._hand_per_player,
+                    self._starting_player,
+                    self._made_dog,
+                    self._original_dog,
+                    self._bid_per_player,
+                    self._announcements,
+                )
+        elif self._game_phase == GamePhase.CARD:
+            reward, done, info = self._current_phase_environment.step(action)
+            self.current_player = self._current_phase_environment.current_player
+            self._played_cards_in_round = self._current_phase_environment._played_cards_in_round
+        else:
+            raise RuntimeError("Unknown game phase")
+        return self._get_observation(), reward, done, info
+
+    @property
+    def chelem_announced(self):
+        return np.any([isinstance(announcement, ChelemAnnouncement) for announcement in self._announcements[0]])
+
+    def _get_observation(self):
+        # TODO fix duplications
+        if self._game_phase == GamePhase.BID:
+            observation = self._current_phase_environment.observation
+        else:
+            original_dog = self._original_dog if np.max(self._bid_per_player) <= Bid.GARDE else "unrevealed"
+            # TODO use overloading
+            if self._game_phase == GamePhase.DOG:
+                observation = DogPhaseObservation(self._hand_per_player[0] + original_dog, len(original_dog))
+            elif self._game_phase == GamePhase.ANNOUNCEMENTS:
+                observation = AnnouncementPhaseObservation(len(self._announcements), self.current_hand)
+            elif self._game_phase == GamePhase.CARD:
+                observation = CardPhaseObservation(self.current_hand, self._played_cards_in_round)
+            else:
+                raise RuntimeError("Unknown game phase")
+        return copy.deepcopy(observation)
+
+    @property
+    def current_hand(self):
+        return self._hand_per_player[self.current_player]
+
+    @current_hand.setter
+    def current_hand(self, hand):
+        self._hand_per_player[self.current_player] = hand
+
     # TODO create smaller functions
 
-    @staticmethod
-    def _get_winning_card_index(played_cards: List[Card]) -> int:
-        asked_color = _retrieve_asked_color(played_cards)
-        card_strengths = []
-        for card in played_cards:
-            # TODO use/create utility functions
-            if "trump" in card.value:
-                card_strengths.append(100 + int(card.value.split("_")[1]))
-            elif asked_color not in card.value:
-                card_strengths.append(0)
-            elif "jack" in card.value:
-                card_strengths.append(11)
-            elif "rider" in card.value:
-                card_strengths.append(12)
-            elif "queen" in card.value:
-                card_strengths.append(13)
-            elif "king" in card.value:
-                card_strengths.append(14)
-            else:
-                card_strengths.append(int(card.value.split("_")[1]))
-        # noinspection PyTypeChecker
-        return int(np.argmax(card_strengths))
+    def _get_next_player(self) -> int:
+        return (self.current_player + 1) % self.n_players
+
+    # TODO create smaller functions
+
+    # TODO create smaller functions
 
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):
