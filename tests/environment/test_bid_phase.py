@@ -3,9 +3,10 @@ import copy
 import numpy as np
 import pytest
 
-from french_tarot.environment.common import Card, Bid, CARDS
-from french_tarot.environment.environment import FrenchTarotEnvironment
-from french_tarot.environment.observations import BidPhaseObservation, AnnouncementPhaseObservation
+from french_tarot.environment.core import CARDS, Bid, Card
+from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
+from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 
 

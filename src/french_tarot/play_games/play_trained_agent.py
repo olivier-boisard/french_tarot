@@ -5,9 +5,10 @@ from torch.utils.tensorboard import SummaryWriter
 from french_tarot.agents.common import set_all_seeds
 from french_tarot.agents.performance_evaluation import compute_diff_score_metric
 from french_tarot.agents.trained_player import AllPhasePlayerTrainer
-from french_tarot.environment.common import Bid
-from french_tarot.environment.environment import FrenchTarotEnvironment, rotate_list
-from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation
+from french_tarot.environment.core import Bid, rotate_list
+from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
+from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 
 
 def _main(n_episodes_training: int = 200000):

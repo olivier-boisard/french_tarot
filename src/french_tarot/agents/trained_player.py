@@ -8,8 +8,10 @@ from french_tarot.agents.common import CoreCardNeuralNet, Agent, Trainer
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
-from french_tarot.environment.observations import BidPhaseObservation, DogPhaseObservation, \
-    AnnouncementPhaseObservation, CardPhaseObservation
+from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
+from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
+from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
+from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 
 
 class DummyTrainer:

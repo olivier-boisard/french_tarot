@@ -1,8 +1,8 @@
 import pytest
 
-from french_tarot.environment.common import Card, Bid, CARDS, ChelemAnnouncement, PoigneeAnnouncement
-from french_tarot.environment.environment import FrenchTarotEnvironment
-from french_tarot.environment.observations import CardPhaseObservation
+from french_tarot.environment.core import Bid, Card, ChelemAnnouncement, CARDS, PoigneeAnnouncement
+from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 
 

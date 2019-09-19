@@ -8,8 +8,8 @@ from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
 from french_tarot.agents.common import BaseNeuralNetAgent, encode_cards, CoreCardNeuralNet, Trainer, Transition
-from french_tarot.environment.common import Card, CARDS
-from french_tarot.environment.observations import DogPhaseObservation
+from french_tarot.environment.core import Card, CARDS
+from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:

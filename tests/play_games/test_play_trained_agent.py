@@ -1,7 +1,7 @@
 import pytest
 from torch import nn
 
-from french_tarot.environment.common import CARDS
+from french_tarot.environment.core import CARDS
 from french_tarot.play_games import play_trained_agent
 
 

@@ -1,7 +1,7 @@
 import pytest
 
-from french_tarot.environment.common import Card, Bid, CARDS, ChelemAnnouncement, PoigneeAnnouncement
-from french_tarot.environment.environment import FrenchTarotEnvironment, get_card_set_point
+from french_tarot.environment.core import get_card_set_point, CARDS, ChelemAnnouncement, Bid, Card, PoigneeAnnouncement
+from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 

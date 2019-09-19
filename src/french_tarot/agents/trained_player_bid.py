@@ -7,8 +7,8 @@ from torch import nn
 from torch.nn.modules.loss import BCELoss
 
 from french_tarot.agents.common import BaseNeuralNetAgent, encode_cards, Transition, Trainer
-from french_tarot.environment.common import Bid
-from french_tarot.environment.observations import BidPhaseObservation
+from french_tarot.environment.core import Bid
+from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 
 
 class BidPhaseAgent(BaseNeuralNetAgent):

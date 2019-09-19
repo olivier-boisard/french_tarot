@@ -5,7 +5,8 @@ import pandas as pd
 
 from french_tarot.agents.common import Agent, BaseNeuralNetAgent
 from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.environment.environment import rotate_list, FrenchTarotEnvironment
+from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.core import rotate_list
 
 
 def compute_diff_score_metric(agent: Agent, n_episodes_testing=10) -> float:

@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 
 from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.environment.common import Bid
-from french_tarot.environment.environment import FrenchTarotEnvironment
+from french_tarot.environment.core import Bid
+from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 
 
 def test_instantiate_random_player():

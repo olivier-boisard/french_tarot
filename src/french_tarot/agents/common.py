@@ -11,7 +11,7 @@ from torch import nn, tensor
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
-from french_tarot.environment.common import Card, CARDS
+from french_tarot.environment.core import Card, CARDS
 from french_tarot.exceptions import FrenchTarotException
 
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
