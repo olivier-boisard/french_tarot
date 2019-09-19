@@ -1,17 +1,12 @@
 import argparse
-import copy
-import datetime
-import os
 from typing import List
 
-import dill
 import matplotlib.pyplot as plt
 import numpy as np
 from joblib import Parallel, delayed
 
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.environment.environment import FrenchTarotEnvironment
-from french_tarot.exceptions import FrenchTarotException
 
 N_ITERATIONS = 1000
 
@@ -38,19 +33,7 @@ def _run_game(iteration: int, initial_seed: int = 0) -> np.array:
     cnt = 0
     reward = None
     while not done:
-        environment_copy = copy.deepcopy(environment)
-        random_agent_copy = copy.deepcopy(random_agent)
-        try:
-            observation, reward, done, _ = environment.step(random_agent.get_action(observation))
-        except FrenchTarotException as e:
-            obj = {"agent": random_agent_copy, "environment": environment_copy, "observation": observation,
-                   "done": done}
-            timestamp = str(datetime.datetime.now()).replace(" ", "_").replace(":", "-").replace(".", "-")
-            output_file_path = os.path.join(os.path.dirname(__file__), "stress_test_{}.dill".format(timestamp))
-            print("Dumping file into " + output_file_path)
-            with open(output_file_path, "wb") as f:
-                dill.dump(obj, f)
-            raise e
+        observation, reward, done, _ = environment.step(random_agent.get_action(observation))
         cnt += 1
         if cnt >= 1000:
             raise RuntimeError("Infinite loop")

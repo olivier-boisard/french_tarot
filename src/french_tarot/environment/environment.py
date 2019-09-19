@@ -225,7 +225,6 @@ class AnnouncementPhaseEnvironment:
             elif isinstance(announcement, ChelemAnnouncement):
                 if len(self.announcements) > 0:
                     raise FrenchTarotException("Only taker can announce chelem")
-                self.chelem_announced = True
 
         if np.sum([isinstance(announcement, list) for announcement in action]) > 1:
             raise FrenchTarotException("Player tried to announcement more than 1 poignees")
@@ -264,7 +263,6 @@ class FrenchTarotEnvironment:
         self._n_cards_per_player = int(np.round((len(CARDS) - self._n_cards_in_dog) / self.n_players))
         self._revealed_cards_in_dog = None
         self._announcements = None
-        self._chelem_announced = None
         self.current_player = None
         self._played_cards_in_round = None
         self._won_cards_per_teams = None
@@ -288,7 +286,6 @@ class FrenchTarotEnvironment:
         self._bid_per_player = []
         self.n_players = 4
         self._announcements = []
-        self._chelem_announced = False
         self.current_player = 0
         self._played_cards_in_round = []
         self._won_cards_per_teams = {"taker": [], "opponents": []}
@@ -305,6 +302,7 @@ class FrenchTarotEnvironment:
     # TODO create smaller functions
     def step(self, action) -> Tuple[any, Union[float, List[float]], bool, any]:
         # TODO create and use function overloading, or use dictionary
+        done = False
         if self._game_phase == GamePhase.BID:
             reward, bid_phase_done, info = self._current_phase_environment.step(action)
             self.original_player_ids = self._current_phase_environment.original_player_ids
@@ -334,13 +332,20 @@ class FrenchTarotEnvironment:
             self._game_phase = GamePhase.ANNOUNCEMENTS
             self._current_phase_environment = AnnouncementPhaseEnvironment(self._hand_per_player, self._starting_player)
         elif self._game_phase == GamePhase.ANNOUNCEMENTS:
-            reward, done, info = self._current_phase_environment.step(action)
+            reward, announcement_phase_done, info = self._current_phase_environment.step(action)
             self._announcements = self._current_phase_environment.announcements
+            if announcement_phase_done:
+                self._game_phase = GamePhase.CARD
+                self.current_player = self._starting_player if not self.chelem_announced else 0
         elif self._game_phase == GamePhase.CARD:
             reward, done, info = self._play_card(action)
         else:
             raise RuntimeError("Unknown game phase")
         return self._get_observation(), reward, done, info
+
+    @property
+    def chelem_announced(self):
+        return np.any([isinstance(announcement, ChelemAnnouncement) for announcement in self._announcements[0]])
 
     def _get_observation(self):
         # TODO fix duplications
@@ -440,10 +445,10 @@ class FrenchTarotEnvironment:
         winners_per_round = self._winners_per_round
         taker_achieved_chelem = self.has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, "taker")
         if taker_achieved_chelem:
-            contract_value += 400 if self._chelem_announced else 200
+            contract_value += 400 if self.chelem_announced else 200
         elif self.has_team_achieved_chelem(winners_per_round, is_excuse_played_in_round, "opponents"):
             contract_value -= 200
-        elif not taker_achieved_chelem and self._chelem_announced:
+        elif not taker_achieved_chelem and self.chelem_announced:
             contract_value -= 200
 
         if is_petit_played_in_round:
