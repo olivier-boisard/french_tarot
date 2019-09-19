@@ -563,9 +563,13 @@ class FrenchTarotEnvironment:
                     self._announcements,
                 )
         elif self._game_phase == GamePhase.CARD:
+            self._current_phase_environment.current_player = self.current_player
+            self._current_phase_environment._hand_per_player = self._hand_per_player
             reward, done, info = self._current_phase_environment.step(action)
             self.current_player = self._current_phase_environment.current_player
             self._played_cards_in_round = self._current_phase_environment._played_cards_in_round
+            self._past_rounds = self._current_phase_environment._past_rounds
+            self._hand_per_player = self._current_phase_environment._hand_per_player
         else:
             raise RuntimeError("Unknown game phase")
         return self._get_observation(), reward, done, info
