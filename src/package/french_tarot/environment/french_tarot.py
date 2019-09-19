@@ -148,10 +148,8 @@ class FrenchTarotEnvironment:
     def current_hand(self, hand):
         self._hand_per_player[self.current_player] = hand
 
-
     def _get_next_player(self) -> int:
         return (self.current_player + 1) % self.n_players
-
 
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):
