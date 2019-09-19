@@ -19,7 +19,14 @@ class DogPhaseEnvironment(SubEnvironment):
     def __init__(self, hand: List[Card], original_dog: List[Card]):
         self.hand = hand + original_dog
         self._n_cards_in_dog = len(original_dog)
-        self.made_dog = []
+        self.new_dog = []
+
+    def reset(self):
+        self.new_dog = []
+
+    @property
+    def game_is_done(self):
+        return False
 
     @property
     def observation(self) -> DogPhaseObservation:
@@ -51,7 +58,7 @@ class DogPhaseEnvironment(SubEnvironment):
         index_to_keep_in_hand = [card not in dog for card in self.hand]
         self.hand = list(np.array(self.hand)[index_to_keep_in_hand])
         reward = get_card_set_point(dog)
-        self.made_dog = dog
+        self.new_dog = dog
         done = False
         info = None
         return reward, done, info

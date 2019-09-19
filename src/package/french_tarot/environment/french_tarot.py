@@ -2,9 +2,12 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse
+from french_tarot.agents.meta import singledispatchmethod
+from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse, rotate_list
+from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseEnvironment
 from french_tarot.environment.subenvironments.core import SubEnvironment
+from french_tarot.environment.subenvironments.dog_phase import DogPhaseEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
@@ -15,15 +18,19 @@ class FrenchTarotEnvironment:
         self._random_state = np.random.RandomState(seed)
         self.done = False
         self._current_phase_environment: Union[SubEnvironment, None] = None
+        self._hand_per_player = []
+        self._made_dog = []
 
     def reset(self):
         self._deal_until_valid()
+        self._made_dog = []
         self._initialize_current_phase_environment()
         observation = self._current_phase_environment.reset()
         return observation
 
     def _initialize_current_phase_environment(self):
         self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player)
+        self._current_phase_environment.reset()
 
     def _deal_until_valid(self):
         while True:
@@ -39,11 +46,44 @@ class FrenchTarotEnvironment:
 
         if phase_is_done:
             self.done = self._current_phase_environment.game_is_done
-            self._initialize_next_phase_environment()
+            self._move_to_next_phase()
         return observation, reward, self.done, info
 
-    def _initialize_next_phase_environment(self):
-        raise NotImplementedError()
+    @singledispatchmethod
+    def _move_to_next_phase(self, observation: SubEnvironment):
+        raise FrenchTarotException("Unhandled type")
+
+    @_move_to_next_phase.register
+    def _(self, bid_phase_environment: BidPhaseEnvironment):
+        self._taker_original_id = bid_phase_environment.taker_original_id
+        self._shift_players_so_that_taker_has_id_0()
+        self._move_to_dog_phase() if not bid_phase_environment.skip_dog_phase else self._move_to_announcement_phase()
+
+    @_move_to_next_phase.register
+    def _(self, dog_phase_environment: DogPhaseEnvironment):
+        self._made_dog = dog_phase_environment.new_dog
+        self._move_to_announcement_phase()
+
+    @_move_to_next_phase.register
+    def _(self, announcement_phase_environment: AnnouncementPhaseEnvironment):
+        self._announcements = announcement_phase_environment.announcements
+
+    def _move_to_dog_phase(self):
+        self._current_phase_environment = DogPhaseEnvironment(self._hand_per_player[0], self._original_dog)
+        self._current_phase_environment.reset()
+
+    def _move_to_announcement_phase(self):
+        self._current_phase_environment = AnnouncementPhaseEnvironment(self._hand_per_player)
+        self._current_phase_environment.reset()
+
+    @property
+    def starting_player_id(self):
+        taker_id = self._taker_original_id
+        starting_player_id = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
+        return starting_player_id
+
+    def _shift_players_so_that_taker_has_id_0(self):
+        self._hand_per_player = rotate_list(self._hand_per_player, self._taker_original_id)
 
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):

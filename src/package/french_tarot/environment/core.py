@@ -214,12 +214,6 @@ def rotate_list(input_list: List, n: int) -> List:
     return list(hand_per_player_deque)
 
 
-def rotate_list_in_place(input_list: List, n: int):
-    new_list = rotate_list(input_list, n)
-    del input_list[:]
-    input_list.extend(new_list)
-
-
 def get_minimum_allowed_bid(bid_per_player: List[Bid]) -> Bid:
     return Bid.PETITE if len(bid_per_player) == 0 else np.max(bid_per_player) + 1
 

@@ -3,8 +3,10 @@ from typing import List
 import numpy as np
 from attr import dataclass
 
+from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.environment.core import Card, Announcement, PoigneeAnnouncement, count_trumps_and_excuse, \
     ChelemAnnouncement
+from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
@@ -14,56 +16,81 @@ class AnnouncementPhaseObservation:
     hand: List[Card]
 
 
-class AnnouncementPhaseEnvironment:
+class AnnouncementPhaseEnvironment(SubEnvironment):
 
-    def __init__(self, hand_per_player: List[List[Card]], starting_player: int):
+    def __init__(self, hand_per_player: List[List[Card]]):
         self._hand_per_player = hand_per_player
-        self.chelem_announced = False
         self.announcements = []
-        self._starting_player = starting_player
-        self.current_player = 0
+
+    def reset(self):
+        self.announcements = []
+
+    @property
+    def game_is_done(self):
+        return False
 
     @property
     def n_players(self):
         return len(self._hand_per_player)
 
     def step(self, action: List[Announcement]):
-        if not isinstance(action, list):
-            raise FrenchTarotException("Input should be list")
-        for announcement in action:
-            # TODO use function overloading
-            if not isinstance(announcement, Announcement):
-                raise FrenchTarotException("Invalid action type")
-            elif isinstance(announcement, PoigneeAnnouncement):
-                current_player_hand = self._hand_per_player[self.current_player]
-                n_cards = len(announcement)
-                if count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
-                    raise FrenchTarotException("Invalid cards in poignee")
-                n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
-                if Card.EXCUSE in announcement.revealed_cards and n_trumps_in_hand != n_cards:
-                    raise FrenchTarotException(
-                        "Excuse can be revealed only if player does not have any other trumps")
-                elif count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
-                    raise FrenchTarotException("Revealed cards should be only trumps or excuse")
-                elif np.any([card not in current_player_hand for card in announcement.revealed_cards]):
-                    raise FrenchTarotException("Revealed card not owned by player")
-            elif isinstance(announcement, ChelemAnnouncement):
-                if len(self.announcements) > 0:
-                    raise FrenchTarotException("Only taker can announce chelem")
-
-        if np.sum([isinstance(announcement, list) for announcement in action]) > 1:
-            raise FrenchTarotException("Player tried to announcement more than 1 poignees")
-
+        self._check(action)
         self.announcements.append(action)
-        done = len(self.announcements) == self.n_players
-        if done:
-            self.current_player = 0 if self.chelem_announced else self._starting_player
-        else:
-            self.current_player = self._get_next_player()
 
         reward = 0
         info = None
-        return reward, done, info
+        return reward, self.done, info
+
+    def _check(self, action):
+        self._check_input_is_list(action)
+        self._check_list_elements(action)
+        self._check_player_announced_at_most_one_poignee(action)
+
+    @staticmethod
+    def _check_player_announced_at_most_one_poignee(action):
+        if np.sum([isinstance(announcement, list) for announcement in action]) > 1:
+            raise FrenchTarotException("Player tried to announcement more than 1 poignees")
+
+    def _check_list_elements(self, action):
+        for announcement in action:
+            self._check_announcement(announcement)
+
+    @staticmethod
+    def _check_input_is_list(action):
+        if not isinstance(action, list):
+            raise FrenchTarotException("Input should be list")
+
+    @singledispatchmethod
+    def _check_announcement(self, announcement: Announcement):
+        raise FrenchTarotException("Unhandled announcement")
+
+    @_check_announcement.register
+    def _(self, announcement: PoigneeAnnouncement):
+        current_player_hand = self._hand_per_player[self.current_player]
+        n_cards = len(announcement)
+        if count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
+            raise FrenchTarotException("Invalid cards in poignee")
+        n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
+        if Card.EXCUSE in announcement.revealed_cards and n_trumps_in_hand != n_cards:
+            raise FrenchTarotException(
+                "Excuse can be revealed only if player does not have any other trumps")
+        elif count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
+            raise FrenchTarotException("Revealed cards should be only trumps or excuse")
+        elif np.any([card not in current_player_hand for card in announcement.revealed_cards]):
+            raise FrenchTarotException("Revealed card not owned by player")
+
+    @_check_announcement.register
+    def _(self, _: ChelemAnnouncement):
+        if len(self.announcements) > 0:
+            raise FrenchTarotException("Only taker can announce chelem")
+
+    @property
+    def current_player(self):
+        return len(self.announcements)
+
+    @property
+    def done(self):
+        return len(self.announcements) == len(self._hand_per_player)
 
     def _get_next_player(self) -> int:
         return (self.current_player + 1) % self.n_players
