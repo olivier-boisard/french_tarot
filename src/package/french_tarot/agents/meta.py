@@ -4,6 +4,8 @@ from french_tarot.exceptions import FrenchTarotException
 
 _singledispatch_registry = {}
 
+DEFAULT = "default"
+
 
 def singledispatchmethod(func):
     """Provides method overloading.
@@ -13,7 +15,7 @@ def singledispatchmethod(func):
 
     if func in _singledispatch_registry:
         raise FrenchTarotException("Function already declared as polymorphic")
-    _singledispatch_registry[func] = {"default": func}
+    _singledispatch_registry[func] = {DEFAULT: func}
 
     def wrapper(*args, **kwargs):
         arg_type = type(args[1])
@@ -41,7 +43,7 @@ def _get_first_arg_type(func_overload):
 def _determine_func_to_call(arg_type, registry):
     func_to_call = _recursively_determine_func_to_call([arg_type], registry)
     if func_to_call is None:
-        func_to_call = registry["default"]
+        func_to_call = registry[DEFAULT]
     return func_to_call
 
 
