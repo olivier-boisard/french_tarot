@@ -24,6 +24,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
 
     def reset(self):
         self.announcements = []
+        return self.observation
 
     @property
     def game_is_done(self):
@@ -39,7 +40,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
 
         reward = 0
         info = None
-        return reward, self.done, info
+        return self.observation, reward, self.done, info
 
     def _check(self, action):
         self._check_input_is_list(action)
@@ -66,7 +67,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
 
     @_check_announcement.register
     def _(self, announcement: PoigneeAnnouncement):
-        current_player_hand = self._hand_per_player[self.current_player]
+        current_player_hand = self._hand_per_player[self.current_player_id]
         n_cards = len(announcement)
         if count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
             raise FrenchTarotException("Invalid cards in poignee")
@@ -85,12 +86,32 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
             raise FrenchTarotException("Only taker can announce chelem")
 
     @property
-    def current_player(self):
-        return len(self.announcements)
+    def chelem_announced(self):
+        is_chelem_announced = False
+        for player_announcement in self.announcements:
+            for announcement in player_announcement:
+                if isinstance(announcement, ChelemAnnouncement):
+                    is_chelem_announced = True
+                    break
+            if is_chelem_announced:
+                break
+        return is_chelem_announced
+
+    @property
+    def current_player_id(self):
+        return len(self.announcements) % self.n_players
+
+    @property
+    def current_player_hand(self):
+        return self._hand_per_player[self.current_player_id]
 
     @property
     def done(self):
         return len(self.announcements) == len(self._hand_per_player)
 
+    @property
+    def observation(self):
+        return AnnouncementPhaseObservation(self.current_player_id, self.current_player_hand)
+
     def _get_next_player(self) -> int:
-        return (self.current_player + 1) % self.n_players
+        return (self.current_player_id + 1) % self.n_players

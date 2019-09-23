@@ -23,6 +23,7 @@ class DogPhaseEnvironment(SubEnvironment):
 
     def reset(self):
         self.new_dog = []
+        return self.observation
 
     @property
     def game_is_done(self):

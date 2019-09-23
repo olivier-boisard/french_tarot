@@ -17,11 +17,12 @@ def singledispatchmethod(func):
 
     if func in _singledispatch_registry:
         raise FrenchTarotException("Function already declared as polymorphic")
-    _singledispatch_registry[func] = {_get_first_arg_type(func): func}
+    _singledispatch_registry[func] = {"default": func}
 
     def wrapper(*args, **kwargs):
         first_arg_type = type(args[1])
-        func_to_call = _singledispatch_registry[func][first_arg_type]
+        default_func = _singledispatch_registry[func]["default"]
+        func_to_call = _singledispatch_registry[func].get(first_arg_type, default_func)
         # noinspection PyArgumentList
         return func_to_call(*args, **kwargs)
 

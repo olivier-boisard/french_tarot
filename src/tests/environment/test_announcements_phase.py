@@ -6,7 +6,7 @@ from french_tarot.environment.subenvironments.card_phase import CardPhaseObserva
 from french_tarot.exceptions import FrenchTarotException
 
 
-def setup_environment():
+def setup_environment() -> FrenchTarotEnvironment:
     environment = FrenchTarotEnvironment()
     environment.reset()
     environment.step(Bid.PASS)
@@ -44,7 +44,7 @@ def get_card_list():
 def test_no_announcements():
     environment = setup_environment()
     observation, reward, done, _ = environment.step([])
-    assert environment._announcements[0] == []
+    assert environment._current_phase_environment.announcements[0] == []
     assert reward == 0
     assert not done
 

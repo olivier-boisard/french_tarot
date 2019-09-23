@@ -7,6 +7,7 @@ from attr import dataclass
 from french_tarot.agents.common import Round
 from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, get_card_set_point, \
     is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement
+from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
@@ -16,32 +17,27 @@ class CardPhaseObservation:
     played_cards_in_round: List[Card]
 
 
-class CardPhaseEnvironment:
+class CardPhaseEnvironment(SubEnvironment):
 
     def __init__(self, hand_per_player, starting_player, made_dog, original_dog, bid_per_player, announcements):
         self._hand_per_player = hand_per_player
-        self._played_cards_in_round = []
-        self._past_rounds = []
         self.current_player = starting_player
         self._made_dog = made_dog
         self._original_dog = original_dog
-        self._winners_per_round = []
         self._bid_per_player = bid_per_player
+        self._announcements = announcements
+        self._played_cards_in_round = []
+        self._past_rounds = []
+        self._winners_per_round = []
         self._won_cards_per_teams = {"taker": [], "opponents": []}
         self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
-        self._announcements = announcements
 
-    @property
-    def chelem_announced(self):
-        return np.any([isinstance(announcement, ChelemAnnouncement) for announcement in self._announcements[0]])
-
-    @property
-    def n_players(self):
-        return len(self._hand_per_player)
-
-    @property
-    def current_hand(self):
-        return self._hand_per_player[self.current_player]
+    def reset(self):
+        self._played_cards_in_round = []
+        self._past_rounds = []
+        self._winners_per_round = []
+        self._won_cards_per_teams = {"taker": [], "opponents": []}
+        self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
 
     def step(self, card: Card) -> Tuple[List[float], bool, any]:
         if not isinstance(card, Card):
@@ -75,6 +71,27 @@ class CardPhaseEnvironment:
 
         info = None
         return rewards, done, info
+
+    @property
+    def game_is_done(self):
+        is_game_done = True
+        for hand in self._hand_per_player:
+            if len(hand) > 0:
+                is_game_done = False
+                break
+        return is_game_done
+
+    @property
+    def chelem_announced(self):
+        return np.any([isinstance(announcement, ChelemAnnouncement) for announcement in self._announcements[0]])
+
+    @property
+    def n_players(self):
+        return len(self._hand_per_player)
+
+    @property
+    def current_hand(self):
+        return self._hand_per_player[self.current_player]
 
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
                           is_taker_win_round: bool) -> List[float]:

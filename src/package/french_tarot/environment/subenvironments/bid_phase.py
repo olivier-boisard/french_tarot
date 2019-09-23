@@ -41,7 +41,7 @@ class BidPhaseEnvironment(SubEnvironment):
 
     @property
     def skip_dog_phase(self) -> bool:
-        return np.all(np.array(self.bid_per_player) <= Bid.GARDE)
+        return np.any(np.array(self.bid_per_player) > Bid.GARDE)
 
     @property
     def done(self):
@@ -53,7 +53,7 @@ class BidPhaseEnvironment(SubEnvironment):
 
     @property
     def current_player(self):
-        return len(self.bid_per_player)
+        return len(self.bid_per_player) % self.n_players
 
     @property
     def current_player_hand(self):
@@ -65,7 +65,7 @@ class BidPhaseEnvironment(SubEnvironment):
 
     @property
     def taker_original_id(self):
-        return np.argmax(np.array(self.bid_per_player))[0]
+        return np.argmax(np.array(self.bid_per_player))
 
     @property
     def all_players_passed(self):

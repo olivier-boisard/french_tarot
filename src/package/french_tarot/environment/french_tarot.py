@@ -1,11 +1,13 @@
 from typing import List, Tuple, Union
 
 import numpy as np
+from tensorboard.backend.event_processing.event_file_inspector import Observation
 
 from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse, rotate_list
 from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseEnvironment
+from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseEnvironment
 from french_tarot.exceptions import FrenchTarotException
@@ -13,6 +15,7 @@ from french_tarot.exceptions import FrenchTarotException
 
 class FrenchTarotEnvironment:
     n_players = 4
+    dog_size = 6
 
     def __init__(self, seed: int = 1988):
         self._random_state = np.random.RandomState(seed)
@@ -20,10 +23,16 @@ class FrenchTarotEnvironment:
         self._current_phase_environment: Union[SubEnvironment, None] = None
         self._hand_per_player = []
         self._made_dog = []
+        self._bid_per_player = []
+        self._announcements = []
+        self._chelem_announced = False
 
     def reset(self):
         self._deal_until_valid()
         self._made_dog = []
+        self._bid_per_player = []
+        self._announcements = []
+        self._chelem_announced = False
         self._initialize_current_phase_environment()
         observation = self._current_phase_environment.reset()
         return observation
@@ -46,40 +55,61 @@ class FrenchTarotEnvironment:
 
         if phase_is_done:
             self.done = self._current_phase_environment.game_is_done
-            self._move_to_next_phase()
+            observation = self._move_to_next_phase(self._current_phase_environment)
         return observation, reward, self.done, info
 
     @singledispatchmethod
-    def _move_to_next_phase(self, observation: SubEnvironment):
+    def _move_to_next_phase(self, observation: SubEnvironment) -> Observation:
         raise FrenchTarotException("Unhandled type")
 
     @_move_to_next_phase.register
-    def _(self, bid_phase_environment: BidPhaseEnvironment):
+    def _(self, bid_phase_environment: BidPhaseEnvironment) -> Observation:
         self._taker_original_id = bid_phase_environment.taker_original_id
         self._shift_players_so_that_taker_has_id_0()
-        self._move_to_dog_phase() if not bid_phase_environment.skip_dog_phase else self._move_to_announcement_phase()
+        self._bid_per_player = bid_phase_environment.bid_per_player
+        if not bid_phase_environment.skip_dog_phase:
+            observation = self._move_to_dog_phase()
+        else:
+            observation = self._move_to_announcement_phase()
+        return observation
 
     @_move_to_next_phase.register
-    def _(self, dog_phase_environment: DogPhaseEnvironment):
+    def _(self, dog_phase_environment: DogPhaseEnvironment) -> Observation:
         self._made_dog = dog_phase_environment.new_dog
-        self._move_to_announcement_phase()
+        return self._move_to_announcement_phase()
 
     @_move_to_next_phase.register
-    def _(self, announcement_phase_environment: AnnouncementPhaseEnvironment):
+    def _(self, announcement_phase_environment: AnnouncementPhaseEnvironment) -> Observation:
         self._announcements = announcement_phase_environment.announcements
+        self._chelem_announced = announcement_phase_environment.chelem_announced
+        return self._move_to_card_phase()
 
-    def _move_to_dog_phase(self):
+    def _move_to_dog_phase(self) -> Observation:
         self._current_phase_environment = DogPhaseEnvironment(self._hand_per_player[0], self._original_dog)
-        self._current_phase_environment.reset()
+        return self._current_phase_environment.reset()
 
-    def _move_to_announcement_phase(self):
+    def _move_to_announcement_phase(self) -> Observation:
         self._current_phase_environment = AnnouncementPhaseEnvironment(self._hand_per_player)
-        self._current_phase_environment.reset()
+        return self._current_phase_environment.reset()
+
+    def _move_to_card_phase(self) -> Observation:
+        self._current_phase_environment = CardPhaseEnvironment(
+            self._hand_per_player,
+            self.starting_player_id,
+            self._made_dog,
+            self._original_dog,
+            self._bid_per_player,
+            self._announcements
+        )
+        return self._current_phase_environment
 
     @property
     def starting_player_id(self):
-        taker_id = self._taker_original_id
-        starting_player_id = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
+        if self._chelem_announced:
+            starting_player_id = 0
+        else:
+            taker_id = self._taker_original_id
+            starting_player_id = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
         return starting_player_id
 
     def _shift_players_so_that_taker_has_id_0(self):
@@ -102,7 +132,7 @@ class FrenchTarotEnvironment:
 
     def _deal_to_players(self, deck):
         self._hand_per_player = []
-        for start in range(0, len(deck), self.n_cards_per_player):
+        for start in range(0, len(deck) - self.dog_size, self.n_cards_per_player):
             self._hand_per_player.append(deck[start:start + self.n_cards_per_player])
         self._check_player_hands()
 
@@ -111,4 +141,4 @@ class FrenchTarotEnvironment:
 
     @property
     def n_cards_per_player(self):
-        return int(len(CARDS) // self.n_players)
+        return int((len(CARDS) - self.dog_size) // self.n_players)
