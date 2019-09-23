@@ -101,7 +101,8 @@ class FrenchTarotEnvironment:
             self._bid_per_player,
             self._announcements
         )
-        return self._current_phase_environment
+        observation = self._current_phase_environment.reset()
+        return observation
 
     @property
     def starting_player_id(self):
@@ -113,7 +114,7 @@ class FrenchTarotEnvironment:
         return starting_player_id
 
     def _shift_players_so_that_taker_has_id_0(self):
-        self._hand_per_player = rotate_list(self._hand_per_player, self._taker_original_id)
+        self._hand_per_player = rotate_list(self._hand_per_player, -self._taker_original_id)
 
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):

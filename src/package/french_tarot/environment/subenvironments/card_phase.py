@@ -38,8 +38,13 @@ class CardPhaseEnvironment(SubEnvironment):
         self._winners_per_round = []
         self._won_cards_per_teams = {"taker": [], "opponents": []}
         self._bonus_points_per_teams = {"taker": 0., "opponents": 0.}
+        return self.observation
 
-    def step(self, card: Card) -> Tuple[List[float], bool, any]:
+    @property
+    def observation(self):
+        return CardPhaseObservation(self.current_hand, self._played_cards_in_round)
+
+    def step(self, card: Card) -> Tuple[any, List[float], bool, any]:
         if not isinstance(card, Card):
             raise FrenchTarotException("Action must be card")
         check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player])
@@ -70,7 +75,7 @@ class CardPhaseEnvironment(SubEnvironment):
             raise RuntimeError("Wrong number of played cards")
 
         info = None
-        return rewards, done, info
+        return self.observation, rewards, done, info
 
     @property
     def game_is_done(self):
