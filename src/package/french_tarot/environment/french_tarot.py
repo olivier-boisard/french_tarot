@@ -76,6 +76,7 @@ class FrenchTarotEnvironment:
     @_move_to_next_phase.register
     def _(self, dog_phase_environment: DogPhaseEnvironment) -> Observation:
         self._made_dog = dog_phase_environment.new_dog
+        self._hand_per_player[0] = dog_phase_environment.hand
         return self._move_to_announcement_phase()
 
     @_move_to_next_phase.register

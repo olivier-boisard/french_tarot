@@ -68,11 +68,11 @@ def test_announce_simple_poignee_valid():
     environment = FrenchTarotEnvironment()
     environment.reset()
     environment._deal(CARDS)
-    hand = environment._hand_per_player[0]
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.GARDE_SANS)
+    hand = environment._hand_per_player[0]
     poignee = PoigneeAnnouncement.largest_possible_poignee_factory(hand)
     observation, reward, done, _ = environment.step([poignee])
     assert reward == 0

@@ -81,13 +81,11 @@ def test_bid_completed(environment):
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
     observation, _, done, _ = environment.step(Bid.PASS)
-    assert not environment._current_phase_environment.all_players_passed
     assert np.all(environment._hand_per_player[0] == original_hands[1])
     assert np.all(environment._hand_per_player[1] == original_hands[2])
     assert np.all(environment._hand_per_player[2] == original_hands[3])
     assert np.all(environment._hand_per_player[3] == original_hands[0])
-    assert environment.current_player_id == 3
-    assert environment.original_player_ids == [1, 2, 3, 0]
+    assert environment._taker_original_id == 1
 
 
 def test_wrong_action_in_bid(environment):

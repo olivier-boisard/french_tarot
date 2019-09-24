@@ -60,6 +60,6 @@ class DogPhaseEnvironment(SubEnvironment):
         self.hand = list(np.array(self.hand)[index_to_keep_in_hand])
         reward = get_card_set_point(dog)
         self.new_dog = dog
-        done = False
+        done = True
         info = None
-        return reward, done, info
+        return self.observation, reward, done, info

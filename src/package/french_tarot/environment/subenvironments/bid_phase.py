@@ -29,7 +29,7 @@ class BidPhaseEnvironment(SubEnvironment):
         self.bid_per_player.append(action)
 
         info = None
-        reward = 0
+        reward = [0] * self.n_players if self.game_is_done else 0
         return self.observation, reward, self.done, info
 
     def _initialize(self):
