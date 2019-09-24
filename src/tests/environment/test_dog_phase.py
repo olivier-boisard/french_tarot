@@ -43,7 +43,6 @@ def test_make_dog():
     assert isinstance(observation, AnnouncementPhaseObservation)
     taking_players_hand = environment._hand_per_player[0]
     assert np.all([card not in taking_players_hand for card in dog])
-    assert len(taking_players_hand) == environment._n_cards_per_player
 
 
 def test_make_dog_with_duplicated_card():
