@@ -5,8 +5,8 @@ import pandas as pd
 
 from french_tarot.agents.common import Agent, BaseNeuralNetAgent
 from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.core import rotate_list
+from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 
 
 def compute_diff_score_metric(agent: Agent, n_episodes_testing=10) -> float:
@@ -35,7 +35,8 @@ def _run_game(environment: FrenchTarotEnvironment, players: List[BaseNeuralNetAg
     cnt = 0
     reward = None
     while not done:
-        current_player = players[observation.current_player_id]
+        player_id = environment._current_phase_environment.current_player
+        current_player = players[player_id]
         observation, reward, done, _ = environment.step(current_player.get_action(observation))
         cnt += 1
         if cnt >= 1000:

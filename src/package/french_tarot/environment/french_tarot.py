@@ -1,3 +1,4 @@
+import copy
 from typing import List, Tuple, Union
 
 import numpy as np
@@ -50,13 +51,13 @@ class FrenchTarotEnvironment:
             except RuntimeError as e:
                 print(e)
 
-    def step(self, action) -> Tuple[any, Union[float, List[float]], bool, any]:
+    def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
         observation, reward, phase_is_done, info = self._current_phase_environment.step(action)
 
         if phase_is_done:
             self.done = self._current_phase_environment.game_is_done
             observation = self._move_to_next_phase(self._current_phase_environment)
-        return observation, reward, self.done, info
+        return copy.deepcopy(observation), reward, self.done, info
 
     @singledispatchmethod
     def _move_to_next_phase(self, observation: SubEnvironment) -> Observation:
@@ -84,6 +85,10 @@ class FrenchTarotEnvironment:
         self._announcements = announcement_phase_environment.announcements
         self._chelem_announced = announcement_phase_environment.chelem_announced
         return self._move_to_card_phase()
+
+    @_move_to_next_phase.register
+    def _(self, announcement_phase_environment: CardPhaseEnvironment) -> Observation:
+        pass
 
     def _move_to_dog_phase(self) -> Observation:
         self._current_phase_environment = DogPhaseEnvironment(self._hand_per_player[0], self._original_dog)

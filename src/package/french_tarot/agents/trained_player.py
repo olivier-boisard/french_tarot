@@ -25,6 +25,9 @@ class AgentWithTrainer(ABC):
         self.agent = agent
         self.trainer = trainer
 
+    def optimize_model(self):
+        self.trainer.optimize_model()
+
 
 class RandomAgentWithDummyTrainer(AgentWithTrainer):
     def __init__(self, agent):
@@ -34,14 +37,14 @@ class RandomAgentWithDummyTrainer(AgentWithTrainer):
 class BidPhaseAgentWithTrainer(AgentWithTrainer):
     def __init__(self, base_card_neural_net: nn.Module, summary_writer: SummaryWriter = None):
         agent = BidPhaseAgent(base_card_neural_net)
-        trainer = BidPhaseAgentTrainer(agent.policy_net, summary_writer=summary_writer)
+        trainer = BidPhaseAgentTrainer(agent.policy_net, summary_writer=summary_writer, name="bid")
         super().__init__(agent, trainer)
 
 
 class DogPhaseAgentWithTrainer(AgentWithTrainer):
     def __init__(self, base_card_neural_net: nn.Module, summary_writer: SummaryWriter = None):
         agent = DogPhaseAgent(base_card_neural_net)
-        trainer = DogPhaseAgentTrainer(agent.policy_net, summary_writer=summary_writer)
+        trainer = DogPhaseAgentTrainer(agent.policy_net, summary_writer=summary_writer, name="dog")
         super().__init__(agent, trainer)
 
 

@@ -1,7 +1,9 @@
 import pytest
 
-from french_tarot.environment.core import get_card_set_point, CARDS, ChelemAnnouncement, Bid, Card, PoigneeAnnouncement
+from french_tarot.environment.core import get_card_set_point, CARDS, ChelemAnnouncement, Bid, Card, PoigneeAnnouncement, \
+    rotate_list
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
@@ -74,15 +76,12 @@ def test_play_complete_round_valid_last_player_team_wins():
 
 def test_play_complete_round_valid_last_player_team_loses():
     environment = setup_environment(taker=1)[0]
-    starting_player = 0
-    environment.current_player = starting_player
+    environment.step(Card.HEART_1)
     environment.step(Card.HEART_KING)
     environment.step(Card.HEART_4)
-    environment.step(Card.HEART_2)
-    observation, reward, done, _ = environment.step(Card.HEART_1)
+    observation, reward, done, _ = environment.step(Card.HEART_2)
 
     expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2, Card.HEART_1]
-    assert environment.current_player == 0
     assert reward[0] == get_card_set_point(expected_values)
     assert reward[1] == 0
     assert reward[2] == 0
@@ -92,7 +91,8 @@ def test_play_complete_round_valid_last_player_team_loses():
 
 def test_play_excuse_in_round():
     environment, observation_0 = setup_environment()
-    environment.current_player = 2
+    current_phase_environment = environment._current_phase_environment
+    current_phase_environment._hand_per_player = rotate_list(current_phase_environment._hand_per_player, 2)
     observation_1 = environment.step(Card.HEART_4)[0]
     observation_2 = environment.step(Card.HEART_2)[0]
     observation_3 = environment.step(Card.EXCUSE)[0]
@@ -121,43 +121,47 @@ def test_play_excuse_first():
 
 
 def test_play_trump_invalid():
-    environment = setup_environment()[0]
-    environment._hand_per_player = [[Card.SPADES_1, Card.SPADES_2], [Card.SPADES_3, Card.TRUMP_1],
-                                    [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    hand_per_player = [[Card.SPADES_1, Card.SPADES_2], [Card.SPADES_3, Card.TRUMP_1],
+                       [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    environment = _create_card_environment(hand_per_player)
     environment.step(Card.SPADES_1)
     with pytest.raises(FrenchTarotException):
         environment.step(Card.TRUMP_1)
 
 
 def test_play_trump_below_trump_unallowed():
-    environment = setup_environment()[0]
-    environment._hand_per_player = [[Card.TRUMP_10, Card.TRUMP_11], [Card.TRUMP_1, Card.TRUMP_12],
-                                    [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    hand_per_player = [[Card.TRUMP_10, Card.TRUMP_11], [Card.TRUMP_1, Card.TRUMP_12],
+                       [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    environment = _create_card_environment(hand_per_player)
     environment.step(Card.TRUMP_10)
     with pytest.raises(FrenchTarotException):
         environment.step(Card.TRUMP_1)
 
 
 def test_pee_not_allowed():
-    environment = setup_environment()[0]
-    environment._hand_per_player = [[Card.SPADES_1, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
-                                    [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    hand_per_player = [[Card.SPADES_1, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
+                       [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    environment = _create_card_environment(hand_per_player)
     environment.step(Card.SPADES_1)
     with pytest.raises(FrenchTarotException):
         environment.step(Card.HEART_4)
 
 
 def test_play_card_not_in_hand():
-    environment = setup_environment()[0]
-    environment._hand_per_player = [[Card.SPADES_1], [Card.SPADES_7], [Card.SPADES_3], [Card.SPADES_2]]
+    hand_per_player = [[Card.SPADES_1], [Card.SPADES_7], [Card.SPADES_3], [Card.SPADES_2]]
+    environment = _create_card_environment(hand_per_player)
     with pytest.raises(FrenchTarotException):
         environment.step(Card.HEART_4)
 
 
+def _create_card_environment(hand_per_player):
+    return CardPhaseEnvironment(hand_per_player, 0, [], [], [], [])
+
+
 def test_play_twice_same_card():
-    environment = setup_environment()[0]
-    environment._hand_per_player = [[Card.SPADES_10, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
-                                    [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    hand_per_player = [[Card.SPADES_10, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
+                       [Card.SPADES_4, Card.SPADES_5], [Card.SPADES_6, Card.SPADES_7]]
+    environment = _create_card_environment(hand_per_player)
     environment.step(Card.SPADES_10)
     environment.step(Card.SPADES_3)
     environment.step(Card.SPADES_4)
@@ -167,9 +171,9 @@ def test_play_twice_same_card():
 
 
 def test_play_trump_win():
-    environment = setup_environment()[0]
-    environment._hand_per_player = [[Card.SPADES_10, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
-                                    [Card.TRUMP_1, Card.HEART_5], [Card.SPADES_6, Card.SPADES_7]]
+    hand_per_player = [[Card.SPADES_10, Card.SPADES_2], [Card.HEART_4, Card.SPADES_3],
+                       [Card.TRUMP_1, Card.HEART_5], [Card.SPADES_6, Card.SPADES_7]]
+    environment = _create_card_environment(hand_per_player)
     environment.step(Card.SPADES_10)
     environment.step(Card.SPADES_3)
     environment.step(Card.TRUMP_1)
@@ -671,9 +675,12 @@ def test_pee_unallowed():
 
 def test_chelem_announced_and_failed():
     environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
-    tmp = environment._hand_per_player[0][16]
-    environment._hand_per_player[0][16] = environment._hand_per_player[1][0]
-    environment._hand_per_player[1][0] = tmp
+
+    current_phase_environment = environment._current_phase_environment
+    tmp = current_phase_environment._hand_per_player[0][16]
+    current_phase_environment._hand_per_player[0][16] = current_phase_environment.environment._hand_per_player[1][0]
+    current_phase_environment._hand_per_player[1][0] = tmp
+
     environment.step(Card.TRUMP_2)
     environment.step(Card.TRUMP_15)
     environment.step(Card.CLOVER_5)

@@ -100,7 +100,7 @@ class CardPhaseEnvironment(SubEnvironment):
 
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
                           is_taker_win_round: bool) -> List[float]:
-        dog = self._made_dog if self._made_dog is not None else self._original_dog
+        dog = self._made_dog if len(self._made_dog) > 0 else self._original_dog
         taker_points = get_card_set_point(self._won_cards_per_teams["taker"] + list(dog))
         taker_points += self._bonus_points_per_teams["taker"]
         opponents_points = get_card_set_point(self._won_cards_per_teams["opponents"])
@@ -125,7 +125,7 @@ class CardPhaseEnvironment(SubEnvironment):
         diff = abs(victory_threshold - taker_points)
         contract_value = 25 + diff
         bid_to_multiplier_map = {Bid.PETITE: 1, Bid.GARDE: 2, Bid.GARDE_SANS: 4, Bid.GARDE_CONTRE: 6}
-        multiplier = bid_to_multiplier_map[self._bid_per_player[0]]
+        multiplier = bid_to_multiplier_map[np.max(self._bid_per_player)]
         contract_value = int(contract_value * multiplier)
         if taker_points < victory_threshold:
             contract_value *= -1

@@ -21,6 +21,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
     def __init__(self, hand_per_player: List[List[Card]]):
         self._hand_per_player = hand_per_player
         self.announcements = []
+        self.current_player = 0  # TODO factorize current player in upperclass
 
     def reset(self):
         self.announcements = []

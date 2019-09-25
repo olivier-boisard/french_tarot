@@ -18,7 +18,6 @@ def _main(n_episodes_training: int = 200000):
     _run_training(trained_agent, n_episodes_training, writer)
 
 
-# TODO create smaller functions
 def _run_training(agent: AllPhasePlayerTrainer, n_episodes: int, tb_writer: SummaryWriter):
     environment = FrenchTarotEnvironment()
     for i in tqdm.tqdm(range(n_episodes)):
@@ -39,11 +38,11 @@ def _run_training(agent: AllPhasePlayerTrainer, n_episodes: int, tb_writer: Summ
 
         if rewards is None:
             raise RuntimeError("No rewards set")
-        rewards = rotate_list(rewards, environment.taking_player_original_id)
+        rewards = rotate_list(rewards, environment.starting_player_id)
         # Add reward of creating the dog, i.e. append the reward that we got at the end of the game for the taker
-        max_bid = np.max(observation.bid_per_player)
+        max_bid = np.max(environment._bid_per_player)
         if Bid.PASS < max_bid < Bid.GARDE_SANS:
-            rewards.append(rewards[environment.taking_player_original_id])
+            rewards.append(rewards[environment.starting_player_id])
         assert len(rewards) == len(early_phases_observations)
         assert len(rewards) == len(early_phases_actions)
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):
