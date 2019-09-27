@@ -47,6 +47,9 @@ class FrenchTarotEnvironment:
             observation = self._move_to_next_phase(self._current_phase_environment)
         return copy.deepcopy(observation), reward, self.done, info
 
+    def render(self, mode="human", close=False):
+        raise NotImplementedError()
+
     @property
     def starting_player_id(self):
         if self._chelem_announced:
@@ -59,9 +62,6 @@ class FrenchTarotEnvironment:
     @property
     def original_player_ids(self):
         return (np.arange(self.n_players) + self._taker_original_id) % self.n_players
-
-    def render(self, mode="human", close=False):
-        raise NotImplementedError()
 
     @property
     def n_cards_per_player(self):
