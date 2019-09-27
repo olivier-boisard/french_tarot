@@ -336,10 +336,10 @@ def test_petit_au_bout_taker():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 2280
+    assert reward[0] == -760
     assert reward[1] == -760
     assert reward[2] == -760
-    assert reward[3] == -760
+    assert reward[3] == 2280
 
 
 def test_poignee():
@@ -417,9 +417,9 @@ def test_poignee():
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
     assert reward[0] == -540
-    assert reward[1] == 1620
+    assert reward[1] == -540
     assert reward[2] == -540
-    assert reward[3] == -540
+    assert reward[3] == 1620
 
 
 def test_chelem_unannounced():
@@ -497,9 +497,9 @@ def test_chelem_unannounced():
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
     assert reward[0] == -520
-    assert reward[1] == 1560
+    assert reward[1] == -520
     assert reward[2] == -520
-    assert reward[3] == -520
+    assert reward[3] == 1560
 
 
 def test_chelem_announced():
@@ -576,10 +576,10 @@ def test_chelem_announced():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 2160
+    assert reward[0] == -720
     assert reward[1] == -720
     assert reward[2] == -720
-    assert reward[3] == -720
+    assert reward[3] == 2160
 
 
 def test_chelem_announced_with_excuse():
@@ -658,10 +658,10 @@ def test_chelem_announced_with_excuse():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 2112
+    assert reward[0] == -704
     assert reward[1] == -704
     assert reward[2] == -704
-    assert reward[3] == -704
+    assert reward[3] == 2112
 
 
 def test_pee_unallowed():
@@ -753,10 +753,10 @@ def test_chelem_announced_and_failed():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 312
+    assert reward[0] == -104
     assert reward[1] == -104
     assert reward[2] == -104
-    assert reward[3] == -104
+    assert reward[3] == 312
 
 
 def test_chelem_unannounced_and_achieved_by_other_team():

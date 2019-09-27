@@ -45,7 +45,7 @@ class FrenchTarotEnvironment:
             observation = self._move_to_next_phase(self._current_phase_environment)
 
         if done:
-            reward = rotate_list(reward, self._starting_player_position_towards_taker)
+            reward = rotate_list(reward, self._taker_id)
         return copy.deepcopy(observation), reward, done, info
 
     def render(self, mode="human", close=False):
@@ -85,7 +85,7 @@ class FrenchTarotEnvironment:
     @_move_to_next_phase.register
     def _(self, bid_phase_environment: BidPhaseEnvironment) -> Observation:
         self._taker_id = bid_phase_environment.taker_original_id
-        self._shift_players_so_that_taker_has_id_0()
+        self._shift_players_so_that_taker_has_position_0()
         self._bid_per_player = bid_phase_environment.bid_per_player
         if not bid_phase_environment.skip_dog_phase:
             observation = self._move_to_dog_phase()
@@ -129,7 +129,7 @@ class FrenchTarotEnvironment:
         observation = self._current_phase_environment.reset()
         return observation
 
-    def _shift_players_so_that_taker_has_id_0(self):
+    def _shift_players_so_that_taker_has_position_0(self):
         self._hand_per_player = rotate_list(self._hand_per_player, -self._taker_id)
 
     def _deal(self, deck: List[Card]):
