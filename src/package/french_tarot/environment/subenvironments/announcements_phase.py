@@ -12,7 +12,6 @@ from french_tarot.exceptions import FrenchTarotException
 
 @dataclass
 class AnnouncementPhaseObservation(Observation):
-    current_player_id: int
     hand: List[Card]
 
 

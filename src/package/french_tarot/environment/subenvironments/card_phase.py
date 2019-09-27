@@ -21,7 +21,7 @@ class CardPhaseEnvironment(SubEnvironment):
 
     def __init__(self, hand_per_player, starting_player, made_dog, original_dog, bid_per_player, announcements):
         self._hand_per_player = hand_per_player
-        self.current_player = starting_player
+        self.current_player_id = starting_player
         self._made_dog = made_dog
         self._original_dog = original_dog
         self._bid_per_player = bid_per_player
@@ -42,21 +42,21 @@ class CardPhaseEnvironment(SubEnvironment):
 
     @property
     def observation(self):
-        return CardPhaseObservation(self.current_hand, self._played_cards_in_round)
+        return CardPhaseObservation(self.current_player_id, self.current_hand, self._played_cards_in_round)
 
     def step(self, card: Card) -> Tuple[any, List[float], bool, any]:
         if not isinstance(card, Card):
             raise FrenchTarotException("Action must be card")
-        check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player])
+        check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player_id])
         self._played_cards_in_round.append(card)
 
         current_hand = list(np.array(self.current_hand)[np.array(self.current_hand) != card])
         rewards = None
         done = False
         if isinstance(current_hand, Card):
-            self._hand_per_player[self.current_player] = list([current_hand])
+            self._hand_per_player[self.current_player_id] = list([current_hand])
         else:
-            self._hand_per_player[self.current_player] = current_hand
+            self._hand_per_player[self.current_player_id] = current_hand
 
         if len(self._played_cards_in_round) == self.n_players:
             self._past_rounds.append(Round(self.next_player, self._played_cards_in_round))
@@ -70,7 +70,7 @@ class CardPhaseEnvironment(SubEnvironment):
                 done = True
 
         elif len(self._played_cards_in_round) < self.n_players:
-            self.current_player = self.next_player
+            self.current_player_id = self.next_player
         else:
             raise RuntimeError("Wrong number of played cards")
 
@@ -96,7 +96,7 @@ class CardPhaseEnvironment(SubEnvironment):
 
     @property
     def current_hand(self):
-        return self._hand_per_player[self.current_player]
+        return self._hand_per_player[self.current_player_id]
 
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
                           is_taker_win_round: bool) -> List[float]:
@@ -153,7 +153,7 @@ class CardPhaseEnvironment(SubEnvironment):
 
     @property
     def next_player(self) -> int:
-        return (self.current_player + 1) % self.n_players
+        return (self.current_player_id + 1) % self.n_players
 
     @staticmethod
     def _get_winning_card_index(played_cards: List[Card]) -> int:
@@ -211,7 +211,7 @@ class CardPhaseEnvironment(SubEnvironment):
             self._won_cards_per_teams["taker"] += won_cards
         else:
             self._won_cards_per_teams["opponents"] += won_cards
-        self.current_player = winner
+        self.current_player_id = winner
         self._played_cards_in_round = []
         return rewards
 

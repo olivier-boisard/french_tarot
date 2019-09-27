@@ -35,8 +35,7 @@ def _run_game(environment: FrenchTarotEnvironment, players: List[BaseNeuralNetAg
     cnt = 0
     reward = None
     while not done:
-        player_id = environment._current_phase_environment.current_player
-        current_player = players[player_id]
+        current_player = players[observation.current_player_id]
         observation, reward, done, _ = environment.step(current_player.get_action(observation))
         cnt += 1
         if cnt >= 1000:

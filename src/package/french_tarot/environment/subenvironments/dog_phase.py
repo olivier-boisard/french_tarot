@@ -20,7 +20,7 @@ class DogPhaseEnvironment(SubEnvironment):
         self.hand = hand + original_dog
         self._n_cards_in_dog = len(original_dog)
         self.new_dog = []
-        self.current_player = 0  # TODO factorize current player in upperclass
+        self.current_player_id = 0  # TODO factorize current player in upperclass
 
     def reset(self):
         self.new_dog = []
@@ -32,7 +32,7 @@ class DogPhaseEnvironment(SubEnvironment):
 
     @property
     def observation(self) -> DogPhaseObservation:
-        return DogPhaseObservation(self.hand, self._n_cards_in_dog)
+        return DogPhaseObservation(self.current_player_id, self.hand, self._n_cards_in_dog)
 
     def step(self, dog: List[Card]) -> Tuple[float, bool, any]:
         if type(dog) != list:

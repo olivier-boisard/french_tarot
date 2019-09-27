@@ -289,4 +289,4 @@ def get_card_set_point(card_list: List[Card]) -> float:
 
 @dataclass
 class Observation:
-    pass
+    current_player_id: int

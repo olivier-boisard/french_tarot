@@ -2,10 +2,9 @@ import copy
 from typing import List, Tuple, Union
 
 import numpy as np
-from tensorboard.backend.event_processing.event_file_inspector import Observation
 
 from french_tarot.agents.meta import singledispatchmethod
-from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse, rotate_list
+from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse, rotate_list, Observation
 from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseEnvironment
 from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment

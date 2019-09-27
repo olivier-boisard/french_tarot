@@ -49,15 +49,15 @@ class BidPhaseEnvironment(SubEnvironment):
 
     @property
     def observation(self) -> BidPhaseObservation:
-        return BidPhaseObservation(self.current_player_hand, self.bid_per_player)
+        return BidPhaseObservation(self.current_player_id, self.current_player_hand, self.bid_per_player)
 
     @property
-    def current_player(self):
+    def current_player_id(self):
         return len(self.bid_per_player) % self.n_players
 
     @property
     def current_player_hand(self):
-        return self._hand_per_player[self.current_player]
+        return self._hand_per_player[self.current_player_id]
 
     @property
     def n_players(self):
