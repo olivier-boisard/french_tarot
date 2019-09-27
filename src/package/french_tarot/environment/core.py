@@ -289,7 +289,7 @@ def get_card_set_point(card_list: List[Card]) -> float:
 
 @dataclass
 class PlayerData:
-    id: int
+    position_towards_taker: int
     hand: List[Card]
 
 

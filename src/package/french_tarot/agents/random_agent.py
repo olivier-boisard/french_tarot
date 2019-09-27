@@ -39,8 +39,8 @@ class RandomPlayer(Agent):
     def _(self, observation: AnnouncementPhaseObservation):
         announcements = []
         chelem_announcement_probability = 0.1
-        if observation.player.id == 0 and self._random_state.rand(1,
-                                                                  1) < chelem_announcement_probability:
+        if observation.player.position_towards_taker == 0 and self._random_state.rand(1,
+                                                                                      1) < chelem_announcement_probability:
             announcements.append(ChelemAnnouncement())
         hand = observation.player.hand
         poignee = PoigneeAnnouncement.largest_possible_poignee_factory(hand)

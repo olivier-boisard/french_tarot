@@ -45,20 +45,21 @@ class FrenchTarotEnvironment:
             observation = self._move_to_next_phase(self._current_phase_environment)
 
         if done:
-            reward = rotate_list(reward, self._starting_player_id)
+            reward = rotate_list(reward, self._starting_player_position_towards_taker)
         return copy.deepcopy(observation), reward, done, info
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
 
     @property
-    def _starting_player_id(self):
+    def _starting_player_position_towards_taker(self):
+        """Returns the position of the starting player, counting from the taker, in the play order"""
         if self._chelem_announced:
-            starting_player_id = 0
+            position = 0
         else:
-            taker_id = self._taker_original_id
-            starting_player_id = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
-        return starting_player_id
+            taker_id = self._taker_id
+            position = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
+        return position
 
     @property
     def _n_cards_per_player(self):
@@ -83,7 +84,7 @@ class FrenchTarotEnvironment:
 
     @_move_to_next_phase.register
     def _(self, bid_phase_environment: BidPhaseEnvironment) -> Observation:
-        self._taker_original_id = bid_phase_environment.taker_original_id
+        self._taker_id = bid_phase_environment.taker_original_id
         self._shift_players_so_that_taker_has_id_0()
         self._bid_per_player = bid_phase_environment.bid_per_player
         if not bid_phase_environment.skip_dog_phase:
@@ -119,7 +120,7 @@ class FrenchTarotEnvironment:
     def _move_to_card_phase(self) -> Observation:
         self._current_phase_environment = CardPhaseEnvironment(
             self._hand_per_player,
-            self._starting_player_id,
+            self._starting_player_position_towards_taker,
             self._made_dog,
             self._original_dog,
             self._bid_per_player,
@@ -129,7 +130,7 @@ class FrenchTarotEnvironment:
         return observation
 
     def _shift_players_so_that_taker_has_id_0(self):
-        self._hand_per_player = rotate_list(self._hand_per_player, -self._taker_original_id)
+        self._hand_per_player = rotate_list(self._hand_per_player, -self._taker_id)
 
     def _deal(self, deck: List[Card]):
         if len(deck) != len(CARDS):
