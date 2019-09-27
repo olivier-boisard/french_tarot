@@ -16,7 +16,7 @@ from french_tarot.exceptions import FrenchTarotException
 
 class FrenchTarotEnvironment:
     n_players = 4
-    dog_size = 6
+    _dog_size = 6
 
     def __init__(self, seed: int = 1988):
         self._random_state = np.random.RandomState(seed)
@@ -66,8 +66,8 @@ class FrenchTarotEnvironment:
         return (np.arange(self.n_players) + self._taker_original_id) % self.n_players
 
     @property
-    def n_cards_per_player(self):
-        return int((len(CARDS) - self.dog_size) // self.n_players)
+    def _n_cards_per_player(self):
+        return int((len(CARDS) - self._dog_size) // self.n_players)
 
     def _initialize_current_phase_environment(self):
         self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player)
@@ -143,7 +143,7 @@ class FrenchTarotEnvironment:
         self._deal_to_dog(deck)
 
     def _deal_to_dog(self, deck):
-        n_cards_in_dog = len(deck) - self.n_players * self.n_cards_per_player
+        n_cards_in_dog = len(deck) - self.n_players * self._n_cards_per_player
         self._original_dog = deck[-n_cards_in_dog:]
 
     def _check_player_hands(self):
@@ -153,6 +153,6 @@ class FrenchTarotEnvironment:
 
     def _deal_to_players(self, deck):
         self._hand_per_player = []
-        for start in range(0, len(deck) - self.dog_size, self.n_cards_per_player):
-            self._hand_per_player.append(deck[start:start + self.n_cards_per_player])
+        for start in range(0, len(deck) - self._dog_size, self._n_cards_per_player):
+            self._hand_per_player.append(deck[start:start + self._n_cards_per_player])
         self._check_player_hands()
