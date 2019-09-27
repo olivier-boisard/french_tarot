@@ -62,10 +62,6 @@ class FrenchTarotEnvironment:
         return starting_player_id
 
     @property
-    def original_player_ids(self):
-        return (np.arange(self.n_players) + self._taker_original_id) % self.n_players
-
-    @property
     def _n_cards_per_player(self):
         return int((len(CARDS) - self._dog_size) // self.n_players)
 
