@@ -36,6 +36,7 @@ class FrenchTarotEnvironment:
         self._chelem_announced = False
         self._initialize_current_phase_environment()
         observation = self._current_phase_environment.reset()
+        self.done = False
         return observation
 
     def _initialize_current_phase_environment(self):
