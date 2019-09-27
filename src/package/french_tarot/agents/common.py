@@ -26,7 +26,7 @@ class Policy:
 
     def should_play_randomly(self, step):
         threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(-1. * step / self._eps_decay)
-        plays_at_random = self._random_state.rand() > threshold
+        plays_at_random = self._random_state.rand(1, 1) > threshold
         return plays_at_random
 
 
