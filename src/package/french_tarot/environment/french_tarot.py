@@ -39,6 +39,34 @@ class FrenchTarotEnvironment:
         self.done = False
         return observation
 
+    def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
+        observation, reward, phase_is_done, info = self._current_phase_environment.step(action)
+
+        if phase_is_done:
+            self.done = self._current_phase_environment.game_is_done
+            observation = self._move_to_next_phase(self._current_phase_environment)
+        return copy.deepcopy(observation), reward, self.done, info
+
+    @property
+    def starting_player_id(self):
+        if self._chelem_announced:
+            starting_player_id = 0
+        else:
+            taker_id = self._taker_original_id
+            starting_player_id = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
+        return starting_player_id
+
+    @property
+    def original_player_ids(self):
+        return (np.arange(self.n_players) + self._taker_original_id) % self.n_players
+
+    def render(self, mode="human", close=False):
+        raise NotImplementedError()
+
+    @property
+    def n_cards_per_player(self):
+        return int((len(CARDS) - self.dog_size) // self.n_players)
+
     def _initialize_current_phase_environment(self):
         self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player)
         self._current_phase_environment.reset()
@@ -51,14 +79,6 @@ class FrenchTarotEnvironment:
                 break
             except RuntimeError as e:
                 print(e)
-
-    def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
-        observation, reward, phase_is_done, info = self._current_phase_environment.step(action)
-
-        if phase_is_done:
-            self.done = self._current_phase_environment.game_is_done
-            observation = self._move_to_next_phase(self._current_phase_environment)
-        return copy.deepcopy(observation), reward, self.done, info
 
     @singledispatchmethod
     def _move_to_next_phase(self, observation: SubEnvironment) -> Observation:
@@ -111,19 +131,6 @@ class FrenchTarotEnvironment:
         observation = self._current_phase_environment.reset()
         return observation
 
-    @property
-    def starting_player_id(self):
-        if self._chelem_announced:
-            starting_player_id = 0
-        else:
-            taker_id = self._taker_original_id
-            starting_player_id = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
-        return starting_player_id
-
-    @property
-    def original_player_ids(self):
-        return (np.arange(self.n_players) + self._taker_original_id) % self.n_players
-
     def _shift_players_so_that_taker_has_id_0(self):
         self._hand_per_player = rotate_list(self._hand_per_player, -self._taker_original_id)
 
@@ -147,10 +154,3 @@ class FrenchTarotEnvironment:
         for start in range(0, len(deck) - self.dog_size, self.n_cards_per_player):
             self._hand_per_player.append(deck[start:start + self.n_cards_per_player])
         self._check_player_hands()
-
-    def render(self, mode="human", close=False):
-        raise NotImplementedError()
-
-    @property
-    def n_cards_per_player(self):
-        return int((len(CARDS) - self.dog_size) // self.n_players)
