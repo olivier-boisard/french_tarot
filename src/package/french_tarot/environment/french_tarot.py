@@ -46,14 +46,14 @@ class FrenchTarotEnvironment:
             observation = self._move_to_next_phase(self._current_phase_environment)
 
         if done:
-            reward = rotate_list(reward, self.starting_player_id)
+            reward = rotate_list(reward, self._starting_player_id)
         return copy.deepcopy(observation), reward, done, info
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
 
     @property
-    def starting_player_id(self):
+    def _starting_player_id(self):
         if self._chelem_announced:
             starting_player_id = 0
         else:
@@ -120,7 +120,7 @@ class FrenchTarotEnvironment:
     def _move_to_card_phase(self) -> Observation:
         self._current_phase_environment = CardPhaseEnvironment(
             self._hand_per_player,
-            self.starting_player_id,
+            self._starting_player_id,
             self._made_dog,
             self._original_dog,
             self._bid_per_player,
