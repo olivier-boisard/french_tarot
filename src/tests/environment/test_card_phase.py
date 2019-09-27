@@ -678,7 +678,7 @@ def test_chelem_announced_and_failed():
 
     current_phase_environment = environment._current_phase_environment
     tmp = current_phase_environment._hand_per_player[0][16]
-    current_phase_environment._hand_per_player[0][16] = current_phase_environment.environment._hand_per_player[1][0]
+    current_phase_environment._hand_per_player[0][16] = current_phase_environment._hand_per_player[1][0]
     current_phase_environment._hand_per_player[1][0] = tmp
 
     environment.step(Card.TRUMP_2)

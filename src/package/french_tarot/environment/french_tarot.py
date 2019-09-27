@@ -120,6 +120,10 @@ class FrenchTarotEnvironment:
             starting_player_id = list(np.arange(taker_id, taker_id + self.n_players) % self.n_players).index(0)
         return starting_player_id
 
+    @property
+    def original_player_ids(self):
+        return (np.arange(self.n_players) + self._taker_original_id) % self.n_players
+
     def _shift_players_so_that_taker_has_id_0(self):
         self._hand_per_player = rotate_list(self._hand_per_player, -self._taker_original_id)
 
