@@ -20,7 +20,6 @@ class FrenchTarotEnvironment:
 
     def __init__(self, seed: int = 1988):
         self._random_state = np.random.RandomState(seed)
-        self.done = False
         self._current_phase_environment: Union[SubEnvironment, None] = None
         self._hand_per_player = []
         self._made_dog = []
@@ -36,16 +35,19 @@ class FrenchTarotEnvironment:
         self._chelem_announced = False
         self._initialize_current_phase_environment()
         observation = self._current_phase_environment.reset()
-        self.done = False
         return observation
 
     def step(self, action) -> Tuple[Observation, Union[float, List[float]], bool, any]:
         observation, reward, phase_is_done, info = self._current_phase_environment.step(action)
 
+        done = False
         if phase_is_done:
-            self.done = self._current_phase_environment.game_is_done
+            done = self._current_phase_environment.game_is_done
             observation = self._move_to_next_phase(self._current_phase_environment)
-        return copy.deepcopy(observation), reward, self.done, info
+
+        if done:
+            reward = rotate_list(reward, self.starting_player_id)
+        return copy.deepcopy(observation), reward, done, info
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()

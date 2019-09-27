@@ -416,8 +416,8 @@ def test_poignee():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 1620
-    assert reward[1] == -540
+    assert reward[0] == -540
+    assert reward[1] == 1620
     assert reward[2] == -540
     assert reward[3] == -540
 
@@ -496,8 +496,8 @@ def test_chelem_unannounced():
     environment.step(Card.CLOVER_4)
     environment.step(Card.HEART_8)
     reward = environment.step(Card.DIAMOND_RIDER)[1]
-    assert reward[0] == 1560
-    assert reward[1] == -520
+    assert reward[0] == -520
+    assert reward[1] == 1560
     assert reward[2] == -520
     assert reward[3] == -520
 
