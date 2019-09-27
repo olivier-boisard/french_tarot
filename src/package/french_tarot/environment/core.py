@@ -288,5 +288,11 @@ def get_card_set_point(card_list: List[Card]) -> float:
 
 
 @dataclass
+class PlayerData:
+    id: int
+    hand: List[Card]
+
+
+@dataclass
 class Observation:
-    current_player_id: int
+    player: PlayerData

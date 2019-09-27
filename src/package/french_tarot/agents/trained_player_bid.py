@@ -21,7 +21,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         self._random_state = RandomState(seed)
 
     def get_max_return_action(self, observation: BidPhaseObservation):
-        state = encode_cards(observation.hand)
+        state = encode_cards(observation.player.hand)
         self._step += 1
         output = self.policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
         bid = self._get_bid_value(output, observation.bid_per_player)
@@ -100,4 +100,4 @@ class BidPhaseAgentTrainer(Trainer):
         return loss
 
     def push_to_memory(self, observation: BidPhaseObservation, action, reward):
-        self.memory.push(encode_cards(observation.hand).unsqueeze(0), action, None, reward)
+        self.memory.push(encode_cards(observation.player.hand).unsqueeze(0), action, None, reward)

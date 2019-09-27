@@ -5,14 +5,14 @@ from attr import dataclass
 
 from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.environment.core import Card, Announcement, PoigneeAnnouncement, count_trumps_and_excuse, \
-    ChelemAnnouncement, Observation
+    ChelemAnnouncement, Observation, PlayerData
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
 @dataclass
 class AnnouncementPhaseObservation(Observation):
-    hand: List[Card]
+    pass
 
 
 class AnnouncementPhaseEnvironment(SubEnvironment):
@@ -111,7 +111,8 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
 
     @property
     def observation(self):
-        return AnnouncementPhaseObservation(self.current_player_id, self.current_player_hand)
+        current_player_data = PlayerData(self.current_player_id, self.current_player_hand)
+        return AnnouncementPhaseObservation(current_player_data)
 
     def _get_next_player(self) -> int:
         return (self.current_player_id + 1) % self.n_players

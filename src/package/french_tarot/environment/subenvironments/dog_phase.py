@@ -3,14 +3,14 @@ from typing import List, Tuple
 import numpy as np
 from attr import dataclass
 
-from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, get_card_set_point, Observation
+from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, get_card_set_point, Observation, \
+    PlayerData
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
 @dataclass
 class DogPhaseObservation(Observation):
-    hand: List[Card]
     dog_size: int
 
 
@@ -32,7 +32,8 @@ class DogPhaseEnvironment(SubEnvironment):
 
     @property
     def observation(self) -> DogPhaseObservation:
-        return DogPhaseObservation(self.current_player_id, self.hand, self._n_cards_in_dog)
+        current_player_data = PlayerData(self.current_player_id, self.hand)
+        return DogPhaseObservation(current_player_data, self._n_cards_in_dog)
 
     def step(self, dog: List[Card]) -> Tuple[float, bool, any]:
         if type(dog) != list:

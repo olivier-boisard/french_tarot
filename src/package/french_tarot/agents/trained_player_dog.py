@@ -30,7 +30,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         super().__init__(net)
 
     def get_max_return_action(self, observation: DogPhaseObservation):
-        hand = copy.copy(observation.hand)
+        hand = copy.copy(observation.player.hand)
         selected_cards = torch.zeros(len(CARDS))
         for _ in range(observation.dog_size):
             xx = torch.cat([encode_cards(hand), selected_cards]).unsqueeze(0)
@@ -89,7 +89,7 @@ class DogPhaseAgentTrainer(Trainer):
     def push_to_memory(self, observation: DogPhaseObservation, action, reward):
         selected_cards = torch.zeros(len(CARDS))
         for permuted_action in itertools.permutations(action):
-            hand = list(observation.hand)
+            hand = list(observation.player.hand)
             for card in permuted_action:
                 xx = torch.cat((encode_cards(hand), selected_cards)).unsqueeze(0)
                 action_id = DogPhaseAgent.CARDS_OK_IN_DOG.index(card)

@@ -21,7 +21,7 @@ def test_n_cards():
 
 def test_reset_environment(environment):
     observation = environment.reset()
-    assert len(observation.hand) == 18
+    assert len(observation.player.hand) == 18
     for bid in observation.bid_per_player:
         assert bid == Bid.NONE
     assert isinstance(observation, BidPhaseObservation)

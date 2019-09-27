@@ -27,11 +27,11 @@ class RandomPlayer(Agent):
         allowed_cards = []
         for card in card_list:
             try:
-                check_card_is_allowed(card, observation.played_cards_in_round, observation.hand)
+                check_card_is_allowed(card, observation.played_cards_in_round, observation.player.hand)
                 allowed_cards.append(True)
             except FrenchTarotException:
                 allowed_cards.append(False)
-        assert 1 <= np.sum(allowed_cards) <= len(observation.hand)
+        assert 1 <= np.sum(allowed_cards) <= len(observation.player.hand)
         rval = self._random_state.choice(card_list[allowed_cards])
         return rval
 
@@ -39,9 +39,10 @@ class RandomPlayer(Agent):
     def _(self, observation: AnnouncementPhaseObservation):
         announcements = []
         chelem_announcement_probability = 0.1
-        if observation.current_player_id == 0 and self._random_state.rand(1, 1) < chelem_announcement_probability:
+        if observation.player.id == 0 and self._random_state.rand(1,
+                                                                  1) < chelem_announcement_probability:
             announcements.append(ChelemAnnouncement())
-        hand = observation.hand
+        hand = observation.player.hand
         poignee = PoigneeAnnouncement.largest_possible_poignee_factory(hand)
         if poignee is not None:
             announcements.append(poignee)
@@ -49,7 +50,7 @@ class RandomPlayer(Agent):
 
     @get_action.register
     def _(self, observation: DogPhaseObservation):
-        permuted_hand = self._random_state.permutation(observation.hand)
+        permuted_hand = self._random_state.permutation(observation.player.hand)
         trump_allowed = False
         rval = []
         while len(rval) < observation.dog_size:

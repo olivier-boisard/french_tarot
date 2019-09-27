@@ -3,14 +3,13 @@ from typing import List, Tuple
 import numpy as np
 from attr import dataclass
 
-from french_tarot.environment.core import Card, Bid, get_minimum_allowed_bid, Observation
+from french_tarot.environment.core import Card, Bid, get_minimum_allowed_bid, Observation, PlayerData
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
 @dataclass
 class BidPhaseObservation(Observation):
-    hand: List[Card]
     bid_per_player: List[Bid]
 
 
@@ -49,7 +48,8 @@ class BidPhaseEnvironment(SubEnvironment):
 
     @property
     def observation(self) -> BidPhaseObservation:
-        return BidPhaseObservation(self.current_player_id, self.current_player_hand, self.bid_per_player)
+        current_player_data = PlayerData(self.current_player_id, self.current_player_hand)
+        return BidPhaseObservation(current_player_data, self.bid_per_player)
 
     @property
     def current_player_id(self):

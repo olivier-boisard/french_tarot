@@ -6,14 +6,13 @@ from attr import dataclass
 
 from french_tarot.agents.common import Round
 from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, get_card_set_point, \
-    is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, Observation
+    is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, Observation, PlayerData
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
 @dataclass
 class CardPhaseObservation(Observation):
-    hand: List[Card]
     played_cards_in_round: List[Card]
 
 
@@ -42,7 +41,8 @@ class CardPhaseEnvironment(SubEnvironment):
 
     @property
     def observation(self):
-        return CardPhaseObservation(self.current_player_id, self.current_hand, self._played_cards_in_round)
+        current_player_data = PlayerData(self.current_player_id, self.current_player_hand)
+        return CardPhaseObservation(current_player_data, self._played_cards_in_round)
 
     def step(self, card: Card) -> Tuple[any, List[float], bool, any]:
         if not isinstance(card, Card):
@@ -50,7 +50,7 @@ class CardPhaseEnvironment(SubEnvironment):
         check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player_id])
         self._played_cards_in_round.append(card)
 
-        current_hand = list(np.array(self.current_hand)[np.array(self.current_hand) != card])
+        current_hand = list(np.array(self.current_player_hand)[np.array(self.current_player_hand) != card])
         rewards = None
         done = False
         if isinstance(current_hand, Card):
@@ -95,7 +95,7 @@ class CardPhaseEnvironment(SubEnvironment):
         return len(self._hand_per_player)
 
     @property
-    def current_hand(self):
+    def current_player_hand(self):
         return self._hand_per_player[self.current_player_id]
 
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
