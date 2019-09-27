@@ -5,6 +5,7 @@ from enum import Enum, IntEnum
 from typing import List
 
 import numpy as np
+from attr import dataclass
 
 from french_tarot.exceptions import FrenchTarotException
 
@@ -284,3 +285,8 @@ def get_card_point(card: Card) -> float:
 def get_card_set_point(card_list: List[Card]) -> float:
     # noinspection PyTypeChecker
     return float(np.sum([get_card_point(card) for card in card_list]))
+
+
+@dataclass
+class Observation:
+    pass

@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 
-from tensorboard.backend.event_processing.event_file_inspector import Observation
-
-from french_tarot.environment.core import Bid
+from french_tarot.environment.core import Bid, Observation
 
 
 class SubEnvironment(ABC):

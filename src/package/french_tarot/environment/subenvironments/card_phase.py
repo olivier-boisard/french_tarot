@@ -6,13 +6,13 @@ from attr import dataclass
 
 from french_tarot.agents.common import Round
 from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, get_card_set_point, \
-    is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement
+    is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, Observation
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
 @dataclass
-class CardPhaseObservation:
+class CardPhaseObservation(Observation):
     hand: List[Card]
     played_cards_in_round: List[Card]
 

@@ -27,7 +27,7 @@ class FrenchTarotEnvironment:
         self._announcements = []
         self._chelem_announced = False
 
-    def reset(self):
+    def reset(self) -> Observation:
         self._deal_until_valid()
         self._made_dog = []
         self._bid_per_player = []

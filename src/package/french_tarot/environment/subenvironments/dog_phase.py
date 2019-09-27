@@ -3,13 +3,13 @@ from typing import List, Tuple
 import numpy as np
 from attr import dataclass
 
-from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, get_card_set_point
+from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, get_card_set_point, Observation
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
 @dataclass
-class DogPhaseObservation:
+class DogPhaseObservation(Observation):
     hand: List[Card]
     dog_size: int
 
