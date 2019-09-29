@@ -2,12 +2,11 @@ from typing import Tuple
 
 import numpy as np
 import torch
-from french_tarot.environment.observations import Observation
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
 from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, encode_cards, Trainer
-from french_tarot.environment.core import CARDS
+from french_tarot.environment.core import CARDS, Observation
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 
 FEATURE_VECTOR_SIZE = 16
@@ -41,7 +40,7 @@ class CardPhaseAgent(BaseNeuralNetAgent):
         super().__init__(net)
 
     def get_max_return_action(self, observation: Observation):
-        hand_vector = encode_cards(observation.hand)
+        hand_vector = encode_cards(observation.player.hand)
         additional_feature_vector = _encode_features(_extract_features(observation))
         output_vector = self.policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
         output_vector[~hand_vector] = -np.inf

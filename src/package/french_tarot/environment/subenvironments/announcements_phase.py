@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 from attr import dataclass
@@ -20,7 +20,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
     def __init__(self, hand_per_player: List[List[Card]]):
         self._hand_per_player = hand_per_player
         self.announcements = []
-        self.current_player = 0  # TODO factorize current player in upperclass
+        self.current_player = 0  # TODO factorize current player in superclass
 
     def reset(self):
         self.announcements = []
@@ -34,7 +34,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
     def n_players(self):
         return len(self._hand_per_player)
 
-    def step(self, action: List[Announcement]):
+    def step(self, action: List[Announcement]) -> Tuple[AnnouncementPhaseObservation, float, bool, any]:
         self._check(action)
         self.announcements.append(action)
 

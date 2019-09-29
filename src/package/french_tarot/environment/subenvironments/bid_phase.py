@@ -23,7 +23,7 @@ class BidPhaseEnvironment(SubEnvironment):
         self._initialize()
         return self.observation
 
-    def step(self, action: Bid) -> Tuple[any, float, bool, any]:
+    def step(self, action: Bid) -> Tuple[BidPhaseObservation, float, bool, any]:
         self._check(action)
         self.bid_per_player.append(action)
 

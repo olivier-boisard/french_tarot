@@ -41,7 +41,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             selected_cards[selected_card_index] = 1
             hand.remove(CARDS[selected_card_index])
         assert selected_cards.sum() == observation.dog_size
-        return list(np.array(Card)[np.array(selected_cards, dtype=bool)])
+        return list(np.array(CARDS)[np.array(selected_cards, dtype=bool)])
 
     def get_random_action(self, observation):
         pass

@@ -35,7 +35,7 @@ class DogPhaseEnvironment(SubEnvironment):
         current_player_data = PlayerData(self.current_player_id, self.hand)
         return DogPhaseObservation(current_player_data, self._n_cards_in_dog)
 
-    def step(self, dog: List[Card]) -> Tuple[float, bool, any]:
+    def step(self, dog: List[Card]) -> Tuple[DogPhaseObservation, float, bool, None]:
         if type(dog) != list:
             raise FrenchTarotException("Wrong type for 'action'")
         if len(set(dog)) != len(dog):

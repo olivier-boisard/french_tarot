@@ -1,4 +1,5 @@
 from functools import update_wrapper
+from typing import List
 
 from french_tarot.exceptions import FrenchTarotException
 
@@ -52,7 +53,7 @@ def _add_type_to_registry_if_not_there(arg_type, func_to_call, registry):
         registry[arg_type] = func_to_call
 
 
-def _recursively_determine_func_to_call(arg_types: type, registry: dict):
+def _recursively_determine_func_to_call(arg_types: List[type], registry: dict):
     if len(arg_types) == 0:
         func_to_call = None
     else:

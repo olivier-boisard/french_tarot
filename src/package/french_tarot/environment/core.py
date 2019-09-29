@@ -91,6 +91,7 @@ class Card(Enum):
     EXCUSE = "excuse"
 
 
+# noinspection PyTypeChecker
 CARDS = list(Card)
 
 
@@ -107,6 +108,10 @@ class Bid(IntEnum):
     GARDE = 2
     GARDE_SANS = 3
     GARDE_CONTRE = 4
+
+
+# noinspection PyTypeChecker
+BIDS = list(Bid)
 
 
 class Announcement(ABC):
@@ -203,10 +208,10 @@ def sort_trump_and_excuse(trumps_and_excuse: List[Card]) -> List[Card]:
 def get_trumps_and_excuse(cards: List[Card]) -> List[Card]:
     output_as_list = isinstance(cards, list)
     cards = np.array(cards)
-    rval = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
+    trumps_and_excuses = cards[np.array(["trump" in card.value or card.value == "excuse" for card in cards])]
     if output_as_list:
-        rval = list(rval)
-    return rval
+        trumps_and_excuses = list(trumps_and_excuses)
+    return trumps_and_excuses
 
 
 def rotate_list(input_list: List, n: int) -> List:
@@ -224,7 +229,7 @@ def check_trump_or_pee_is_allowed(played_card: Card, played_cards_before: List[C
     if asked_color is not None:
         for card in player_hand:
             if asked_color in card.value or ("trump" in card.value and "trump" not in played_card.value):
-                raise FrenchTarotException("Trump or pee unallowed")
+                raise FrenchTarotException("Trump or pee not allowed")
 
 
 def check_trump_value_is_allowed(card: Card, played_cards_before: List[Card], current_player_hand: List[Card]):

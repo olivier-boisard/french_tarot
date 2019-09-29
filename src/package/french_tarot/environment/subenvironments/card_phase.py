@@ -44,7 +44,7 @@ class CardPhaseEnvironment(SubEnvironment):
         current_player_data = PlayerData(self.current_player_id, self.current_player_hand)
         return CardPhaseObservation(current_player_data, self._played_cards_in_round)
 
-    def step(self, card: Card) -> Tuple[any, List[float], bool, any]:
+    def step(self, card: Card) -> Tuple[CardPhaseObservation, List[float], bool, any]:
         if not isinstance(card, Card):
             raise FrenchTarotException("Action must be card")
         check_card_is_allowed(card, self._played_cards_in_round, self._hand_per_player[self.current_player_id])
