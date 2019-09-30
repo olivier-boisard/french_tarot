@@ -7,6 +7,7 @@ from french_tarot.agents.common import Agent, BaseNeuralNetAgent
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.environment.core import rotate_list
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.exceptions import FrenchTarotException
 
 
 def compute_diff_score_metric(agent: Agent, n_episodes_testing=10) -> float:
@@ -39,7 +40,7 @@ def _run_game(environment: FrenchTarotEnvironment, players: List[BaseNeuralNetAg
         observation, reward, done, _ = environment.step(current_player.get_action(observation))
         cnt += 1
         if cnt >= 1000:
-            raise RuntimeError("Infinite loop")
+            raise FrenchTarotException("Infinite loop")
     if np.sum(reward) != 0:
-        RuntimeError("Scores do not sum up to 0")
+        FrenchTarotException("Scores do not sum up to 0")
     return reward

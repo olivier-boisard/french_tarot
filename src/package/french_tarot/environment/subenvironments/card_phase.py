@@ -72,7 +72,7 @@ class CardPhaseEnvironment(SubEnvironment):
         elif len(self._played_cards_in_round) < self.n_players:
             self.current_player_id = self.next_player
         else:
-            raise RuntimeError("Wrong number of played cards")
+            raise FrenchTarotException("Wrong number of played cards")
 
         info = None
         return self.observation, rewards, done, info
@@ -106,9 +106,9 @@ class CardPhaseEnvironment(SubEnvironment):
         opponents_points = get_card_set_point(self._won_cards_per_teams["opponents"])
         opponents_points += self._bonus_points_per_teams["opponents"]
         if taker_points + opponents_points != 91:
-            raise RuntimeError("Invalid score")
+            raise FrenchTarotException("Invalid score")
         if taker_points != round(taker_points):
-            raise RuntimeError("Score should be integer")
+            raise FrenchTarotException("Score should be integer")
         n_oudlers_taker = np.sum([is_oudler(card) for card in list(self._won_cards_per_teams["taker"]) + list(dog)])
         victory_threshold = None
         if n_oudlers_taker == 3:
@@ -120,7 +120,7 @@ class CardPhaseEnvironment(SubEnvironment):
         elif n_oudlers_taker == 0:
             victory_threshold = 56
         else:
-            RuntimeError("Invalid number of oudlers")
+            FrenchTarotException("Invalid number of oudlers")
         # noinspection PyTypeChecker
         diff = abs(victory_threshold - taker_points)
         contract_value = 25 + diff

@@ -77,7 +77,7 @@ class FrenchTarotEnvironment:
                 deck = list(self._random_state.permutation(CARDS))
                 self._deal(deck)
                 break
-            except RuntimeError as e:
+            except FrenchTarotException as e:
                 print(e)
 
     @singledispatchmethod
@@ -147,7 +147,7 @@ class FrenchTarotEnvironment:
     def _check_player_hands(self):
         for hand in self._hand_per_player:
             if Card.TRUMP_1 in hand and count_trumps_and_excuse(hand) == 1:
-                raise RuntimeError("'Petit sec'. Deal again.")
+                raise FrenchTarotException("'Petit sec'. Deal again.")
 
     def _deal_to_players(self, deck):
         self._hand_per_player = []

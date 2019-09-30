@@ -4,6 +4,7 @@ import pytest
 
 from french_tarot.environment.core import CARDS, Card
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.exceptions import FrenchTarotException
 
 
 def test_deal_petit_sec():
@@ -12,5 +13,5 @@ def test_deal_petit_sec():
     card_list[-21] = Card.SPADES_1
     environment = FrenchTarotEnvironment()
     environment.reset()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(FrenchTarotException):
         environment._deal(card_list)
