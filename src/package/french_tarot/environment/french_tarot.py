@@ -87,8 +87,8 @@ class FrenchTarotEnvironment:
     @_move_to_next_phase.register
     def _(self, bid_phase_environment: BidPhaseEnvironment) -> Observation:
         self._taker_id = bid_phase_environment.taker_id
-        self._shift_players_so_that_taker_has_position_0()
         self._bid_per_player = bid_phase_environment.bid_per_player
+        self._shift_players_so_that_taker_has_position_0()
         if not bid_phase_environment.skip_dog_phase:
             observation = self._move_to_dog_phase()
         else:
