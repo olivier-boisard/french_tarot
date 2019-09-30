@@ -19,20 +19,17 @@ class FrenchTarotEnvironment:
 
     def __init__(self, seed: int = 1988):
         self._random_state = np.random.RandomState(seed)
-        self._current_phase_environment: Union[SubEnvironment, None] = None
-        self._hand_per_player = []
-        self._made_dog = []
-        self._bid_per_player = []
-        self._announcements = []
-        self._chelem_announced = False
+        self._current_phase_environment = None
+        self._hand_per_player = None
+        self._made_dog = None
+        self._bid_per_player = None
+        self._announcements = None
+        self._chelem_announced = None
 
     def reset(self) -> Observation:
         self._deal_until_valid()
         self._made_dog = []
-        self._bid_per_player = []
-        self._announcements = []
-        self._chelem_announced = False
-        self._initialize_current_phase_environment()
+        self._initialize_first_phase_environment()
         observation = self._current_phase_environment.reset()
         return observation
 
@@ -70,7 +67,7 @@ class FrenchTarotEnvironment:
     def _n_cards_per_player(self):
         return int((len(CARDS) - self._dog_size) // self.n_players)
 
-    def _initialize_current_phase_environment(self):
+    def _initialize_first_phase_environment(self):
         self._current_phase_environment = BidPhaseEnvironment(self._hand_per_player)
         self._current_phase_environment.reset()
 
