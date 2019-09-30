@@ -64,7 +64,7 @@ class BidPhaseEnvironment(SubEnvironment):
         return len(self._hand_per_player)
 
     @property
-    def taker_original_id(self):
+    def taker_id(self):
         return np.argmax(np.array(self.bid_per_player))
 
     @property
