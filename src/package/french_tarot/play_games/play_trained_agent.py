@@ -1,11 +1,9 @@
-import numpy as np
 import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import set_all_seeds
 from french_tarot.agents.performance_evaluation import compute_diff_score_metric
 from french_tarot.agents.trained_player import AllPhasePlayerTrainer
-from french_tarot.environment.core import Bid
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
@@ -38,10 +36,9 @@ def _run_training(agent: AllPhasePlayerTrainer, n_episodes: int, tb_writer: Summ
 
         if rewards is None:
             raise RuntimeError("No rewards set")
-        # Add reward of creating the dog, i.e. append the reward that we got at the end of the game for the taker
-        max_bid = np.max(environment._bid_per_player)
-        if Bid.PASS < max_bid < Bid.GARDE_SANS:
-            rewards.append(rewards[environment._taker_id])
+        dog_reward = environment.extract_dog_phase_reward(rewards)
+        if dog_reward is not None:
+            rewards.append(dog_reward)
         assert len(rewards) == len(early_phases_observations)
         assert len(rewards) == len(early_phases_actions)
         for observation, action, reward in zip(early_phases_observations, early_phases_actions, rewards):

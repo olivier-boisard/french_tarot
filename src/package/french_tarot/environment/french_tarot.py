@@ -4,7 +4,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from french_tarot.agents.meta import singledispatchmethod
-from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse, rotate_list, Observation
+from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse, rotate_list, Observation, Bid
 from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseEnvironment
 from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
@@ -50,6 +50,11 @@ class FrenchTarotEnvironment:
 
     def render(self, mode="human", close=False):
         raise NotImplementedError()
+
+    def extract_dog_phase_reward(self, rewards: List):
+        max_bid = np.max(self._bid_per_player)
+        reward = rewards[self._taker_id] if Bid.PASS < max_bid < Bid.GARDE_SANS else None
+        return reward
 
     @property
     def _starting_player_position_towards_taker(self):
