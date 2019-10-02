@@ -7,7 +7,7 @@ from joblib import Parallel, delayed
 
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.exceptions import FrenchTarotException, FrenchTarotRuntimeError
+from french_tarot.exceptions import FrenchTarotException
 
 N_ITERATIONS = 1000
 
@@ -35,12 +35,10 @@ def _run_game(iteration: int, initial_seed: int = 0) -> np.array:
     while not done:
         observation, reward, done, _ = environment.step(random_agent.get_action(observation))
         cnt += 1
-        if cnt >= 1000:
-            raise FrenchTarotRuntimeError("Infinite loop")
+        assert cnt < 1000, "Infinite loop"
     offset = iteration % environment.n_players  # first player changes at each turn
     game_scores = np.roll(reward, offset)
-    if np.sum(game_scores) != 0:
-        raise FrenchTarotRuntimeError("Scores do not sum up to 0")
+    assert np.sum(game_scores) == 0
     return game_scores
 
 
