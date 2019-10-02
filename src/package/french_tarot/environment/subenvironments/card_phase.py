@@ -232,15 +232,9 @@ class CardPhaseEnvironment(SubEnvironment):
                     is_player_won = rewards[player] > 0
                     if player == 0:
                         if is_player_won:
-                            rewards[0] += 3 * bonus
-                            rewards[1] -= bonus
-                            rewards[2] -= bonus
-                            rewards[3] -= bonus
+                            rewards = self._add_bonus_to_rewards(rewards, -bonus)
                         else:
-                            rewards[0] -= 3 * bonus
-                            rewards[1] += bonus
-                            rewards[2] += bonus
-                            rewards[3] += bonus
+                            rewards = self._add_bonus_to_rewards(rewards, bonus)
                     else:
                         is_taker_won = rewards[0] > 0
                         if is_taker_won:
@@ -250,8 +244,14 @@ class CardPhaseEnvironment(SubEnvironment):
                                 else:
                                     rewards[i] -= bonus
                         else:
-                            rewards[0] -= 3 * bonus
-                            rewards[1] += bonus
-                            rewards[2] += bonus
-                            rewards[3] += bonus
+                            rewards = self._add_bonus_to_rewards(rewards, bonus)
+        return rewards
+
+    @staticmethod
+    def _add_bonus_to_rewards(rewards, bonus):
+        rewards = copy.copy(rewards)
+        rewards[0] -= 3 * bonus
+        rewards[1] += bonus
+        rewards[2] += bonus
+        rewards[3] += bonus
         return rewards
