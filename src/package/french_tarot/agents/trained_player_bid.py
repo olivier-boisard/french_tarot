@@ -100,4 +100,4 @@ class BidPhaseAgentTrainer(Trainer):
         return loss
 
     def push_to_memory(self, observation: BidPhaseObservation, action, reward):
-        self.memory.push(encode_cards(observation.player.hand).unsqueeze(0), action, None, reward)
+        self.memory.push_message(encode_cards(observation.player.hand).unsqueeze(0), action, None, reward)

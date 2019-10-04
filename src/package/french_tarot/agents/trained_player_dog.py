@@ -93,7 +93,7 @@ class DogPhaseAgentTrainer(Trainer):
             for card in permuted_action:
                 xx = torch.cat((encode_cards(hand), selected_cards)).unsqueeze(0)
                 action_id = DogPhaseAgent.CARDS_OK_IN_DOG.index(card)
-                self.memory.push(xx, action_id, None, reward)
+                self.memory.push_message(xx, action_id, None, reward)
 
                 selected_cards[action_id] = 1
                 hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[action_id])
