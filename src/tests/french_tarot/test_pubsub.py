@@ -1,6 +1,6 @@
 import pytest
 
-from french_tarot.observer import Manager, Event, Subscriber, Publisher, Message
+from french_tarot.observer import Manager, Event, Subscriber, Message
 
 
 class DummySubscriber(Subscriber):
@@ -32,14 +32,11 @@ def test_synchronous_pubsub(dummy_message):
 def test_threaded_pubsub(dummy_message):
     manager = Manager()
     subscriber = DummySubscriber()
-    publisher = Publisher(manager)
     manager.subscribe(subscriber, Event.DUMMY)
 
     manager.start()
     subscriber.start()
-    publisher.start()
-
-    publisher.stop()
+    manager.push(dummy_message)
     subscriber.stop()
     manager.stop()
 

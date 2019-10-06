@@ -7,14 +7,6 @@ from typing import Dict, List
 from attr import dataclass
 
 
-class Publisher:
-    def __init__(self, manager: 'Manager'):
-        self._manager = manager
-
-    def push(self, message: 'Message'):
-        self._manager.push(message)
-
-
 class Subscriber(ABC):
 
     @abstractmethod
