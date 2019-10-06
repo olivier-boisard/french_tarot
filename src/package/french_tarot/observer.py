@@ -15,7 +15,6 @@ class Publisher:
         self._manager.push(message)
 
 
-# TODO put in thread
 class Subscriber(ABC):
 
     @abstractmethod

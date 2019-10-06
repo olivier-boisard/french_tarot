@@ -16,7 +16,7 @@ def dummy_message():
     return Message(event_type=Event.DUMMY, data="Hello!")
 
 
-def test_synchronous_subscribe_notify(dummy_message):
+def test_synchronous_pubsub(dummy_message):
     subscriber = DummySubscriber()
     manager = Manager()
 
@@ -29,14 +29,19 @@ def test_synchronous_subscribe_notify(dummy_message):
 
 
 @pytest.mark.timeout(1)
-def test_thread_start_stop(dummy_message):
-    subscriber = DummySubscriber()
+def test_threaded_pubsub(dummy_message):
     manager = Manager()
-
-    manager.subscribe(subscriber, Event.DUMMY)
-    manager.start()
+    subscriber = DummySubscriber()
     publisher = Publisher(manager)
-    publisher.push(dummy_message)
+    manager.subscribe(subscriber, Event.DUMMY)
+
+    manager.start()
+    subscriber.start()
+    publisher.start()
+
+    publisher.stop()
+    subscriber.stop()
     manager.stop()
+
     assert subscriber.state == dummy_message.data
     assert manager._queue.empty()
