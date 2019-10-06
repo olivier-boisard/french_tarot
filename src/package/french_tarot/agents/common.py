@@ -41,7 +41,7 @@ class ReplayMemory:
         self.position = 0
         self._random_state = random.Random(random_seed)
 
-    def push(self, state: torch.Tensor, action: int, next_state: torch.Tensor, reward: float):
+    def push_message(self, state: torch.Tensor, action: int, next_state: torch.Tensor, reward: float):
         """Saves a transition."""
         if len(self.memory) < self.capacity:
             self.memory.append(None)
