@@ -1,11 +1,6 @@
 import pytest
-from attr import dataclass
 
-from french_tarot.observer import Manager, Event, Subscriber
-
-
-class DummyPublisher:
-    pass
+from french_tarot.observer import Manager, Event, Subscriber, Publisher, Message
 
 
 class DummySubscriber(Subscriber):
@@ -16,17 +11,12 @@ class DummySubscriber(Subscriber):
         self.state = data
 
 
-@dataclass
-class DummyData:
-    value: int
-
-
 @pytest.fixture
-def dummy_data():
-    return DummyData(1988)
+def dummy_message():
+    return Message(event_type=Event.DUMMY, data="Hello!")
 
 
-def test_subscribe(dummy_data):
+def test_synchronous_subscribe_notify(dummy_message):
     subscriber = DummySubscriber()
     manager = Manager()
 
@@ -34,5 +24,19 @@ def test_subscribe(dummy_data):
     assert manager._event_subscriber_map[Event.DUMMY] == [subscriber]
 
     assert subscriber.state is None
-    manager.notify(Event.DUMMY, dummy_data)
-    assert subscriber.state == dummy_data
+    manager.notify(dummy_message)
+    assert subscriber.state == dummy_message.data
+
+
+@pytest.mark.timeout(1)
+def test_thread_start_stop(dummy_message):
+    subscriber = DummySubscriber()
+    manager = Manager()
+
+    manager.subscribe(subscriber, Event.DUMMY)
+    manager.start()
+    publisher = Publisher(manager)
+    publisher.push(dummy_message)
+    manager.stop()
+    assert subscriber.state == dummy_message.data
+    assert manager._queue.empty()
