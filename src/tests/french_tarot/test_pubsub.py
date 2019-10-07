@@ -8,7 +8,7 @@ class DummySubscriber(Subscriber):
         super().__init__()
         self.state = None
 
-    def loop_once(self, data: any):
+    def update(self, data: any):
         self.state = data
 
 

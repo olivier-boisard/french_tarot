@@ -24,7 +24,7 @@ class Subscriber(ABC):
     def loop(self):
         while self._running:
             try:
-                self.loop_once(self._queue.get_nowait())
+                self.update(self._queue.get_nowait())
             except Empty:
                 pass
 
@@ -32,7 +32,7 @@ class Subscriber(ABC):
         self._queue.put(data)
 
     @abstractmethod
-    def loop_once(self, data: any):
+    def update(self, data: any):
         pass
 
 
