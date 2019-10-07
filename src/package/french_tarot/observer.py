@@ -47,7 +47,7 @@ class Manager:
             self._event_subscriber_map[event_type] = []
         self._event_subscriber_map[event_type].append(subscriber)
 
-    def notify(self, message: 'Message'):
+    def publish(self, message: 'Message'):
         for subscriber in self._event_subscriber_map[message.event_type]:
             subscriber.push(message.data)
 

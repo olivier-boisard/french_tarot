@@ -26,7 +26,7 @@ def test_lifecycle(dummy_message):
     subscriber.start()
     assert subscriber._thread.is_alive()
 
-    manager.notify(dummy_message)
+    manager.publish(dummy_message)
     _wait_for_subscriber_is_updated(subscriber)
 
     subscriber.stop()
