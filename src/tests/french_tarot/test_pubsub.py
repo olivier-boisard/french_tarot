@@ -18,7 +18,7 @@ def dummy_message():
 
 
 @pytest.mark.timeout(3)
-def test_threaded_pubsub(dummy_message):
+def test_lifecycle(dummy_message):
     manager = Manager()
     subscriber = DummySubscriber()
     manager.subscribe(subscriber, Event.DUMMY)
@@ -28,8 +28,7 @@ def test_threaded_pubsub(dummy_message):
     assert subscriber._thread.is_alive()
 
     manager.push(dummy_message)
-    while subscriber.state is None:
-        pass
+    _wait_for_subscriber_is_updated(subscriber)
 
     subscriber.stop()
     manager.stop()
@@ -37,3 +36,12 @@ def test_threaded_pubsub(dummy_message):
     assert not subscriber._thread.is_alive()
     assert subscriber.state == dummy_message.data
     assert manager._queue.empty()
+
+
+def _wait_for_subscriber_is_updated(subscriber):
+    while not _is_updated(subscriber):
+        pass
+
+
+def _is_updated(subscriber):
+    return subscriber.state is not None
