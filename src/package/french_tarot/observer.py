@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 from enum import Enum, auto
-from queue import Queue
+from queue import Queue, Empty
 from threading import Thread
 from typing import Dict, List
 
@@ -9,8 +9,31 @@ from attr import dataclass
 
 class Subscriber(ABC):
 
-    @abstractmethod
+    def __init__(self):
+        self._queue = Queue()
+        self._running = False
+        self._thread = Thread(target=self.loop)
+
     def update(self, data: any):
+        self._queue.put(data)
+
+    def start(self):
+        self._running = True
+        self._thread.start()
+
+    def stop(self):
+        self._running = False
+        self._thread.join()
+
+    def loop(self):
+        while self._running:
+            try:
+                self.loop_once(self._queue.get_nowait())
+            except Empty:
+                pass
+
+    @abstractmethod
+    def loop_once(self, data: any):
         pass
 
 
@@ -32,8 +55,10 @@ class Manager:
 
     def loop(self):
         while self._running:
-            message = self._queue.get()
-            self.notify(message)
+            try:
+                self.notify(self._queue.get_nowait())
+            except Empty:
+                pass
 
     def start(self):
         self._running = True

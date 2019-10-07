@@ -5,9 +5,10 @@ from french_tarot.observer import Manager, Event, Subscriber, Message
 
 class DummySubscriber(Subscriber):
     def __init__(self):
+        super().__init__()
         self.state = None
 
-    def update(self, data: any):
+    def loop_once(self, data: any):
         self.state = data
 
 
@@ -16,19 +17,7 @@ def dummy_message():
     return Message(event_type=Event.DUMMY, data="Hello!")
 
 
-def test_synchronous_pubsub(dummy_message):
-    subscriber = DummySubscriber()
-    manager = Manager()
-
-    manager.subscribe(subscriber, Event.DUMMY)
-    assert manager._event_subscriber_map[Event.DUMMY] == [subscriber]
-
-    assert subscriber.state is None
-    manager.notify(dummy_message)
-    assert subscriber.state == dummy_message.data
-
-
-@pytest.mark.timeout(1)
+@pytest.mark.timeout(3)
 def test_threaded_pubsub(dummy_message):
     manager = Manager()
     subscriber = DummySubscriber()
@@ -36,9 +25,15 @@ def test_threaded_pubsub(dummy_message):
 
     manager.start()
     subscriber.start()
+    assert subscriber._thread.is_alive()
+
     manager.push(dummy_message)
+    while subscriber.state is None:
+        pass
+
     subscriber.stop()
     manager.stop()
 
+    assert not subscriber._thread.is_alive()
     assert subscriber.state == dummy_message.data
     assert manager._queue.empty()
