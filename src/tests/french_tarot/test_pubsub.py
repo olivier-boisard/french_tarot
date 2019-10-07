@@ -21,21 +21,18 @@ def dummy_message():
 def test_lifecycle(dummy_message):
     manager = Manager()
     subscriber = DummySubscriber()
-    manager.subscribe(subscriber, Event.DUMMY)
+    manager.add_subscriber(subscriber, Event.DUMMY)
 
-    manager.start()
     subscriber.start()
     assert subscriber._thread.is_alive()
 
-    manager.push(dummy_message)
+    manager.notify(dummy_message)
     _wait_for_subscriber_is_updated(subscriber)
 
     subscriber.stop()
-    manager.stop()
 
     assert not subscriber._thread.is_alive()
     assert subscriber.state == dummy_message.data
-    assert manager._queue.empty()
 
 
 def _wait_for_subscriber_is_updated(subscriber):

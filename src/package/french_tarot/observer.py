@@ -7,7 +7,7 @@ from typing import Dict, List
 from attr import dataclass
 
 
-class Threaded:
+class Subscriber(ABC):
     def __init__(self):
         self._queue = Queue()
         self._running = False
@@ -28,30 +28,26 @@ class Threaded:
             except Empty:
                 pass
 
+    def push(self, data: any):
+        self._queue.put(data)
+
     @abstractmethod
     def loop_once(self, data: any):
         pass
 
-    def push(self, data: any):
-        self._queue.put(data)
 
-
-class Subscriber(Threaded, ABC):
-    pass
-
-
-class Manager(Threaded):
+class Manager:
 
     def __init__(self):
         super().__init__()
         self._event_subscriber_map: Dict[Event, List[Subscriber]] = {}
 
-    def subscribe(self, subscriber: Subscriber, event_type: 'Event'):
+    def add_subscriber(self, subscriber: Subscriber, event_type: 'Event'):
         if event_type not in self._event_subscriber_map:
             self._event_subscriber_map[event_type] = []
         self._event_subscriber_map[event_type].append(subscriber)
 
-    def loop_once(self, message: 'Message'):
+    def notify(self, message: 'Message'):
         for subscriber in self._event_subscriber_map[message.event_type]:
             subscriber.push(message.data)
 
