@@ -7,7 +7,6 @@ from french_tarot.agents.trained_player import AllPhasePlayerTrainer
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
-from french_tarot.exceptions import FrenchTarotException
 
 
 def _main(n_episodes_training: int = 200000):
@@ -35,8 +34,7 @@ def _run_training(agent: AllPhasePlayerTrainer, n_episodes: int, tb_writer: Summ
                 early_phases_actions.append(action)
             observation = new_observation
 
-        if rewards is None:
-            raise FrenchTarotException("No rewards set")
+        assert rewards is not None
         dog_reward = environment.extract_dog_phase_reward(rewards)
         if dog_reward is not None:
             rewards.append(dog_reward)
