@@ -14,12 +14,20 @@ class Subscriber(ABC):
         self._thread = Thread(target=self.loop)
 
     def start(self):
+        self.setup()
         self._running = True
         self._thread.start()
 
     def stop(self):
         self._running = False
         self._thread.join()
+        self.teardown()
+
+    def setup(self):
+        pass
+
+    def teardown(self):
+        pass
 
     def loop(self):
         while self._running:
