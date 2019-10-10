@@ -1,6 +1,6 @@
 import pytest
 
-from french_tarot.observer import Event, Subscriber, Message
+from french_tarot.observer import EventType, Subscriber, Message
 
 
 class DummySubscriber(Subscriber):
@@ -14,13 +14,13 @@ class DummySubscriber(Subscriber):
 
 @pytest.fixture
 def dummy_message():
-    return Message(event_type=Event.DUMMY, data="Hello!")
+    return Message(event_type=EventType.DUMMY, data="Hello!")
 
 
 @pytest.mark.timeout(3)
 def test_lifecycle(dummy_message, manager):
     subscriber = DummySubscriber()
-    manager.add_subscriber(subscriber, Event.DUMMY)
+    manager.add_subscriber(subscriber, EventType.DUMMY)
 
     subscriber.start()
     assert subscriber._thread.is_alive()

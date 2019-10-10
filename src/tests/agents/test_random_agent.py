@@ -27,11 +27,6 @@ def random_agent():
     return RandomPlayer()
 
 
-@pytest.fixture(scope="module")
-def environment():
-    return FrenchTarotEnvironment()
-
-
 @pytest.mark.repeat(10)
 def test_play_game(random_agent, environment):
     observation = environment.reset()

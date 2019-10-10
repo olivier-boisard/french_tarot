@@ -40,9 +40,9 @@ class Manager:
 
     def __init__(self):
         super().__init__()
-        self._event_subscriber_map: Dict[Event, List[Subscriber]] = {}
+        self._event_subscriber_map: Dict[EventType, List[Subscriber]] = {}
 
-    def add_subscriber(self, subscriber: Subscriber, event_type: 'Event'):
+    def add_subscriber(self, subscriber: Subscriber, event_type: 'EventType'):
         if event_type not in self._event_subscriber_map:
             self._event_subscriber_map[event_type] = []
         self._event_subscriber_map[event_type].append(subscriber)
@@ -54,9 +54,11 @@ class Manager:
 
 @dataclass
 class Message:
-    event_type: 'Event'
+    event_type: 'EventType'
     data: any
 
 
-class Event(Enum):
+class EventType(Enum):
     DUMMY = auto()
+    OBSERVATION = auto()
+    ACTION = auto()
