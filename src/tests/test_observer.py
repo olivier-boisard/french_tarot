@@ -1,6 +1,6 @@
 import pytest
 
-from french_tarot.observer import Manager, Event, Subscriber, Message
+from french_tarot.observer import Event, Subscriber, Message
 
 
 class DummySubscriber(Subscriber):
@@ -18,8 +18,7 @@ def dummy_message():
 
 
 @pytest.mark.timeout(3)
-def test_lifecycle(dummy_message):
-    manager = Manager()
+def test_lifecycle(dummy_message, manager):
     subscriber = DummySubscriber()
     manager.add_subscriber(subscriber, Event.DUMMY)
 
