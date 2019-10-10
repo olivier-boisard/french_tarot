@@ -2,7 +2,6 @@ from abc import ABC
 from typing import Union, Dict
 
 from torch import nn
-from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.agents.common import CoreCardNeuralNet, Agent, Trainer
 from french_tarot.agents.random_agent import RandomPlayer
@@ -35,31 +34,31 @@ class RandomAgentWithDummyTrainer(AgentWithTrainer):
 
 
 class BidPhaseAgentWithTrainer(AgentWithTrainer):
-    def __init__(self, base_card_neural_net: nn.Module, summary_writer: SummaryWriter = None):
+    def __init__(self, base_card_neural_net: nn.Module):
         agent = BidPhaseAgent(base_card_neural_net)
-        trainer = BidPhaseAgentTrainer(agent.policy_net, summary_writer=summary_writer, name="bid")
+        trainer = BidPhaseAgentTrainer(agent.policy_net)
         super().__init__(agent, trainer)
 
 
 class DogPhaseAgentWithTrainer(AgentWithTrainer):
-    def __init__(self, base_card_neural_net: nn.Module, summary_writer: SummaryWriter = None):
+    def __init__(self, base_card_neural_net: nn.Module):
         agent = DogPhaseAgent(base_card_neural_net)
-        trainer = DogPhaseAgentTrainer(agent.policy_net, summary_writer=summary_writer, name="dog")
+        trainer = DogPhaseAgentTrainer(agent.policy_net)
         super().__init__(agent, trainer)
 
 
 class AllPhasePlayerTrainer(Agent):
     _agents_with_trainers: Dict[type, AgentWithTrainer]
 
-    def __init__(self, summary_writer: SummaryWriter = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._initialize_per_phase_agents(summary_writer)
+        self._initialize_per_phase_agents()
 
-    def _initialize_per_phase_agents(self, summary_writer):
+    def _initialize_per_phase_agents(self):
         base_card_neural_net = CoreCardNeuralNet()
         self._agents_with_trainers = {
-            BidPhaseObservation: BidPhaseAgentWithTrainer(base_card_neural_net, summary_writer=summary_writer),
-            DogPhaseObservation: DogPhaseAgentWithTrainer(base_card_neural_net, summary_writer=summary_writer),
+            BidPhaseObservation: BidPhaseAgentWithTrainer(base_card_neural_net),
+            DogPhaseObservation: DogPhaseAgentWithTrainer(base_card_neural_net),
             AnnouncementPhaseObservation: RandomAgentWithDummyTrainer(RandomPlayer()),
             CardPhaseObservation: RandomAgentWithDummyTrainer(RandomPlayer())
         }

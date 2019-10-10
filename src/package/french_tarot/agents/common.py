@@ -9,10 +9,8 @@ import torch
 from attr import dataclass
 from torch import nn, tensor
 from torch.optim import Adam
-from torch.utils.tensorboard import SummaryWriter
 
 from french_tarot.environment.core import Card, CARDS
-from french_tarot.exceptions import FrenchTarotException
 
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
@@ -118,25 +116,16 @@ class Trainer(ABC):
             net: nn.Module,
             batch_size: int = 64,
             replay_memory_size: int = 20000,
-            summary_writer: SummaryWriter = None,
-            name=None
     ):
         self._net = net
         self._batch_size = batch_size
         self.memory = ReplayMemory(replay_memory_size)
-        self._summary_writer = summary_writer
-        self._name = name
         self._optimizer = Adam(net.parameters())
         self._initialize_inner_attribute()
-        self._check_parameters()
 
     def _initialize_inner_attribute(self):
         self._step = 0
         self.loss = []
-
-    def _check_parameters(self):
-        if self._summary_writer is not None and self._name is None:
-            raise FrenchTarotException("name should not be None if summary_writer is not None")
 
     @abstractmethod
     def push_to_memory(self, observation, action, reward):
@@ -164,11 +153,6 @@ class Trainer(ABC):
         loss.backward()
         nn.utils.clip_grad_norm_(self._net.parameters(), 0.1)
         self._optimizer.step()
-        self._log()
-
-    def _log(self):
-        if self._step % 1000 == 0 and self._summary_writer is not None:
-            self._summary_writer.add_scalar("Loss/train/" + self._name, self.loss[-1], self._step)
 
     @property
     def device(self) -> str:
