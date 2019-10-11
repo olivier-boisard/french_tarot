@@ -1,10 +1,14 @@
 from abc import abstractmethod, ABC
 from enum import Enum, auto
-from queue import Queue, Empty
+from queue import Queue
 from threading import Thread
 from typing import Dict, List
 
 from attr import dataclass
+
+
+class Kill:
+    pass
 
 
 class Subscriber(ABC):
@@ -20,6 +24,7 @@ class Subscriber(ABC):
 
     def stop(self):
         self._running = False
+        self.push(Kill())
         self._thread.join()
         self.teardown()
 
@@ -30,11 +35,13 @@ class Subscriber(ABC):
         pass
 
     def loop(self):
-        while self._running:
-            try:
-                self.update(self._queue.get_nowait())
-            except Empty:
-                pass
+        run = True
+        while run:
+            message = self._queue.get()
+            if not isinstance(message, Kill):
+                self.update(message)
+            else:
+                run = False
 
     def push(self, data: any):
         self._queue.put(data)

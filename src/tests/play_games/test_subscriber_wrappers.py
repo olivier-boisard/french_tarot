@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 
 from french_tarot.agents.random_agent import RandomPlayer
@@ -17,37 +19,59 @@ class DummySubscriber(Subscriber):
         self.data = data
 
 
-@pytest.mark.timeout(10)
-def test_agent_subscriber(environment: FrenchTarotEnvironment):
+def subscriber_receives_data(subscriber, data_type, timeout_seconds=1):
+    start_time = datetime.datetime.now()
+    received = False
+    timeout = False
+    while not (received or timeout):
+        received = isinstance(subscriber.data, data_type)
+        timeout = (datetime.datetime.now() - start_time) >= datetime.timedelta(seconds=timeout_seconds)
+    return received
+
+
+def create_teardown_func(*threads):
+    def teardown():
+        for thread in threads:
+            thread.stop()
+
+    return teardown
+
+
+def test_agent_subscriber(environment: FrenchTarotEnvironment, request):
     manager = Manager()
     subscriber = AgentSubscriber(manager)
     dummy_subscriber = DummySubscriber()
     manager.add_subscriber(subscriber, EventType.OBSERVATION)
     manager.add_subscriber(dummy_subscriber, EventType.ACTION)
+    request.addfinalizer(create_teardown_func(subscriber, dummy_subscriber))
 
     subscriber.start()
     dummy_subscriber.start()
+
     observation = environment.reset()
     manager.publish(Message(EventType.OBSERVATION, observation))
-    while not isinstance(dummy_subscriber.data, Bid):
-        pass
-    dummy_subscriber.stop()
-    subscriber.stop()
+    assert subscriber_receives_data(dummy_subscriber, Bid)
 
 
-@pytest.mark.timeout(3)
-def test_environment_subscriber(environment: FrenchTarotEnvironment):
+@pytest.mark.timeout(5)
+def test_environment_subscriber(environment: FrenchTarotEnvironment, request):
     manager = Manager()
+
     subscriber = FrenchTarotEnvironmentSubscriber(manager)
     observation_subscriber = DummySubscriber()
+    action_result_subscriber = DummySubscriber()
+    request.addfinalizer(create_teardown_func(subscriber, action_result_subscriber, observation_subscriber))
+
     manager.add_subscriber(subscriber, EventType.ACTION)
     manager.add_subscriber(observation_subscriber, EventType.OBSERVATION)
+    manager.add_subscriber(action_result_subscriber, EventType.ACTION_RESULT)
+
+    subscriber.start()
+    action_result_subscriber.start()
+    observation_subscriber.start()
 
     # Test publish observation on start
-    subscriber.start()
-    observation_subscriber.start()
-    while not isinstance(observation_subscriber.data, Observation):
-        pass
+    assert subscriber_receives_data(observation_subscriber, Observation)
     observation = observation_subscriber.data
 
     # Test publish observation after action
@@ -55,17 +79,8 @@ def test_environment_subscriber(environment: FrenchTarotEnvironment):
     while observation_subscriber.data is not None:
         pass
     manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
-    while not isinstance(observation_subscriber.data, Observation):
-        pass
+    assert subscriber_receives_data(observation_subscriber, Observation)
 
     observation = observation_subscriber.data
-    action_result_subscriber = DummySubscriber()
-    action_result_subscriber.start()
-    manager.add_subscriber(action_result_subscriber, EventType.ACTION_RESULT)
     manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
-    while not isinstance(action_result_subscriber.data, ActionResult):
-        pass
-    action_result_subscriber.stop()
-
-    observation_subscriber.stop()
-    subscriber.stop()
+    assert subscriber_receives_data(action_result_subscriber, ActionResult)
