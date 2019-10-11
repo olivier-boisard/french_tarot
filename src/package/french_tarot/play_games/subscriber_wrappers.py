@@ -46,9 +46,12 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
 class TrainerSubscriber(Subscriber):
     def __init__(self, trainer: AllPhaseTrainer, batch_size: int = 64):
         super().__init__()
-        self.buffer = []
+        self.buffer: List[ActionResult] = []
         self._batch_size = batch_size
         self._trainer = trainer
 
-    def update(self, data: Observation):
+    def update(self, data: ActionResult):
         self.buffer.append(data)
+        if len(self.buffer) >= self._batch_size:
+            for e in self.buffer:
+                self._trainer.push_to_memory(e.observation, e.reward, e.done)

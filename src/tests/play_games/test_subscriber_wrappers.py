@@ -113,6 +113,9 @@ def test_trainer_subscriber(request):
     while len(subscriber.buffer) < batch_size:
         pass
 
-    assert bid_phase_trainer.push_to_memory.assert_called_once()
+    while bid_phase_trainer.push_to_memory.call_count == 0:
+        pass
+
+    # TODO make sure training loop was called once on a copy of the neural net
 
     request.addfinalizer(create_teardown_func(subscriber))

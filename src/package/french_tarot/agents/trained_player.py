@@ -30,3 +30,6 @@ class AllPhaseAgent(Agent):
 class AllPhaseTrainer:
     def __init__(self, bid_phase_trainer: BidPhaseAgentTrainer):
         self._bid_phase_trainer = bid_phase_trainer
+
+    def push_to_memory(self, observation, reward, done):
+        self._bid_phase_trainer.push_to_memory(observation, reward, done)
