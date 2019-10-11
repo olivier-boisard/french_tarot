@@ -56,8 +56,9 @@ class Manager:
         self._event_subscriber_map[event_type].append(subscriber)
 
     def publish(self, message: 'Message'):
-        for subscriber in self._event_subscriber_map[message.event_type]:
-            subscriber.push(message.data)
+        if message.event_type in self._event_subscriber_map:
+            for subscriber in self._event_subscriber_map[message.event_type]:
+                subscriber.push(message.data)
 
 
 @dataclass
@@ -70,3 +71,4 @@ class EventType(Enum):
     DUMMY = auto()
     OBSERVATION = auto()
     ACTION = auto()
+    ACTION_RESULT = auto()
