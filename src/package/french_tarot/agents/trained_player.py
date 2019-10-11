@@ -15,9 +15,6 @@ class AllPhaseAgent(Agent):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._initialize_per_phase_agents()
-
-    def _initialize_per_phase_agents(self):
         base_card_neural_net = CoreCardNeuralNet()
         self._agents = {
             BidPhaseObservation: BidPhaseAgent(base_card_neural_net),
