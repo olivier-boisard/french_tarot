@@ -11,7 +11,7 @@ from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservati
 
 
 class AllPhaseAgent(Agent):
-    _agents_with_trainers: Dict[type, Agent]
+    _agents: Dict[type, Agent]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -19,7 +19,7 @@ class AllPhaseAgent(Agent):
 
     def _initialize_per_phase_agents(self):
         base_card_neural_net = CoreCardNeuralNet()
-        self._agents_with_trainers = {
+        self._agents = {
             BidPhaseObservation: BidPhaseAgent(base_card_neural_net),
             DogPhaseObservation: DogPhaseAgent(base_card_neural_net),
             AnnouncementPhaseObservation: RandomPlayer(),
@@ -27,4 +27,4 @@ class AllPhaseAgent(Agent):
         }
 
     def get_action(self, observation):
-        return self._agents_with_trainers[observation.__class__].get_action(observation)
+        return self._agents[observation.__class__].get_action(observation)
