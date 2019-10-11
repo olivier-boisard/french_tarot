@@ -10,7 +10,7 @@ from french_tarot.environment.subenvironments.card_phase import CardPhaseObserva
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 
 
-class AllPhasePlayerTrainer(Agent):
+class AllPhaseAgent(Agent):
     _agents_with_trainers: Dict[type, Agent]
 
     def __init__(self, **kwargs):
