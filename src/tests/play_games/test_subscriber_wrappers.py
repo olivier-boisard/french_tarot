@@ -81,6 +81,7 @@ def test_environment_subscriber(environment: FrenchTarotEnvironment, request):
     manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
     assert subscriber_receives_data(observation_subscriber, Observation)
 
+    # Test publish action result after action
     observation = observation_subscriber.data
     manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
     assert subscriber_receives_data(action_result_subscriber, ActionResult)
