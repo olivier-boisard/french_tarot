@@ -14,16 +14,13 @@ class Kill:
 class Subscriber(ABC):
     def __init__(self):
         self._queue = Queue()
-        self._running = False
         self._thread = Thread(target=self.loop)
 
     def start(self):
         self.setup()
-        self._running = True
         self._thread.start()
 
     def stop(self):
-        self._running = False
         self.push(Kill())
         self._thread.join()
         self.teardown()
