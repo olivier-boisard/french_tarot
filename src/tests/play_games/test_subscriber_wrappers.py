@@ -1,12 +1,15 @@
 import datetime
+from unittest.mock import Mock
 
 import pytest
 
 from french_tarot.agents.random_agent import RandomPlayer
+from french_tarot.agents.trained_player import AllPhaseAgent, AllPhaseTrainer
 from french_tarot.environment.core import Bid, Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer import EventType, Message, Manager, Subscriber
-from french_tarot.play_games.subscriber_wrappers import AgentSubscriber, FrenchTarotEnvironmentSubscriber, ActionResult
+from french_tarot.play_games.subscriber_wrappers import AgentSubscriber, FrenchTarotEnvironmentSubscriber, ActionResult, \
+    TrainerSubscriber
 
 
 class DummySubscriber(Subscriber):
@@ -85,3 +88,31 @@ def test_environment_subscriber(environment: FrenchTarotEnvironment, request):
     observation = observation_subscriber.data
     manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
     assert subscriber_receives_data(action_result_subscriber, ActionResult)
+
+
+@pytest.mark.timeout(5)
+def test_trainer_subscriber(request):
+    batch_size = 64
+
+    bid_phase_trainer = Mock()
+
+    trainer = AllPhaseTrainer(bid_phase_trainer)
+    subscriber = TrainerSubscriber(trainer, batch_size=batch_size)
+    manager = Manager()
+    manager.add_subscriber(subscriber, EventType.ACTION_RESULT)
+
+    subscriber.start()
+    environment = FrenchTarotEnvironment()
+    observation = environment.reset()
+    agent = AllPhaseAgent()
+    action = agent.get_action(observation)
+    observation, reward, done, _ = environment.step(action)
+
+    for _ in range(batch_size):
+        manager.publish(Message(EventType.ACTION_RESULT, ActionResult(observation, reward, done)))
+    while len(subscriber.buffer) < batch_size:
+        pass
+
+    assert bid_phase_trainer.push_to_memory.assert_called_once()
+
+    request.addfinalizer(create_teardown_func(subscriber))

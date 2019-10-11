@@ -1,10 +1,18 @@
-from french_tarot.agents.trained_player import AllPhaseAgent
+from typing import Union, List
+
+from attr import dataclass
+
+from french_tarot.agents.trained_player import AllPhaseAgent, AllPhaseTrainer
+from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer import Subscriber, Manager, Message, EventType
 
 
+@dataclass
 class ActionResult:
-    pass
+    observation: Observation
+    reward: Union[float, List[float]]
+    done: bool
 
 
 class AgentSubscriber(Subscriber):
@@ -33,3 +41,14 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
         observation, _, _, _ = self._environment.step(action)
         self._manager.publish(Message(EventType.OBSERVATION, observation))
         self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult()))
+
+
+class TrainerSubscriber(Subscriber):
+    def __init__(self, trainer: AllPhaseTrainer, batch_size: int = 64):
+        super().__init__()
+        self.buffer = []
+        self._batch_size = batch_size
+        self._trainer = trainer
+
+    def update(self, data: Observation):
+        self.buffer.append(data)

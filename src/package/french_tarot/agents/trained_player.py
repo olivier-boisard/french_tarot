@@ -2,7 +2,7 @@ from typing import Dict
 
 from french_tarot.agents.common import CoreCardNeuralNet, Agent
 from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.agents.trained_player_bid import BidPhaseAgent
+from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
@@ -25,3 +25,8 @@ class AllPhaseAgent(Agent):
 
     def get_action(self, observation):
         return self._agents[observation.__class__].get_action(observation)
+
+
+class AllPhaseTrainer:
+    def __init__(self, bid_phase_trainer: BidPhaseAgentTrainer):
+        self._bid_phase_trainer = bid_phase_trainer

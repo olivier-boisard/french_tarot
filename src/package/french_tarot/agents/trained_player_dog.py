@@ -72,9 +72,9 @@ class DogPhaseAgent(BaseNeuralNetAgent):
 
 class DogPhaseAgentTrainer(Trainer):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, net: torch.nn.Module, **kwargs):
         # noinspection PyArgumentList
-        super().__init__(*args, **kwargs)
+        super().__init__(net, **kwargs)
         self._return_scale_factor = 0.001
 
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
