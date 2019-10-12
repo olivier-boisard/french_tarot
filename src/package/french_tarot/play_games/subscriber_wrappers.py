@@ -1,7 +1,9 @@
+from enum import Enum, auto
 from queue import Queue, Empty
 from threading import Thread
 from typing import Union, List
 
+import torch
 from attr import dataclass
 
 from french_tarot.agents.trained_player import AllPhaseAgent
@@ -20,6 +22,16 @@ class ActionResult:
     observation: Observation
     reward: Union[float, List[float]]
     done: bool
+
+
+@dataclass
+class ModelUpdate:
+    phase: 'ModelUpdate.Phase'
+    model: torch.nn.Module
+
+    class Phase(Enum):
+        BID = auto()
+        DOG = auto()
 
 
 class AgentSubscriber(Subscriber):
@@ -45,9 +57,9 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
         self._manager.publish(Message(EventType.OBSERVATION, observation))
 
     def update(self, action: any):
-        observation, _, _, _ = self._environment.step(action)
+        observation, reward, done, _ = self._environment.step(action)
         self._manager.publish(Message(EventType.OBSERVATION, observation))
-        self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult()))
+        self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
 
 
 class TrainerSubscriber(Subscriber):

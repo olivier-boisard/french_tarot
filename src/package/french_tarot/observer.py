@@ -76,3 +76,4 @@ class EventType(Enum):
     OBSERVATION = auto()
     ACTION = auto()
     ACTION_RESULT = auto()
+    MODEL = auto()

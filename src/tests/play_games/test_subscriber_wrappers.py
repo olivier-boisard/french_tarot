@@ -9,7 +9,7 @@ from french_tarot.environment.core import Bid, Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer import EventType, Message, Manager, Subscriber
 from french_tarot.play_games.subscriber_wrappers import AgentSubscriber, FrenchTarotEnvironmentSubscriber, ActionResult, \
-    TrainerSubscriber
+    TrainerSubscriber, ModelUpdate
 
 
 class DummySubscriber(Subscriber):
@@ -93,15 +93,19 @@ def test_environment_subscriber(environment: FrenchTarotEnvironment, request):
 @pytest.mark.timeout(5)
 def test_trainer_subscriber(request):
     batch_size = 64
+    steps_per_update = 10
 
     bid_phase_trainer = Mock()
     dog_phase_trainer = Mock()
     subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer)
+    dummy_subscriber = DummySubscriber()
+    dummy_subscriber.start()
     subscriber.start()
-    request.addfinalizer(create_teardown_func(subscriber))
+    request.addfinalizer(create_teardown_func(subscriber, dummy_subscriber))
 
     manager = Manager()
     manager.add_subscriber(subscriber, EventType.ACTION_RESULT)
+    manager.add_subscriber(dummy_subscriber, EventType.MODEL)
 
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
@@ -117,3 +121,6 @@ def test_trainer_subscriber(request):
         pass
     bid_phase_trainer.optimize_model.assert_called()
     dog_phase_trainer.optimize_model.assert_called()
+    while bid_phase_trainer.push_to_memory.call_count < steps_per_update:
+        pass
+    assert subscriber_receives_data(dummy_subscriber, ModelUpdate)
