@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.agents.trained_player import AllPhaseAgent, AllPhaseTrainer
+from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.environment.core import Bid, Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer import EventType, Message, Manager, Subscriber
@@ -95,13 +95,14 @@ def test_trainer_subscriber(request):
     batch_size = 64
 
     bid_phase_trainer = Mock()
+    dog_phase_trainer = Mock()
+    subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer)
+    subscriber.start()
+    request.addfinalizer(create_teardown_func(subscriber))
 
-    trainer = AllPhaseTrainer(bid_phase_trainer)
-    subscriber = TrainerSubscriber(trainer, batch_size=batch_size)
     manager = Manager()
     manager.add_subscriber(subscriber, EventType.ACTION_RESULT)
 
-    subscriber.start()
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
     agent = AllPhaseAgent()
@@ -109,13 +110,10 @@ def test_trainer_subscriber(request):
     observation, reward, done, _ = environment.step(action)
 
     for _ in range(batch_size):
-        manager.publish(Message(EventType.ACTION_RESULT, ActionResult(observation, reward, done)))
-    while len(subscriber.buffer) < batch_size:
-        pass
+        manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
 
+    # Test behavior
     while bid_phase_trainer.push_to_memory.call_count == 0:
         pass
-
-    # TODO make sure training loop was called once on a copy of the neural net
-
-    request.addfinalizer(create_teardown_func(subscriber))
+    bid_phase_trainer.optimize_model.assert_called()
+    dog_phase_trainer.optimize_model.assert_called()
