@@ -13,8 +13,9 @@ from french_tarot.environment.core import Bid, Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 from french_tarot.observer import EventType, Message, Manager, Subscriber
+from french_tarot.play_games.datastructures import ModelUpdate
 from french_tarot.play_games.subscriber_wrappers import AgentSubscriber, FrenchTarotEnvironmentSubscriber, ActionResult, \
-    TrainerSubscriber, ModelUpdate
+    TrainerSubscriber
 
 
 class DummySubscriber(Subscriber):
@@ -78,11 +79,11 @@ def test_environment_subscriber(environment: FrenchTarotEnvironment, request):
     action_result_subscriber.start()
     observation_subscriber.start()
 
-    # Test publish observation on start
+    # Test publish data on start
     assert subscriber_receives_data(observation_subscriber, Observation)
     observation = observation_subscriber.data
 
-    # Test publish observation after action
+    # Test publish data after action
     manager.publish(Message(EventType.OBSERVATION, None))
     while observation_subscriber.data is not None:
         pass
@@ -96,7 +97,7 @@ def test_environment_subscriber(environment: FrenchTarotEnvironment, request):
 
 
 @pytest.mark.timeout(5)
-def test_trainer_subscriber(request):
+def test_trainer_and_agent_subscribers(request):
     batch_size = 64
     steps_per_update = 10
 
@@ -109,12 +110,16 @@ def test_trainer_subscriber(request):
     manager = Manager()
     subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer, manager, steps_per_update=steps_per_update)
     dummy_subscriber = DummySubscriber()
+    agent_subscriber = AgentSubscriber(manager)
+    untrained_policy_net = _get_policy_net(agent_subscriber)
+    agent_subscriber.start()
     dummy_subscriber.start()
     subscriber.start()
-    request.addfinalizer(create_teardown_func(subscriber, dummy_subscriber))
+    request.addfinalizer(create_teardown_func(subscriber, dummy_subscriber, agent_subscriber))
 
     manager.add_subscriber(subscriber, EventType.ACTION_RESULT)
     manager.add_subscriber(dummy_subscriber, EventType.MODEL_UPDATE)
+    manager.add_subscriber(agent_subscriber, EventType.MODEL_UPDATE)
 
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
@@ -130,8 +135,13 @@ def test_trainer_subscriber(request):
         pass
     assert subscriber_receives_data(dummy_subscriber, ModelUpdate)
     sent_model = dummy_subscriber.data.agent_to_model_map[BidPhaseAgent]
-    received_model_id = id(sent_model)
     model_in_trainer = subscriber._trainers[BidPhaseObservation].model
-    original_model_id = id(model_in_trainer)
     assert type(sent_model) == type(model_in_trainer)
-    assert received_model_id != original_model_id
+    assert torch.any(sent_model[0].weight != model_in_trainer[0].weight)
+    untrained_bid_phase_policy_net_weights = untrained_policy_net[0].standard_cards_tower[0].weight
+    trained_bid_phase_policy_net_weights = _get_policy_net(agent_subscriber)[0].standard_cards_tower[0].weight
+    assert torch.any(trained_bid_phase_policy_net_weights != untrained_bid_phase_policy_net_weights)
+
+
+def _get_policy_net(agent_subscriber):
+    return agent_subscriber._agent._agents[BidPhaseObservation].policy_net

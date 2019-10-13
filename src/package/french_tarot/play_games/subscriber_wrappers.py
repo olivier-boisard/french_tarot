@@ -5,6 +5,7 @@ from typing import Union, List
 
 from attr import dataclass
 
+from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer, BidPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhaseAgent
@@ -12,7 +13,9 @@ from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
+from french_tarot.exceptions import FrenchTarotException
 from french_tarot.observer import Subscriber, Manager, Message, EventType, Kill
+from french_tarot.play_games.datastructures import ModelUpdate
 
 
 @dataclass
@@ -29,9 +32,18 @@ class AgentSubscriber(Subscriber):
         self._manager: Manager = manager
         self._agent = AllPhaseAgent()
 
-    def update(self, observation: any):
+    @singledispatchmethod
+    def update(self, data: any):
+        raise FrenchTarotException("Should not be called")
+
+    @update.register
+    def _(self, observation: Observation):
         action = self._agent.get_action(observation)
         self._manager.publish(Message(EventType.ACTION, action))
+
+    @update.register
+    def _(self, model_update: ModelUpdate):
+        self._agent.update_model(model_update)
 
 
 class FrenchTarotEnvironmentSubscriber(Subscriber):
@@ -49,11 +61,6 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
         observation, reward, done, _ = self._environment.step(action)
         self._manager.publish(Message(EventType.OBSERVATION, observation))
         self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
-
-
-@dataclass
-class ModelUpdate:
-    agent_to_model_map: dict
 
 
 class TrainerSubscriber(Subscriber):
