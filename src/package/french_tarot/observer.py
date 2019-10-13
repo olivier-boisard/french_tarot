@@ -39,6 +39,7 @@ class Subscriber(ABC):
                 self.update(message)
             else:
                 run = False
+            self._queue.task_done()
 
     def push(self, data: any):
         self._queue.put(data)
@@ -76,4 +77,4 @@ class EventType(Enum):
     OBSERVATION = auto()
     ACTION = auto()
     ACTION_RESULT = auto()
-    MODEL = auto()
+    MODEL_UPDATE = auto()

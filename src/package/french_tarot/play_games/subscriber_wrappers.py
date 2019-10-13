@@ -1,14 +1,13 @@
-from enum import Enum, auto
+import copy
 from queue import Queue, Empty
 from threading import Thread
 from typing import Union, List
 
-import torch
 from attr import dataclass
 
 from french_tarot.agents.trained_player import AllPhaseAgent
-from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer
-from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer
+from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer, BidPhaseAgent
+from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhaseAgent
 from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
@@ -22,16 +21,6 @@ class ActionResult:
     observation: Observation
     reward: Union[float, List[float]]
     done: bool
-
-
-@dataclass
-class ModelUpdate:
-    phase: 'ModelUpdate.Phase'
-    model: torch.nn.Module
-
-    class Phase(Enum):
-        BID = auto()
-        DOG = auto()
 
 
 class AgentSubscriber(Subscriber):
@@ -62,11 +51,19 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
         self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
 
 
+@dataclass
+class ModelUpdate:
+    agent_to_model_map: dict
+
+
 class TrainerSubscriber(Subscriber):
-    def __init__(self, bid_phase_trainer: BidPhaseAgentTrainer, dog_phase_trainer: DogPhaseAgentTrainer):
+    def __init__(self, bid_phase_trainer: BidPhaseAgentTrainer, dog_phase_trainer: DogPhaseAgentTrainer,
+                 manager: Manager, steps_per_update: int = 100):
         super().__init__()
         self._training_queue = Queue()
         self._training_thread = Thread(target=self._train)
+        self._steps_per_update = steps_per_update
+        self._manager = manager
         self._trainers = {
             BidPhaseObservation: bid_phase_trainer,
             DogPhaseObservation: dog_phase_trainer
@@ -80,12 +77,14 @@ class TrainerSubscriber(Subscriber):
         self._training_thread.start()
 
     def stop(self):
-        super().stop()
         self._training_queue.put(Kill())
+        super().stop()
         self._training_thread.join()
 
     def _train(self):
+        step = 0
         while True:
+            step += 1
             for trainer in self._trainers.values():
                 trainer.optimize_model()
 
@@ -95,5 +94,15 @@ class TrainerSubscriber(Subscriber):
                     self._trainers[action_result.observation.__class__].push_to_memory(action_result.observation,
                                                                                        action_result.action,
                                                                                        action_result.reward)
+                else:
+                    break
+                self._training_queue.task_done()
             except Empty:
                 pass
+
+            if step % self._steps_per_update == 0:
+                new_models = ModelUpdate({
+                    BidPhaseAgent: copy.deepcopy(self._trainers[BidPhaseObservation].model),
+                    DogPhaseAgent: copy.deepcopy(self._trainers[DogPhaseObservation].model)
+                })
+                self._manager.publish(Message(EventType.MODEL_UPDATE, new_models))

@@ -1,12 +1,17 @@
+import copy
 import datetime
-from unittest.mock import Mock
 
 import pytest
+import torch
+from torch import nn
 
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
+from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
+from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer
 from french_tarot.environment.core import Bid, Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 from french_tarot.observer import EventType, Message, Manager, Subscriber
 from french_tarot.play_games.subscriber_wrappers import AgentSubscriber, FrenchTarotEnvironmentSubscriber, ActionResult, \
     TrainerSubscriber, ModelUpdate
@@ -95,17 +100,21 @@ def test_trainer_subscriber(request):
     batch_size = 64
     steps_per_update = 10
 
-    bid_phase_trainer = Mock()
-    dog_phase_trainer = Mock()
-    subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer)
+    bid_phase_model = nn.Sequential(torch.nn.Linear(78, 1), nn.Sigmoid())
+    untrained_model = copy.deepcopy(bid_phase_model)
+    # noinspection PyUnresolvedReferences
+    assert torch.all(bid_phase_model[0].weight == untrained_model[0].weight)
+    bid_phase_trainer = BidPhaseAgentTrainer(bid_phase_model)
+    dog_phase_trainer = DogPhaseAgentTrainer(nn.Linear(78, 1))
+    manager = Manager()
+    subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer, manager, steps_per_update=steps_per_update)
     dummy_subscriber = DummySubscriber()
     dummy_subscriber.start()
     subscriber.start()
     request.addfinalizer(create_teardown_func(subscriber, dummy_subscriber))
 
-    manager = Manager()
     manager.add_subscriber(subscriber, EventType.ACTION_RESULT)
-    manager.add_subscriber(dummy_subscriber, EventType.MODEL)
+    manager.add_subscriber(dummy_subscriber, EventType.MODEL_UPDATE)
 
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
@@ -116,11 +125,13 @@ def test_trainer_subscriber(request):
     for _ in range(batch_size):
         manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
 
-    # Test behavior
-    while bid_phase_trainer.push_to_memory.call_count == 0:
-        pass
-    bid_phase_trainer.optimize_model.assert_called()
-    dog_phase_trainer.optimize_model.assert_called()
-    while bid_phase_trainer.push_to_memory.call_count < steps_per_update:
+    # noinspection PyUnresolvedReferences
+    while not torch.any(bid_phase_model[0].weight != untrained_model[0].weight):
         pass
     assert subscriber_receives_data(dummy_subscriber, ModelUpdate)
+    sent_model = dummy_subscriber.data.agent_to_model_map[BidPhaseAgent]
+    received_model_id = id(sent_model)
+    model_in_trainer = subscriber._trainers[BidPhaseObservation].model
+    original_model_id = id(model_in_trainer)
+    assert type(sent_model) == type(model_in_trainer)
+    assert received_model_id != original_model_id

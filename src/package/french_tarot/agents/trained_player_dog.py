@@ -79,7 +79,7 @@ class DogPhaseAgentTrainer(Trainer):
 
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
         state_batch, action_batch, target = self._get_batches()
-        model_output = self._net(state_batch).gather(1, action_batch)
+        model_output = self.model(state_batch).gather(1, action_batch)
         return model_output, target
 
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -93,13 +93,13 @@ class DogPhaseAgentTrainer(Trainer):
             for card in permuted_action:
                 xx = torch.cat((encode_cards(hand), selected_cards)).unsqueeze(0)
                 action_id = DogPhaseAgent.CARDS_OK_IN_DOG.index(card)
-                self.memory.push_message(xx, action_id, None, reward)
+                self._memory.push_message(xx, action_id, None, reward)
 
                 selected_cards[action_id] = 1
                 hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[action_id])
 
     def _get_batches(self):
-        transitions = self.memory.sample(self._batch_size)
+        transitions = self._memory.sample(self._batch_size)
         batch = Transition(*zip(*transitions))
         state_batch = torch.cat(batch.state).to(self.device)
         action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)

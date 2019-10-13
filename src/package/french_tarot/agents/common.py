@@ -117,9 +117,9 @@ class Trainer(ABC):
             batch_size: int = 64,
             replay_memory_size: int = 20000,
     ):
-        self._net = net
+        self.model = net
         self._batch_size = batch_size
-        self.memory = ReplayMemory(replay_memory_size)
+        self._memory = ReplayMemory(replay_memory_size)
         self._optimizer = Adam(net.parameters())
         self._initialize_inner_attribute()
 
@@ -140,7 +140,7 @@ class Trainer(ABC):
         pass
 
     def optimize_model(self):
-        if len(self.memory) > self._batch_size:
+        if len(self._memory) >= self._batch_size:
             model_output, target = self.get_model_output_and_target()
             self._train_model_one_step(model_output, target)
 
@@ -151,12 +151,12 @@ class Trainer(ABC):
 
         self._optimizer.zero_grad()
         loss.backward()
-        nn.utils.clip_grad_norm_(self._net.parameters(), 0.1)
+        nn.utils.clip_grad_norm_(self.model.parameters(), 0.1)
         self._optimizer.step()
 
     @property
     def device(self) -> str:
-        return "cuda" if next(self._net.parameters()).is_cuda else "cpu"
+        return "cuda" if next(self.model.parameters()).is_cuda else "cpu"
 
 
 class BaseNeuralNetAgent(Agent, ABC):

@@ -82,7 +82,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
 class BidPhaseAgentTrainer(Trainer):
 
     def _get_input_and_target_tensors(self):
-        transitions = self.memory.sample(self._batch_size)
+        transitions = self._memory.sample(self._batch_size)
         batch = Transition(*zip(*transitions))
         input_vectors = torch.cat(batch.state).to(self.device)
         targets = torch.tensor(batch.reward).float().to(self.device)
@@ -92,12 +92,11 @@ class BidPhaseAgentTrainer(Trainer):
 
     def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
         input_vectors, target = self._get_input_and_target_tensors()
-        model_output = self._net(input_vectors)
+        model_output = self.model(input_vectors)
         return model_output, target
 
     def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss = BCELoss()(model_output.flatten(), target.flatten())
-        return loss
+        return BCELoss()(model_output.flatten(), target.flatten())
 
     def push_to_memory(self, observation: BidPhaseObservation, action, reward):
-        self.memory.push_message(encode_cards(observation.player.hand).unsqueeze(0), action, None, reward)
+        self._memory.push_message(encode_cards(observation.player.hand).unsqueeze(0), action, None, reward)
