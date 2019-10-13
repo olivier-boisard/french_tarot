@@ -161,7 +161,7 @@ class Trainer(ABC):
 
 class BaseNeuralNetAgent(Agent, ABC):
     def __init__(self, policy_net: nn.Module):
-        self.policy_net = policy_net
+        self._policy_net = policy_net
         self._initialize_internals()
 
     def _initialize_internals(self):
@@ -171,10 +171,10 @@ class BaseNeuralNetAgent(Agent, ABC):
     def get_action(self, observation):
         self._step += 1
         if not self._random_action_policy.should_play_randomly(self._step):
-            self.policy_net.eval()
+            self._policy_net.eval()
             with torch.no_grad():
                 action = self.get_max_return_action(observation)
-            self.policy_net.train()
+            self._policy_net.train()
         else:
             action = self.get_random_action(observation)
         return action
@@ -189,7 +189,7 @@ class BaseNeuralNetAgent(Agent, ABC):
 
     @property
     def device(self) -> str:
-        return "cuda" if next(self.policy_net.parameters()).is_cuda else "cpu"
+        return "cuda" if next(self._policy_net.parameters()).is_cuda else "cpu"
 
 
 def encode_cards(cards: List[Card]) -> torch.Tensor:

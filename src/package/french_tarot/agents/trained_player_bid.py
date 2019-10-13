@@ -23,7 +23,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
     def get_max_return_action(self, observation: BidPhaseObservation):
         state = encode_cards(observation.player.hand)
         self._step += 1
-        output = self.policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
+        output = self._policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
         bid = self._get_bid_value(output, observation.bid_per_player)
         return bid
 
@@ -52,7 +52,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
 
     @property
     def output_dimension(self) -> int:
-        return self.policy_net.output_layer[-2].out_features
+        return self._policy_net.output_layer[-2].out_features
 
     @staticmethod
     def _create_dqn(base_neural_net: nn.Module) -> nn.Module:

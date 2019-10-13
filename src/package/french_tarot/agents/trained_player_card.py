@@ -42,7 +42,7 @@ class CardPhaseAgent(BaseNeuralNetAgent):
     def get_max_return_action(self, observation: Observation):
         hand_vector = encode_cards(observation.player.hand)
         additional_feature_vector = _encode_features(_extract_features(observation))
-        output_vector = self.policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
+        output_vector = self._policy_net(torch.cat([hand_vector, additional_feature_vector], dim=1))
         output_vector[~hand_vector] = -np.inf
         return CARDS[output_vector.argmax()]
 
