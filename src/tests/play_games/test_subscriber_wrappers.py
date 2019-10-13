@@ -7,7 +7,7 @@ from torch import nn
 
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
-from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
+from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer
 from french_tarot.environment.core import Bid, Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
@@ -101,16 +101,16 @@ def test_trainer_and_agent_subscribers(request):
     batch_size = 64
     steps_per_update = 10
 
-    bid_phase_model = nn.Sequential(torch.nn.Linear(78, 1), nn.Sigmoid())
+    manager = Manager()
+    agent_subscriber = AgentSubscriber(manager)
+    bid_phase_model = agent_subscriber._agent._agents[BidPhaseObservation]._policy_net
     untrained_model = copy.deepcopy(bid_phase_model)
     # noinspection PyUnresolvedReferences
-    assert torch.all(bid_phase_model[0].weight == untrained_model[0].weight)
     bid_phase_trainer = BidPhaseAgentTrainer(bid_phase_model)
     dog_phase_trainer = DogPhaseAgentTrainer(nn.Linear(78, 1))
-    manager = Manager()
     subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer, manager, steps_per_update=steps_per_update)
     dummy_subscriber = DummySubscriber()
-    agent_subscriber = AgentSubscriber(manager)
+
     untrained_policy_net = _get_policy_net(agent_subscriber)
     agent_subscriber.start()
     dummy_subscriber.start()
@@ -131,17 +131,11 @@ def test_trainer_and_agent_subscribers(request):
         manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
 
     # noinspection PyUnresolvedReferences
-    while not torch.any(bid_phase_model[0].weight != untrained_model[0].weight):
-        pass
     assert subscriber_receives_data(dummy_subscriber, ModelUpdate)
-    sent_model = dummy_subscriber.data.agent_to_model_map[BidPhaseAgent]
-    model_in_trainer = subscriber._trainers[BidPhaseObservation].model
-    assert type(sent_model) == type(model_in_trainer)
-    assert torch.any(sent_model[0].weight != model_in_trainer[0].weight)
     untrained_bid_phase_policy_net_weights = untrained_policy_net[0].standard_cards_tower[0].weight
     trained_bid_phase_policy_net_weights = _get_policy_net(agent_subscriber)[0].standard_cards_tower[0].weight
     assert torch.any(trained_bid_phase_policy_net_weights != untrained_bid_phase_policy_net_weights)
 
 
 def _get_policy_net(agent_subscriber):
-    return agent_subscriber._agent._agents[BidPhaseObservation].policy_net
+    return agent_subscriber._agent._agents[BidPhaseObservation]._policy_net

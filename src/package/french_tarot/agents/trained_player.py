@@ -29,6 +29,6 @@ class AllPhaseAgent(Agent):
         return self._agents[observation.__class__].get_action(observation)
 
     def update_model(self, model_update: ModelUpdate):
-        type_to_agent_map = {agent.__class__: agent for agent in self._agents.items()}
+        type_to_agent_map = {agent.__class__: agent for agent in self._agents.values()}
         for agent_type, new_model in model_update.agent_to_model_map.items():
-            type_to_agent_map[agent_type].policy_net.load_state_dict(new_model.state_dict())
+            type_to_agent_map[agent_type]._policy_net.load_state_dict(new_model.state_dict())
