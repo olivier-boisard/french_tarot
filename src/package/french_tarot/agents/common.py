@@ -141,6 +141,7 @@ class Trainer(ABC):
 
     def optimize_model(self):
         if len(self._memory) >= self._batch_size:
+            self.model.train()
             model_output, target = self.get_model_output_and_target()
             self._train_model_one_step(model_output, target)
 
@@ -174,7 +175,6 @@ class BaseNeuralNetAgent(Agent, ABC):
             self._policy_net.eval()
             with torch.no_grad():
                 action = self.get_max_return_action(observation)
-            self._policy_net.train()
         else:
             action = self.get_random_action(observation)
         return action

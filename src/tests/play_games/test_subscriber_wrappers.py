@@ -1,5 +1,6 @@
 import copy
 import datetime
+from time import sleep
 
 import pytest
 import torch
@@ -104,14 +105,13 @@ def test_trainer_and_agent_subscribers(request):
     manager = Manager()
     agent_subscriber = AgentSubscriber(manager)
     bid_phase_model = agent_subscriber._agent._agents[BidPhaseObservation]._policy_net
-    untrained_model = copy.deepcopy(bid_phase_model)
     # noinspection PyUnresolvedReferences
     bid_phase_trainer = BidPhaseAgentTrainer(bid_phase_model)
     dog_phase_trainer = DogPhaseAgentTrainer(nn.Linear(78, 1))
     subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer, manager, steps_per_update=steps_per_update)
     dummy_subscriber = DummySubscriber()
 
-    untrained_policy_net = _get_policy_net(agent_subscriber)
+    untrained_policy_net = copy.deepcopy(_get_policy_net(agent_subscriber))
     agent_subscriber.start()
     dummy_subscriber.start()
     subscriber.start()
@@ -132,9 +132,10 @@ def test_trainer_and_agent_subscribers(request):
 
     # noinspection PyUnresolvedReferences
     assert subscriber_receives_data(dummy_subscriber, ModelUpdate)
-    untrained_bid_phase_policy_net_weights = untrained_policy_net[0].standard_cards_tower[0].weight
-    trained_bid_phase_policy_net_weights = _get_policy_net(agent_subscriber)[0].standard_cards_tower[0].weight
-    assert torch.any(trained_bid_phase_policy_net_weights != untrained_bid_phase_policy_net_weights)
+    untrained_bid_phase_model_weights = untrained_policy_net[0].standard_cards_tower[0].weight
+    trained_bid_phase_model_weights = _get_policy_net(agent_subscriber)[0].standard_cards_tower[0].weight
+    sleep(1)  # TODO ugly
+    assert torch.any(trained_bid_phase_model_weights != untrained_bid_phase_model_weights)
 
 
 def _get_policy_net(agent_subscriber):
