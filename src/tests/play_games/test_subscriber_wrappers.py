@@ -15,8 +15,7 @@ from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer import EventType, Message, Manager, Subscriber
 from french_tarot.play_games.datastructures import ModelUpdate
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, FrenchTarotEnvironmentSubscriber, \
-    ActionResult, \
-    TrainerSubscriber
+    ActionResult, TrainerSubscriber
 
 
 def create_teardown_func(*threads):
@@ -29,18 +28,19 @@ def create_teardown_func(*threads):
 
 def test_agent_subscriber(environment: FrenchTarotEnvironment, request):
     manager = Manager()
-    agent_subscriber = AllPhaseAgentSubscriber(manager)
-    dummy_subscriber = DummySubscriber()
 
-    request.addfinalizer(create_teardown_func(agent_subscriber, dummy_subscriber))
+    agent_subscriber = AllPhaseAgentSubscriber(_create_all_phase_agent(), manager)
+    action_subscriber = DummySubscriber()
+
+    request.addfinalizer(create_teardown_func(agent_subscriber, action_subscriber))
     manager.add_subscriber(agent_subscriber, EventType.OBSERVATION)
-    manager.add_subscriber(dummy_subscriber, EventType.ACTION)
+    manager.add_subscriber(action_subscriber, EventType.ACTION)
     agent_subscriber.start()
-    dummy_subscriber.start()
+    action_subscriber.start()
 
     observation = environment.reset()
     manager.publish(Message(EventType.OBSERVATION, observation))
-    assert subscriber_receives_data(dummy_subscriber, Bid)
+    assert subscriber_receives_data(action_subscriber, Bid)
 
 
 @pytest.mark.timeout(5)
@@ -125,6 +125,16 @@ class DummySubscriber(Subscriber):
 
     def update(self, data: any):
         self.data = data
+
+
+def _create_all_phase_agent():
+    base_card_neural_net = CoreCardNeuralNet()
+    bid_phase_agent_model = BidPhaseAgent.create_dqn(base_card_neural_net)
+    bid_phase_agent = BidPhaseAgent(bid_phase_agent_model)
+    dog_phase_agent_model = DogPhaseAgent.create_dqn(base_card_neural_net)
+    dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
+    agent = AllPhaseAgent(bid_phase_agent, dog_phase_agent)
+    return agent
 
 
 def subscriber_receives_data(subscriber, data_type, timeout_seconds=1):

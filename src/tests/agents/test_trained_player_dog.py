@@ -13,7 +13,7 @@ def test_dog_phase_observation_encoder():
 
 
 def test_create_dog_phase_player():
-    player = DogPhaseAgent(CoreCardNeuralNet(), device="cpu")
+    player = DogPhaseAgent(DogPhaseAgent.create_dqn(CoreCardNeuralNet()))
     observation = _prepare_environment()
     action = player.get_action(observation)
     assert isinstance(action, list)
