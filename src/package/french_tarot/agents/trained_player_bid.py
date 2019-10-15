@@ -13,10 +13,8 @@ from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservati
 
 class BidPhaseAgent(BaseNeuralNetAgent):
 
-    def __init__(self, base_card_neural_net: nn.Module, device: str = "cuda", seed: int = 1988):
-        # noinspection PyUnresolvedReferences
-        net = BidPhaseAgent._create_dqn(base_card_neural_net).to(device)
-        super().__init__(net)
+    def __init__(self, policy_net: nn.Module, device: str = "cuda", seed: int = 1988):
+        super().__init__(policy_net)
         self._epoch = 0
         self._random_state = RandomState(seed)
 
@@ -55,7 +53,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         return self._policy_net.output_layer[-2].out_features
 
     @staticmethod
-    def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
+    def create_dqn(base_neural_net: nn.Module) -> nn.Module:
         width = base_neural_net.output_dimensions
         output_layer = nn.Sequential(
             nn.BatchNorm1d(width),

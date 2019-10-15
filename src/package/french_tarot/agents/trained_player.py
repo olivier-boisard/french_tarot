@@ -1,9 +1,7 @@
 from typing import Dict, Union
 
-from french_tarot.agents.common import CoreCardNeuralNet, Agent, BaseNeuralNetAgent
+from french_tarot.agents.common import Agent, BaseNeuralNetAgent
 from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.agents.trained_player_bid import BidPhaseAgent
-from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.core import Observation
 from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
@@ -15,12 +13,11 @@ from french_tarot.play_games.datastructures import ModelUpdate
 class AllPhaseAgent(Agent):
     _agents: Dict[type, Agent]
 
-    def __init__(self, **kwargs):
+    def __init__(self, bid_phase_agent, dog_phase_agent, **kwargs):
         super().__init__(**kwargs)
-        base_card_neural_net = CoreCardNeuralNet()
         self._agents: Dict[Observation, Union[BaseNeuralNetAgent, Agent]] = {
-            BidPhaseObservation: BidPhaseAgent(base_card_neural_net),
-            DogPhaseObservation: DogPhaseAgent(base_card_neural_net),
+            BidPhaseObservation: bid_phase_agent,
+            DogPhaseObservation: dog_phase_agent,
             AnnouncementPhaseObservation: RandomPlayer(),
             CardPhaseObservation: RandomPlayer()
         }

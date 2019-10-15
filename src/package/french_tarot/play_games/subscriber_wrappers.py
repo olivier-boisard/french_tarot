@@ -26,11 +26,11 @@ class ActionResult:
     done: bool
 
 
-class AgentSubscriber(Subscriber):
-    def __init__(self, manager: Manager):
+class AllPhaseAgentSubscriber(Subscriber):
+    def __init__(self, agent: AllPhaseAgent, manager: Manager):
         super().__init__()
         self._manager: Manager = manager
-        self._agent = AllPhaseAgent()
+        self._agent = agent
 
     @singledispatchmethod
     def update(self, data: any):

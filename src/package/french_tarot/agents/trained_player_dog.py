@@ -24,10 +24,8 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     CARDS_OK_IN_DOG = [card for card in CARDS if _card_is_ok_in_dog(card)]
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
 
-    def __init__(self, base_card_neural_net, device: str = "cuda"):
-        # noinspection PyUnresolvedReferences
-        net = DogPhaseAgent._create_dqn(base_card_neural_net).to(device)
-        super().__init__(net)
+    def __init__(self, policy_net):
+        super().__init__(policy_net)
 
     def get_max_return_action(self, observation: DogPhaseObservation):
         hand = copy.copy(observation.player.hand)
@@ -66,7 +64,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         return selections
 
     @staticmethod
-    def _create_dqn(base_neural_net: nn.Module) -> nn.Module:
+    def create_dqn(base_neural_net: nn.Module) -> nn.Module:
         return TrainedPlayerDogNeuralNet(base_neural_net)
 
 

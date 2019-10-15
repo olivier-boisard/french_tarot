@@ -34,10 +34,8 @@ class CardPhaseTrainer(Trainer):
 
 class CardPhaseAgent(BaseNeuralNetAgent):
 
-    def __init__(self, base_card_neural_net, device: str = "cuda"):
-        # noinspection PyUnresolvedReferences
-        net = CardPhaseAgent._create_dqn(base_card_neural_net).to(device)
-        super().__init__(net)
+    def __init__(self, policy_net):
+        super().__init__(policy_net)
 
     def get_max_return_action(self, observation: Observation):
         hand_vector = encode_cards(observation.player.hand)
