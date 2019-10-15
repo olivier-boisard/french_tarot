@@ -12,6 +12,5 @@ def test_deal_petit_sec():
     card_list[0] = Card.TRUMP_1
     card_list[-21] = Card.SPADES_1
     environment = FrenchTarotEnvironment()
-    environment.reset()
     with pytest.raises(FrenchTarotException):
-        environment._deal(card_list)
+        environment.reset(card_list)

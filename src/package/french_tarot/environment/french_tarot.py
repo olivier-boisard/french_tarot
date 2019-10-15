@@ -26,8 +26,11 @@ class FrenchTarotEnvironment:
         self._announcements = None
         self._chelem_announced = None
 
-    def reset(self) -> Observation:
-        self._deal_until_valid()
+    def reset(self, shuffled_card_deck: List[Card] = None) -> Observation:
+        if shuffled_card_deck is None:
+            self._deal_until_valid()
+        else:
+            self._deal(shuffled_card_deck)
         self._made_dog = []
         self._initialize_first_phase_environment()
         observation = self._current_phase_environment.reset()

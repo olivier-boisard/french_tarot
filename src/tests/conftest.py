@@ -12,3 +12,11 @@ def manager():
 @pytest.fixture(scope="module")
 def environment():
     return FrenchTarotEnvironment()
+
+
+def create_teardown_func(*threads):
+    def teardown():
+        for thread in threads:
+            thread.stop()
+
+    return teardown

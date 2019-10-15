@@ -16,14 +16,7 @@ from french_tarot.observer import EventType, Message, Manager, Subscriber
 from french_tarot.play_games.datastructures import ModelUpdate
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, FrenchTarotEnvironmentSubscriber, \
     ActionResult, TrainerSubscriber
-
-
-def create_teardown_func(*threads):
-    def teardown():
-        for thread in threads:
-            thread.stop()
-
-    return teardown
+from src.tests.conftest import create_teardown_func
 
 
 def test_agent_subscriber(environment: FrenchTarotEnvironment, request):

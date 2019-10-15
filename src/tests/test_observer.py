@@ -1,6 +1,7 @@
 import pytest
 
 from french_tarot.observer import EventType, Subscriber, Message
+from src.tests.conftest import create_teardown_func
 
 
 class DummySubscriber(Subscriber):
@@ -18,19 +19,15 @@ def dummy_message():
 
 
 @pytest.mark.timeout(3)
-def test_lifecycle(dummy_message, manager):
+def test_lifecycle(dummy_message, manager, request):
     subscriber = DummySubscriber()
     manager.add_subscriber(subscriber, EventType.DUMMY)
 
     subscriber.start()
-    assert subscriber._thread.is_alive()
+    request.addfinalizer(create_teardown_func(subscriber))
 
     manager.publish(dummy_message)
     _wait_for_subscriber_is_updated(subscriber)
-
-    subscriber.stop()
-
-    assert not subscriber._thread.is_alive()
     assert subscriber.state == dummy_message.data
 
 

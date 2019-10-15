@@ -9,10 +9,11 @@ from french_tarot.exceptions import FrenchTarotException
 
 def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     environment = FrenchTarotEnvironment()
-    environment.reset()
+
     if sorted_deck:
-        # noinspection PyProtectedMember
-        environment._deal(CARDS)
+        environment.reset(CARDS)
+    else:
+        environment.reset()
     good = False
     for i in range(environment.n_players):
         if i == taker:
@@ -27,7 +28,6 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     if chelem:
         announcements.append(ChelemAnnouncement())
     if poignee:
-        # noinspection PyProtectedMember
         card_list = list(environment._hand_per_player[0][-11:-1])
         announcements.append(PoigneeAnnouncement.largest_possible_poignee_factory(card_list))
     environment.step(announcements)
