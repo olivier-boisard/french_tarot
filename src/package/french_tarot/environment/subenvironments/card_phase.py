@@ -160,7 +160,6 @@ class CardPhaseEnvironment(SubEnvironment):
         asked_color = retrieve_asked_color(played_cards)
         card_strengths = []
         for card in played_cards:
-            # TODO use/create utility functions
             if "trump" in card.value:
                 card_strengths.append(100 + int(card.value.split("_")[1]))
             elif asked_color not in card.value:

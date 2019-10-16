@@ -20,7 +20,7 @@ class DogPhaseEnvironment(SubEnvironment):
         self.hand = hand + original_dog
         self._n_cards_in_dog = len(original_dog)
         self.new_dog = []
-        self.current_player_id = 0  # TODO factorize current player in superclass
+        self.current_player_id = 0
 
     def reset(self):
         self.new_dog = []

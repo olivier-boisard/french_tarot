@@ -10,7 +10,6 @@ from french_tarot.environment.subenvironments.card_phase import CardPhaseEnviron
 from french_tarot.exceptions import FrenchTarotException
 
 
-# TODO replace by fixtures
 def setup_environment(taker=0, shuffled_deck=None, chelem=False, poignee=False):
     environment = FrenchTarotEnvironment()
 

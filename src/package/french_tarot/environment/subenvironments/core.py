@@ -12,8 +12,6 @@ class SubEnvironment(ABC):
 
     @abstractmethod
     def step(self, action: any) -> Tuple[Observation, Union[float, List[float]], bool, any]:
-        # TODO create superclass for actions
-        # TODO create superclass for rewards instead of Union[float,List[float]]
         pass
 
     @property
