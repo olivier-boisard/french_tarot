@@ -21,7 +21,7 @@ from french_tarot.play_games.datastructures import ModelUpdate
 @dataclass
 class ActionResult:
     action: any
-    observation: Observation
+    next_observation: Observation
     reward: Union[float, List[float]]
     done: bool
 
@@ -107,9 +107,10 @@ class TrainerSubscriber(Subscriber):
             try:
                 action_result: ActionResult = self._training_queue.get_nowait()
                 if not isinstance(action_result, Kill):
-                    self._trainers[action_result.observation.__class__].push_to_memory(action_result.observation,
-                                                                                       action_result.action,
-                                                                                       action_result.reward)
+                    self._trainers[action_result.next_observation.__class__].push_to_memory(
+                        action_result.next_observation,
+                        action_result.action,
+                        action_result.reward)
                 else:
                     break
                 self._training_queue.task_done()
