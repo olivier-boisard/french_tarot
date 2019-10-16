@@ -13,7 +13,7 @@ def test_bid_phase_observation_encoder():
 
 
 def test_create_bid_phase_player():
-    player = BidPhaseAgent(CoreCardNeuralNet(), device="cpu")
+    player = BidPhaseAgent(CoreCardNeuralNet().to("cpu"))
     observation = FrenchTarotEnvironment().reset()
     action = player.get_action(observation)
     assert isinstance(action, Bid)

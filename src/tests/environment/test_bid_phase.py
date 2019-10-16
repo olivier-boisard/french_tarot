@@ -72,10 +72,10 @@ def test_reward_zero(environment):
 
 
 def test_bid_completed(environment, random_agent):
-    observation_for_player_id_0 = environment.reset()
-    observation_for_player_id_1 = environment.step(Bid.PASS)[0]
-    observation_for_player_id_2 = environment.step(Bid.GARDE_SANS)[0]
-    observation_for_player_id_3 = environment.step(Bid.PASS)[0]
+    environment.reset()
+    environment.step(Bid.PASS)
+    environment.step(Bid.GARDE_SANS)
+    environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step([])
     environment.step([])

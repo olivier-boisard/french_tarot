@@ -169,6 +169,9 @@ class BaseNeuralNetAgent(Agent, ABC):
         self._step = 0
         self._random_action_policy = Policy()
 
+    def update_policy_net(self, policy_net: torch.nn.Module):
+        self._policy_net.load_state_dict(policy_net.state_dict())
+
     def get_action(self, observation):
         self._step += 1
         if not self._random_action_policy.should_play_randomly(self._step):
