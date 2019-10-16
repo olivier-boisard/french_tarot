@@ -37,16 +37,17 @@ class AllPhaseAgentSubscriber(Subscriber):
         self._agent = agent
 
     @singledispatchmethod
-    def update(self, data: any):
-        raise FrenchTarotException("Should not be called")
+    def update(self, data, *_):
+        if data is not None:
+            raise FrenchTarotException("data should be None if not of supported types")
 
     @update.register
-    def _(self, observation: Observation):
+    def _(self, observation: Observation, group: int):
         action = self._agent.get_action(observation)
-        self._manager.publish(Message(EventType.ACTION, action))
+        self._manager.publish(Message(EventType.ACTION, action, group=group))
 
     @update.register
-    def _(self, model_update: ModelUpdate):
+    def _(self, model_update: ModelUpdate, *_):
         self._agent.update_model(model_update)
 
 
@@ -59,16 +60,17 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
 
     def setup(self):
         observation = self._environment.reset()
-        self._manager.publish(Message(EventType.OBSERVATION, observation))
+        self._manager.publish(Message(EventType.OBSERVATION, observation, group=0))
 
     @singledispatchmethod
-    def update(self, action):
+    def update(self, action, group: int):
         observation, reward, done, _ = self._environment.step(action)
-        self._manager.publish(Message(EventType.OBSERVATION, observation))
-        self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
+        self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done),
+                                      group=group))
+        self._manager.publish(Message(EventType.OBSERVATION, observation, group=group + 1))
 
     @update.register
-    def _(self, _: ResetEnvironment):
+    def _(self, _: ResetEnvironment, *__):
         self.setup()
 
 
@@ -80,13 +82,34 @@ class TrainerSubscriber(Subscriber):
         self._training_thread = Thread(target=self._train)
         self._steps_per_update = steps_per_update
         self._manager = manager
+        self._action_results = {}
+        self._observations = {}
         self._trainers = {
             BidPhaseObservation: bid_phase_trainer,
             DogPhaseObservation: dog_phase_trainer
         }
 
-    def update(self, action_result: Union[ActionResult]):
-        self._training_queue.put(action_result)
+    @singledispatchmethod
+    def update(self, *_):
+        pass
+
+    @update.register
+    def _(self, action_result: ActionResult, group_id: int):
+        self._action_results[group_id] = action_result
+        self._match_action_results_and_observation()
+
+    @update.register
+    def _(self, observation: Observation, group_id: int):
+        self._observations[group_id] = observation
+        self._match_action_results_and_observation()
+
+    def _match_action_results_and_observation(self):
+        keys = filter(lambda k: k in self._observations, self._action_results.keys())
+        for key in keys:
+            observation = self._observations.pop(key)
+            action_result = self._action_results.pop(key)
+            new_entry = (observation, action_result.action, action_result.reward, action_result.next_observation)
+            self._training_queue.put(new_entry)
 
     def start(self):
         super().start()
@@ -105,12 +128,10 @@ class TrainerSubscriber(Subscriber):
                 trainer.optimize_model()
 
             try:
-                action_result: ActionResult = self._training_queue.get_nowait()
-                if not isinstance(action_result, Kill):
-                    self._trainers[action_result.next_observation.__class__].push_to_memory(
-                        action_result.next_observation,
-                        action_result.action,
-                        action_result.reward)
+                new_entry = self._training_queue.get_nowait()
+                if not isinstance(new_entry, Kill):
+                    observation, action, reward, next_observation = new_entry
+                    self._trainers[next_observation.__class__].push_to_memory(observation, action, reward)
                 else:
                     break
                 self._training_queue.task_done()

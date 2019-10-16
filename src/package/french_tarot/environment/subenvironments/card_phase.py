@@ -124,7 +124,7 @@ class CardPhaseEnvironment(SubEnvironment):
         # noinspection PyTypeChecker
         diff = abs(victory_threshold - taker_points)
         contract_value = 25 + diff
-        bid_to_multiplier_map = {Bid.PETITE: 1, Bid.GARDE: 2, Bid.GARDE_SANS: 4, Bid.GARDE_CONTRE: 6}
+        bid_to_multiplier_map = {Bid.PASS: 0, Bid.PETITE: 1, Bid.GARDE: 2, Bid.GARDE_SANS: 4, Bid.GARDE_CONTRE: 6}
         multiplier = bid_to_multiplier_map[np.max(self._bid_per_player)]
         contract_value = int(contract_value * multiplier)
         if taker_points < victory_threshold:

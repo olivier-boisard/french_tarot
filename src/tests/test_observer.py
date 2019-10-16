@@ -9,7 +9,7 @@ class DummySubscriber(Subscriber):
         super().__init__()
         self.state = None
 
-    def update(self, data: any):
+    def update(self, data: any, *_):
         self.state = data
 
 

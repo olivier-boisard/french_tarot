@@ -20,11 +20,11 @@ class ActionResultSubscriber(Subscriber):
     def loop(self):
         run = True
         while run:
-            action_result: ActionResult = self._queue.get()
+            action_result, _ = self._queue.get()
             run = not action_result.done
             self._queue.task_done()
 
-    def update(self, data: ActionResult):
+    def update(self, data: ActionResult, *_):
         pass
 
 
@@ -54,6 +54,7 @@ def main(n_episodes_training: int = 200000):
     manager.add_subscriber(agent_subscriber, EventType.OBSERVATION)
     manager.add_subscriber(agent_subscriber, EventType.MODEL_UPDATE)
     manager.add_subscriber(environment_subscriber, EventType.ACTION)
+    manager.add_subscriber(environment_subscriber, EventType.RESET_ENVIRONMENT)
     manager.add_subscriber(trainer_subscriber, EventType.ACTION_RESULT)
     manager.add_subscriber(action_subscriber, EventType.ACTION_RESULT)
 
