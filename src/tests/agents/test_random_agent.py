@@ -22,11 +22,6 @@ def test_randomness_when_bidding():
     assert len(np.unique(actions)) > 1
 
 
-@pytest.fixture(scope="module")
-def random_agent():
-    return RandomPlayer()
-
-
 @pytest.mark.repeat(10)
 def test_play_game(random_agent, environment):
     observation = environment.reset()

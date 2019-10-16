@@ -1,5 +1,3 @@
-import copy
-
 import numpy as np
 import pytest
 
@@ -74,17 +72,24 @@ def test_reward_zero(environment):
     assert reward == [0, 0, 0, 0]
 
 
-def test_bid_completed(environment):
-    environment.reset()
-    original_hands = copy.deepcopy(environment._hand_per_player)
+def test_bid_completed(environment, random_agent):
+    observation_for_player_id_0 = environment.reset()
+    observation_for_player_id_1 = environment.step(Bid.PASS)[0]
+    observation_for_player_id_2 = environment.step(Bid.GARDE_SANS)[0]
+    observation_for_player_id_3 = environment.step(Bid.PASS)[0]
     environment.step(Bid.PASS)
-    environment.step(Bid.PETITE)
-    environment.step(Bid.PASS)
-    observation, _, done, _ = environment.step(Bid.PASS)
-    assert np.all(environment._hand_per_player[0] == original_hands[1])
-    assert np.all(environment._hand_per_player[1] == original_hands[2])
-    assert np.all(environment._hand_per_player[2] == original_hands[3])
-    assert np.all(environment._hand_per_player[3] == original_hands[0])
+    environment.step([])
+    environment.step([])
+    environment.step([])
+    observation_for_player_position_0 = environment.step([])[0]
+    observation_for_player_position_1 = environment.step(random_agent.get_action(observation_for_player_position_0))[0]
+    observation_for_player_position_2 = environment.step(random_agent.get_action(observation_for_player_position_1))[0]
+    observation_for_player_position_3 = environment.step(random_agent.get_action(observation_for_player_position_2))[0]
+
+    assert np.all(observation_for_player_id_0.player.hand == observation_for_player_position_1.player.hand)
+    assert np.all(observation_for_player_id_1.player.hand == observation_for_player_position_2.player.hand)
+    assert np.all(observation_for_player_id_2.player.hand == observation_for_player_position_3.player.hand)
+    assert np.all(observation_for_player_id_3.player.hand == observation_for_player_position_0.player.hand)
 
 
 def test_wrong_action_in_bid(environment):

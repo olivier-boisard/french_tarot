@@ -287,7 +287,7 @@ def get_card_point(card: Card) -> float:
     return points
 
 
-def get_card_set_point(card_list: List[Card]) -> float:
+def compute_card_set_points(card_list: List[Card]) -> float:
     # noinspection PyTypeChecker
     return float(np.sum([get_card_point(card) for card in card_list]))
 

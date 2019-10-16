@@ -23,8 +23,8 @@ def prepare_environment_sorted_deck():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    environment.step(Bid.PETITE)
-    return environment
+    observation = environment.step(Bid.PETITE)[0]
+    return environment, observation
 
 
 def test_make_dog():
@@ -33,14 +33,14 @@ def test_make_dog():
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    environment.step(Bid.PASS)
-    dog = list(environment._hand_per_player[0][2:8])
+    observation = environment.step(Bid.PASS)[0]
+    taker_hand = observation.player.hand
+    dog = taker_hand[2:8]
     observation, reward, done, _ = environment.step(dog)
     assert not done
     assert reward > 0
     assert isinstance(observation, AnnouncementPhaseObservation)
-    taking_players_hand = environment._hand_per_player[0]
-    assert np.all([card not in taking_players_hand for card in dog])
+    assert np.all([card not in observation.player.hand for card in dog])
 
 
 def test_make_dog_with_duplicated_card():
@@ -72,7 +72,7 @@ def test_make_dog_with_trump_invalid():
 
 
 def test_make_dog_with_trump_valid():
-    environment = prepare_environment_sorted_deck()
+    environment = prepare_environment_sorted_deck()[0]
     dog = [Card.DIAMOND_QUEEN, Card.TRUMP_2, Card.TRUMP_3, Card.TRUMP_4, Card.TRUMP_5, Card.TRUMP_6]
     observation, reward, done, _ = environment.step(dog)
     assert not done
@@ -86,15 +86,15 @@ def test_make_dog_without_trump():
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    environment.step(Bid.PASS)
-    dog = list(environment._hand_per_player[0][:6])  # taking player is always player 0
+    observation = environment.step(Bid.PASS)[0]
+    dog = list(observation.player.hand[:6])  # taking player is always player 0
     observation, reward, done, _ = environment.step(dog)
     assert np.isclose(reward, 3.0)
 
 
 def test_dog_with_card_not_in_players_hand():
-    environment = prepare_environment_sorted_deck()
-    dog = list(environment._hand_per_player[0][:6])
+    environment, observation = prepare_environment_sorted_deck()
+    dog = list(observation.player.hand[:6])
     with pytest.raises(FrenchTarotException):
         environment.step(dog)
 
@@ -105,7 +105,7 @@ def test_dog_has_wrong_number_of_cards():
     environment.step(Bid.PASS)
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
-    environment.step(Bid.PASS)
-    dog = list(environment._hand_per_player[0][:5])  # taking player is always player 0
+    observation = environment.step(Bid.PASS)[0]
+    dog = list(observation.player.hand[:5])  # taking player is always player 0
     with pytest.raises(FrenchTarotException):
         environment.step(dog)

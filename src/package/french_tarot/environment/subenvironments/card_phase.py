@@ -5,7 +5,7 @@ import numpy as np
 from attr import dataclass
 
 from french_tarot.agents.common import Round
-from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, get_card_set_point, \
+from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, compute_card_set_points, \
     is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, Observation, PlayerData
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
@@ -101,9 +101,9 @@ class CardPhaseEnvironment(SubEnvironment):
     def _compute_win_loss(self, is_petit_played_in_round: bool, is_excuse_played_in_round: bool,
                           is_taker_win_round: bool) -> List[float]:
         dog = self._made_dog if len(self._made_dog) > 0 else self._original_dog
-        taker_points = get_card_set_point(self._won_cards_per_teams["taker"] + list(dog))
+        taker_points = compute_card_set_points(self._won_cards_per_teams["taker"] + list(dog))
         taker_points += self._bonus_points_per_teams["taker"]
-        opponents_points = get_card_set_point(self._won_cards_per_teams["opponents"])
+        opponents_points = compute_card_set_points(self._won_cards_per_teams["opponents"])
         opponents_points += self._bonus_points_per_teams["opponents"]
         if taker_points + opponents_points != 91:
             raise FrenchTarotException("Invalid score")
@@ -183,7 +183,7 @@ class CardPhaseEnvironment(SubEnvironment):
         winning_card_index = self._get_winning_card_index(self._played_cards_in_round)
         play_order = np.arange(starting_player, starting_player + self.n_players) % self.n_players
         winner = play_order[winning_card_index]
-        reward_for_winner = get_card_set_point(self._played_cards_in_round)
+        reward_for_winner = compute_card_set_points(self._played_cards_in_round)
         rewards = []
         if winner == 0:  # if winner is taking player
             rewards.append(reward_for_winner)

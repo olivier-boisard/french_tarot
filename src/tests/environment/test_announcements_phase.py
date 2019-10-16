@@ -1,6 +1,9 @@
+import copy
+
 import pytest
 
-from french_tarot.environment.core import Bid, Card, ChelemAnnouncement, CARDS, PoigneeAnnouncement
+from french_tarot.environment.core import Bid, Card, ChelemAnnouncement, CARDS, PoigneeAnnouncement, \
+    SimplePoigneeAnnouncement
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
@@ -70,9 +73,8 @@ def test_announce_simple_poignee_valid():
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    environment.step(Bid.GARDE_SANS)
-    hand = environment._hand_per_player[0]
-    poignee = PoigneeAnnouncement.largest_possible_poignee_factory(hand)
+    observation = environment.step(Bid.GARDE_SANS)[0]
+    poignee = PoigneeAnnouncement.largest_possible_poignee_factory(observation.player.hand)
     observation, reward, done, _ = environment.step([poignee])
     assert reward == 0
     assert not done
@@ -106,10 +108,10 @@ def test_announce_chelem_wrong_string():
 
 def test_announce_simple_poignee_excuse_refused():
     environment = FrenchTarotEnvironment()
+    deck = copy.copy(CARDS)
+    deck[77] = Card.TRUMP_16
+    deck[71] = Card.EXCUSE
     environment.reset(CARDS)
-    environment._hand_per_player[-1][-1] = Card.EXCUSE
-    environment._original_dog[-1] = Card.TRUMP_16
-    hand = environment._hand_per_player[-1][-10:]
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
@@ -117,18 +119,19 @@ def test_announce_simple_poignee_excuse_refused():
 
     environment.step([])
     environment.step([])
-    environment.step([])
+    observation = environment.step([])[0]
     with pytest.raises(FrenchTarotException):
-        environment.step([hand])
+        environment.step([observation.player.hand])
 
 
 def test_announce_simple_poignee_excuse_accepted():
     environment = FrenchTarotEnvironment()
-    environment.reset(CARDS)
-    environment._hand_per_player[3][15] = Card.EXCUSE
-    environment._hand_per_player[3][16] = Card.SPADES_1
-    environment._hand_per_player[0][0] = Card.TRUMP_15
-    environment._original_dog[5] = Card.TRUMP_14
+    deck = copy.copy(CARDS)
+    deck[69] = Card.EXCUSE
+    deck[70] = Card.SPADES_1
+    deck[0] = Card.TRUMP_15
+    deck[77] = Card.TRUMP_14
+    environment.reset(deck)
 
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
@@ -152,9 +155,8 @@ def test_announce_simple_poignee_no_trump():
     environment.step([])
     environment.step([])
     environment.step([])
-    poignee = PoigneeAnnouncement.largest_possible_poignee_factory(environment._hand_per_player[0][-10:])
     with pytest.raises(FrenchTarotException):
-        environment.step([poignee])
+        environment.step([SimplePoigneeAnnouncement(CARDS[:11])])
 
 
 def test_announce_simple_poignee_no_such_cards_in_hand():

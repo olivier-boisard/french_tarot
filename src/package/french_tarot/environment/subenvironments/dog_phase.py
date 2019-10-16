@@ -3,8 +3,8 @@ from typing import List, Tuple
 import numpy as np
 from attr import dataclass
 
-from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, get_card_set_point, Observation, \
-    PlayerData
+from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, Observation, \
+    PlayerData, compute_card_set_points
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
@@ -60,7 +60,7 @@ class DogPhaseEnvironment(SubEnvironment):
 
         index_to_keep_in_hand = [card not in dog for card in self.hand]
         self.hand = list(np.array(self.hand)[index_to_keep_in_hand])
-        reward = get_card_set_point(dog)
+        reward = compute_card_set_points(dog)
         self.new_dog = dog
         done = True
         info = None

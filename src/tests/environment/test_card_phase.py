@@ -1,26 +1,27 @@
+import copy
+
+import numpy as np
 import pytest
 
-from french_tarot.environment.core import get_card_set_point, CARDS, ChelemAnnouncement, Bid, Card, \
-    PoigneeAnnouncement, rotate_list
+from french_tarot.environment.core import compute_card_set_points, CARDS, ChelemAnnouncement, Bid, Card, \
+    PoigneeAnnouncement
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
-def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
+# TODO replace by fixtures
+def setup_environment(taker=0, shuffled_deck=None, chelem=False, poignee=False):
     environment = FrenchTarotEnvironment()
 
-    if sorted_deck:
-        environment.reset(CARDS)
-    else:
-        environment.reset()
+    observation = environment.reset(shuffled_card_deck=shuffled_deck)
     good = False
     for i in range(environment.n_players):
         if i == taker:
-            environment.step(Bid.GARDE_SANS)
+            observation = environment.step(Bid.GARDE_SANS)[0]
             good = True
         else:
-            environment.step(Bid.PASS)
+            observation = environment.step(Bid.PASS)[0]
     if not good:
         raise FrenchTarotException("No taking player")
 
@@ -28,8 +29,7 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
     if chelem:
         announcements.append(ChelemAnnouncement())
     if poignee:
-        card_list = list(environment._hand_per_player[0][-11:-1])
-        announcements.append(PoigneeAnnouncement.largest_possible_poignee_factory(card_list))
+        announcements.append(PoigneeAnnouncement.largest_possible_poignee_factory(observation.player.hand[-11:-1]))
     environment.step(announcements)
     environment.step([])
     environment.step([])
@@ -38,8 +38,8 @@ def setup_environment(taker=0, sorted_deck=False, chelem=False, poignee=False):
 
 
 def test_start_valid_card():
-    environment = setup_environment()[0]
-    played_card = environment._hand_per_player[0][0]
+    environment, observation = setup_environment()
+    played_card = observation.player.hand[0]
     observation, reward, done, _ = environment.step(played_card)
     assert observation.played_cards_in_round == [played_card]
     assert reward is None
@@ -53,8 +53,8 @@ def test_start_invalid_action():
 
 
 def test_start_invalid_card_not_in_hand():
-    environment = setup_environment()[0]
-    played_card = environment._hand_per_player[1][0]
+    environment, observation = setup_environment()
+    played_card = filter(lambda card: card not in observation.player.hand, CARDS)
     with pytest.raises(FrenchTarotException):
         environment.step(played_card)
 
@@ -66,7 +66,7 @@ def test_play_complete_round_valid_last_player_team_wins():
     environment.step(Card.HEART_4)
     observation, reward, done, _ = environment.step(Card.HEART_2)
 
-    expected_reward = get_card_set_point([Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2])
+    expected_reward = compute_card_set_points([Card.HEART_1, Card.HEART_KING, Card.HEART_4, Card.HEART_2])
     assert reward[0] == 0
     assert reward[1] == expected_reward
     assert reward[2] == expected_reward
@@ -82,7 +82,7 @@ def test_play_complete_round_valid_last_player_team_loses():
     observation, reward, done, _ = environment.step(Card.HEART_2)
 
     expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2, Card.HEART_1]
-    assert reward[0] == get_card_set_point(expected_values)
+    assert reward[0] == compute_card_set_points(expected_values)
     assert reward[1] == 0
     assert reward[2] == 0
     assert reward[3] == 0
@@ -90,21 +90,22 @@ def test_play_complete_round_valid_last_player_team_loses():
 
 
 def test_play_excuse_in_round():
-    environment, observation_0 = setup_environment()
-    current_phase_environment = environment._current_phase_environment
-    current_phase_environment._hand_per_player = rotate_list(current_phase_environment._hand_per_player, 2)
-    observation_1 = environment.step(Card.HEART_4)[0]
-    observation_2 = environment.step(Card.HEART_2)[0]
+    shuffled_deck = list(np.random.RandomState(seed=1988).permutation(CARDS))
+    shuffled_deck[15] = Card.DIAMOND_KING
+    shuffled_deck[40] = Card.EXCUSE
+    environment, observation_0 = setup_environment(shuffled_deck=shuffled_deck)
+    observation_1 = environment.step(Card.HEART_1)[0]
+    observation_2 = environment.step(Card.HEART_5)[0]
     observation_3 = environment.step(Card.EXCUSE)[0]
-    observation_4, reward, done, _ = environment.step(Card.HEART_KING)
+    observation_4, reward, done, _ = environment.step(Card.HEART_2)
 
     assert observation_0.played_cards_in_round == []
-    assert observation_1.played_cards_in_round == [Card.HEART_4]
-    assert observation_2.played_cards_in_round == [Card.HEART_4, Card.HEART_2]
-    assert observation_3.played_cards_in_round == [Card.HEART_4, Card.HEART_2, Card.EXCUSE]
+    assert observation_1.played_cards_in_round == [Card.HEART_1]
+    assert observation_2.played_cards_in_round == [Card.HEART_1, Card.HEART_5]
+    assert observation_3.played_cards_in_round == [Card.HEART_1, Card.HEART_5, Card.EXCUSE]
 
-    expected_values = [Card.HEART_KING, Card.HEART_4, Card.HEART_2, Card.EXCUSE]
-    assert reward[-1] == get_card_set_point(expected_values)  # last player's team won this round
+    expected_values = [Card.HEART_1, Card.HEART_5, Card.EXCUSE, Card.HEART_2]
+    assert reward[-1] == compute_card_set_points(expected_values)  # last player's team won this round
     assert not done
 
 
@@ -116,7 +117,7 @@ def test_play_excuse_first():
     observation, reward, done, _ = environment.step(Card.HEART_2)
 
     expected_values = [Card.EXCUSE, Card.HEART_KING, Card.HEART_4, Card.HEART_2]
-    assert reward[-1] == get_card_set_point(expected_values)  # last player's team won this round
+    assert reward[-1] == compute_card_set_points(expected_values)  # last player's team won this round
     assert not done
 
 
@@ -263,7 +264,7 @@ def test_play_complete_game():
 
 
 def test_petit_au_bout_taker():
-    environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
+    environment = setup_environment(taker=3, shuffled_deck=CARDS, chelem=True)[0]
     environment.step(Card.TRUMP_2)
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
@@ -343,7 +344,7 @@ def test_petit_au_bout_taker():
 
 
 def test_poignee():
-    environment = setup_environment(taker=3, sorted_deck=True, poignee=True)[0]
+    environment = setup_environment(taker=3, shuffled_deck=CARDS, poignee=True)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
@@ -423,7 +424,7 @@ def test_poignee():
 
 
 def test_chelem_unannounced():
-    environment = setup_environment(taker=3, sorted_deck=True)[0]
+    environment = setup_environment(taker=3, shuffled_deck=CARDS)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
@@ -503,7 +504,7 @@ def test_chelem_unannounced():
 
 
 def test_chelem_announced():
-    environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
+    environment = setup_environment(taker=3, shuffled_deck=CARDS, chelem=True)[0]
     environment.step(Card.TRUMP_2)
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
@@ -583,9 +584,10 @@ def test_chelem_announced():
 
 
 def test_chelem_announced_with_excuse():
-    environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
-    environment._original_dog[-1] = Card.TRUMP_1
-    environment._hand_per_player[0][2] = Card.EXCUSE
+    deck = copy.copy(CARDS)
+    deck[56] = Card.EXCUSE
+    deck[77] = Card.TRUMP_1
+    environment = setup_environment(taker=3, shuffled_deck=deck, chelem=True)[0]
     environment.step(Card.TRUMP_2)
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
@@ -665,7 +667,7 @@ def test_chelem_announced_with_excuse():
 
 
 def test_pee_unallowed():
-    environment = setup_environment(taker=0, sorted_deck=True)[0]
+    environment = setup_environment(taker=0, shuffled_deck=CARDS)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
@@ -674,12 +676,10 @@ def test_pee_unallowed():
 
 
 def test_chelem_announced_and_failed():
-    environment = setup_environment(taker=3, sorted_deck=True, chelem=True)[0]
-
-    current_phase_environment = environment._current_phase_environment
-    tmp = current_phase_environment._hand_per_player[0][16]
-    current_phase_environment._hand_per_player[0][16] = current_phase_environment._hand_per_player[1][0]
-    current_phase_environment._hand_per_player[1][0] = tmp
+    deck = copy.copy(CARDS)
+    deck[70] = Card.SPADES_1
+    deck[0] = Card.TRUMP_15
+    environment = setup_environment(taker=3, shuffled_deck=deck, chelem=True)[0]
 
     environment.step(Card.TRUMP_2)
     environment.step(Card.TRUMP_15)
@@ -760,7 +760,7 @@ def test_chelem_announced_and_failed():
 
 
 def test_chelem_unannounced_and_achieved_by_other_team():
-    environment = setup_environment(taker=0, sorted_deck=True)[0]
+    environment = setup_environment(taker=0, shuffled_deck=CARDS)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
