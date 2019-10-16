@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from french_tarot.environment.core import CARDS, Bid, Card
@@ -86,10 +85,10 @@ def test_bid_completed(environment, random_agent):
     observation_for_player_position_2 = environment.step(random_agent.get_action(observation_for_player_position_1))[0]
     observation_for_player_position_3 = environment.step(random_agent.get_action(observation_for_player_position_2))[0]
 
-    assert np.all(observation_for_player_id_0.player.hand == observation_for_player_position_1.player.hand)
-    assert np.all(observation_for_player_id_1.player.hand == observation_for_player_position_2.player.hand)
-    assert np.all(observation_for_player_id_2.player.hand == observation_for_player_position_3.player.hand)
-    assert np.all(observation_for_player_id_3.player.hand == observation_for_player_position_0.player.hand)
+    assert observation_for_player_position_1.player.position_towards_taker == 0
+    assert observation_for_player_position_2.player.position_towards_taker == 1
+    assert observation_for_player_position_3.player.position_towards_taker == 2
+    assert observation_for_player_position_0.player.position_towards_taker == 3
 
 
 def test_wrong_action_in_bid(environment):
