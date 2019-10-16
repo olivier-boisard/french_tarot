@@ -78,3 +78,4 @@ class EventType(Enum):
     ACTION = auto()
     ACTION_RESULT = auto()
     MODEL_UPDATE = auto()
+    RESET_ENVIRONMENT = auto()

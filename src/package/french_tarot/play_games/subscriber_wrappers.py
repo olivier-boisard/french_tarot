@@ -26,6 +26,10 @@ class ActionResult:
     done: bool
 
 
+class ResetEnvironment:
+    pass
+
+
 class AllPhaseAgentSubscriber(Subscriber):
     def __init__(self, agent: AllPhaseAgent, manager: Manager):
         super().__init__()
@@ -57,10 +61,15 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
         observation = self._environment.reset()
         self._manager.publish(Message(EventType.OBSERVATION, observation))
 
-    def update(self, action: any):
+    @singledispatchmethod
+    def update(self, action):
         observation, reward, done, _ = self._environment.step(action)
         self._manager.publish(Message(EventType.OBSERVATION, observation))
         self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
+
+    @update.register
+    def _(self, _: ResetEnvironment):
+        self.setup()
 
 
 class TrainerSubscriber(Subscriber):
@@ -76,7 +85,7 @@ class TrainerSubscriber(Subscriber):
             DogPhaseObservation: dog_phase_trainer
         }
 
-    def update(self, action_result: ActionResult):
+    def update(self, action_result: Union[ActionResult]):
         self._training_queue.put(action_result)
 
     def start(self):
