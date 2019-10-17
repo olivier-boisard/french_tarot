@@ -1,4 +1,5 @@
 import copy
+from abc import ABC
 from queue import Queue, Empty
 from threading import Thread
 from typing import Union, List
@@ -12,6 +13,7 @@ from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhas
 from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
+from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 from french_tarot.observer import Subscriber, Manager, Message, EventType, Kill
@@ -19,11 +21,26 @@ from french_tarot.play_games.datastructures import ModelUpdate
 
 
 @dataclass
-class ActionResult:
+class WithGroupBaseClass(ABC):
+    observation_action_reward_group: int
+
+
+@dataclass
+class ActionResult(WithGroupBaseClass):
     action: any
     next_observation: Observation
     reward: Union[float, List[float]]
     done: bool
+
+
+@dataclass
+class ObservationWithGroup(WithGroupBaseClass):
+    observation: Observation
+
+
+@dataclass
+class ActionWithGroup(WithGroupBaseClass):
+    action: any
 
 
 class ResetEnvironment:
@@ -37,17 +54,18 @@ class AllPhaseAgentSubscriber(Subscriber):
         self._agent = agent
 
     @singledispatchmethod
-    def update(self, data, *_):
+    def update(self, data):
         if data is not None:
             raise FrenchTarotException("data should be None if not of supported types")
 
     @update.register
-    def _(self, observation: Observation, group: int):
-        action = self._agent.get_action(observation)
-        self._manager.publish(Message(EventType.ACTION, action, group=group))
+    def _(self, observation_with_group: ObservationWithGroup):
+        action = self._agent.get_action(observation_with_group.observation)
+        self._manager.publish(Message(EventType.ACTION,
+                                      ActionWithGroup(observation_with_group.observation_action_reward_group, action)))
 
     @update.register
-    def _(self, model_update: ModelUpdate, *_):
+    def _(self, model_update: ModelUpdate):
         self._agent.update_model(model_update)
 
 
@@ -60,24 +78,31 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
 
     def setup(self):
         observation = self._environment.reset()
-        self._manager.publish(Message(EventType.OBSERVATION, observation, group=0))
+        self._manager.publish(Message(EventType.OBSERVATION, ObservationWithGroup(0, observation)))
 
     @singledispatchmethod
-    def update(self, action, group: int):
-        observation, reward, done, _ = self._environment.step(action)
-        self._manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done),
-                                      group=group))
-        self._manager.publish(Message(EventType.OBSERVATION, observation, group=group + 1))
+    def update(self, data: any):
+        raise NotImplementedError
 
     @update.register
-    def _(self, _: ResetEnvironment, *__):
+    def _(self, action: ActionWithGroup):
+        observation, reward, done, _ = self._environment.step(action)
+        new_group = action.observation_action_reward_group + 1
+        action_result = ActionResult(new_group, action, observation, reward, done)
+        self._manager.publish(Message(EventType.ACTION_RESULT, action_result))
+        self._manager.publish(Message(EventType.OBSERVATION, ObservationWithGroup(new_group, observation)))
+
+    @update.register
+    def _(self, _: ResetEnvironment):
         self.setup()
 
 
 class TrainerSubscriber(Subscriber):
+
     def __init__(self, bid_phase_trainer: BidPhaseAgentTrainer, dog_phase_trainer: DogPhaseAgentTrainer,
                  manager: Manager, steps_per_update: int = 100):
         super().__init__()
+        self._pre_card_phase_observations_and_action_results = []
         self._training_queue = Queue()
         self._training_thread = Thread(target=self._train)
         self._steps_per_update = steps_per_update
@@ -90,17 +115,19 @@ class TrainerSubscriber(Subscriber):
         }
 
     @singledispatchmethod
-    def update(self, *_):
+    def update(self, data: any):
         pass
 
     @update.register
-    def _(self, action_result: ActionResult, group_id: int):
-        self._action_results[group_id] = action_result
+    def _(self, action_result: ActionResult):
+        self._action_results[action_result.observation_action_reward_group] = action_result
         self._match_action_results_and_observation()
+        if action_result.done:
+            self._push_early_actions_to_replay_memory()
 
     @update.register
-    def _(self, observation: Observation, group_id: int):
-        self._observations[group_id] = observation
+    def _(self, observation_with_group: ObservationWithGroup):
+        self._observations[observation_with_group.observation_action_reward_group] = observation_with_group
         self._match_action_results_and_observation()
 
     def _match_action_results_and_observation(self):
@@ -108,8 +135,11 @@ class TrainerSubscriber(Subscriber):
         for key in keys:
             observation = self._observations.pop(key)
             action_result = self._action_results.pop(key)
-            new_entry = (observation, action_result.action, action_result.reward, action_result.next_observation)
-            self._training_queue.put(new_entry)
+            observation_and_action_results = (observation, action_result)
+            if not isinstance(observation, CardPhaseObservation):
+                self._pre_card_phase_observations_and_action_results.append(observation_and_action_results)
+            else:
+                self._training_queue.put(observation_and_action_results)
 
     def start(self):
         super().start()
@@ -130,8 +160,9 @@ class TrainerSubscriber(Subscriber):
             try:
                 new_entry = self._training_queue.get_nowait()
                 if not isinstance(new_entry, Kill):
-                    observation, action, reward, next_observation = new_entry
-                    self._trainers[next_observation.__class__].push_to_memory(observation, action, reward)
+                    observation, action_result = new_entry
+                    self._trainers[observation.__class__].push_to_memory(observation, action_result.action,
+                                                                         action_result.reward)
                 else:
                     break
                 self._training_queue.task_done()
@@ -144,3 +175,10 @@ class TrainerSubscriber(Subscriber):
                     DogPhaseAgent: copy.deepcopy(self._trainers[DogPhaseObservation].model)
                 })
                 self._manager.publish(Message(EventType.MODEL_UPDATE, new_models))
+
+    def _push_early_actions_to_replay_memory(self):
+        for observation, registered_action_result in self._pre_card_phase_observations_and_action_results:
+            action_result_with_updated_reward = copy.copy(registered_action_result)
+            index = observation.player.position_towards_taker
+            action_result_with_updated_reward.reward = registered_action_result.reward[index]
+            self._training_queue.put((observation, action_result_with_updated_reward))

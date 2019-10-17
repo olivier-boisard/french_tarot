@@ -24,7 +24,7 @@ class ActionResultSubscriber(Subscriber):
             run = not action_result.done
             self._queue.task_done()
 
-    def update(self, data: ActionResult, *_):
+    def update(self, data: ActionResult):
         pass
 
 

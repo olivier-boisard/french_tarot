@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from enum import Enum, auto
 from queue import Queue
 from threading import Thread
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from attr import dataclass
 
@@ -21,7 +21,7 @@ class Subscriber(ABC):
         self._thread.start()
 
     def stop(self):
-        self.push(Kill(), None)
+        self.push(Kill())
         self._thread.join()
         self.teardown()
 
@@ -34,18 +34,18 @@ class Subscriber(ABC):
     def loop(self):
         run = True
         while run:
-            message, group = self._queue.get()
+            message = self._queue.get()
             if not isinstance(message, Kill):
-                self.update(message, group)
+                self.update(message)
             else:
                 run = False
             self._queue.task_done()
 
-    def push(self, data: any, group: int):
-        self._queue.put((data, group))
+    def push(self, data: any):
+        self._queue.put(data)
 
     @abstractmethod
-    def update(self, data: any, group_id: int):
+    def update(self, data: any):
         pass
 
 
@@ -63,14 +63,13 @@ class Manager:
     def publish(self, message: 'Message'):
         if message.event_type in self._event_subscriber_map:
             for subscriber in self._event_subscriber_map[message.event_type]:
-                subscriber.push(message.data, message.group)
+                subscriber.push(message.data)
 
 
 @dataclass
 class Message:
     event_type: 'EventType'
     data: any
-    group: Union[int, None] = None
 
 
 class EventType(Enum):

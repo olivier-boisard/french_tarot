@@ -116,7 +116,7 @@ class DummySubscriber(Subscriber):
         super().__init__()
         self.data = None
 
-    def update(self, data: any, *_):
+    def update(self, data: any):
         self.data = data
 
 
