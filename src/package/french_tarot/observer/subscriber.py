@@ -9,7 +9,8 @@ from french_tarot.observer.managers.event_type import EventType
 
 
 class Kill:
-    pass
+    def __init__(self, error: bool = False):
+        self.error = error
 
 
 class Subscriber(AbstractSubscriber):
@@ -44,7 +45,7 @@ class Subscriber(AbstractSubscriber):
                 else:
                     run = False
             except Exception as e:
-                self._manager.publish(Message(EventType.KILL_ALL, Kill()))
+                self._manager.publish(Message(EventType.KILL_ALL, Kill(error=True)))
                 raise e
             finally:
                 self._queue.task_done()

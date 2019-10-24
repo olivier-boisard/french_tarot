@@ -5,6 +5,7 @@ from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
 from french_tarot.observer.core import Message
+from french_tarot.observer.managers.abstract_manager import AbstractManager
 from french_tarot.observer.managers.event_type import EventType
 from french_tarot.observer.managers.manager import Manager
 from french_tarot.observer.subscriber import Subscriber, Kill
@@ -14,6 +15,10 @@ from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber,
 
 class ActionResultSubscriber(Subscriber):
 
+    def __init__(self, manager: AbstractManager):
+        super().__init__(manager)
+        self.error = False
+
     def wait_for_episode_done(self):
         self.loop()
 
@@ -22,8 +27,10 @@ class ActionResultSubscriber(Subscriber):
         while run:
             action_result = self._queue.get()
             if isinstance(action_result, Kill):
-                break
-            run = not action_result.done
+                run = False
+                self.error = action_result.error
+            else:
+                run = not action_result.done
             self._queue.task_done()
 
     def update(self, data: ActionResult):
@@ -66,6 +73,8 @@ def main(n_episodes_training: int = 200000):
         environment_subscriber.start()
         for _ in tqdm(range(n_episodes_training)):
             action_subscriber.wait_for_episode_done()
+            if action_subscriber.error:
+                break
             manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
     finally:
         agent_subscriber.stop()
