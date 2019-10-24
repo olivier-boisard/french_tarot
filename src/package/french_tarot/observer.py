@@ -35,11 +35,13 @@ class Subscriber(ABC):
         run = True
         while run:
             message = self._queue.get()
-            if not isinstance(message, Kill):
-                self.update(message)
-            else:
-                run = False
-            self._queue.task_done()
+            try:
+                if not isinstance(message, Kill):
+                    self.update(message)
+                else:
+                    run = False
+            finally:
+                self._queue.task_done()
 
     def push(self, data: any):
         self._queue.put(data)
