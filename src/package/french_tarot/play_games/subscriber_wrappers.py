@@ -16,7 +16,10 @@ from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservati
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
-from french_tarot.observer import Subscriber, Manager, Message, EventType, Kill
+from french_tarot.observer.core import Message
+from french_tarot.observer.managers.event_type import EventType
+from french_tarot.observer.managers.manager import Manager
+from french_tarot.observer.subscriber import Subscriber, Kill
 from french_tarot.play_games.datastructures import ModelUpdate
 
 
@@ -49,7 +52,7 @@ class ResetEnvironment:
 
 class AllPhaseAgentSubscriber(Subscriber):
     def __init__(self, agent: AllPhaseAgent, manager: Manager):
-        super().__init__()
+        super().__init__(manager)
         self._manager: Manager = manager
         self._agent = agent
 
@@ -72,7 +75,7 @@ class AllPhaseAgentSubscriber(Subscriber):
 class FrenchTarotEnvironmentSubscriber(Subscriber):
 
     def __init__(self, manager: Manager):
-        super().__init__()
+        super().__init__(manager)
         self._environment = FrenchTarotEnvironment()
         self._manager: Manager = manager
 
@@ -102,7 +105,7 @@ class TrainerSubscriber(Subscriber):
 
     def __init__(self, bid_phase_trainer: BidPhaseAgentTrainer, dog_phase_trainer: DogPhaseAgentTrainer,
                  manager: Manager, steps_per_update: int = 100):
-        super().__init__()
+        super().__init__(manager)
         self._pre_card_phase_observations_and_action_results = []
         self._training_queue = Queue()
         self._training_thread = Thread(target=self._train)

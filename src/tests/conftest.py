@@ -2,7 +2,7 @@ import pytest
 
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.observer import Manager
+from french_tarot.observer.managers.manager import Manager
 
 
 @pytest.fixture

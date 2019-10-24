@@ -5,7 +5,8 @@ from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
 from french_tarot.observer.core import Message
-from french_tarot.observer.managers.manager import Manager, EventType
+from french_tarot.observer.managers.event_type import EventType
+from french_tarot.observer.managers.manager import Manager
 from french_tarot.observer.subscriber import Subscriber
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, TrainerSubscriber, \
     FrenchTarotEnvironmentSubscriber, ActionResult, ResetEnvironment
@@ -48,7 +49,7 @@ def main(n_episodes_training: int = 200000):
 
     environment_subscriber = FrenchTarotEnvironmentSubscriber(manager)
 
-    action_subscriber = ActionResultSubscriber()
+    action_subscriber = ActionResultSubscriber(manager)
 
     manager.add_subscriber(agent_subscriber, EventType.OBSERVATION)
     manager.add_subscriber(agent_subscriber, EventType.MODEL_UPDATE)

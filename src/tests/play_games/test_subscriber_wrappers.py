@@ -12,7 +12,10 @@ from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer, BidPhas
 from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhaseAgent
 from french_tarot.environment.core import Bid, Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.observer import EventType, Message, Manager, Subscriber
+from french_tarot.observer.core import Message
+from french_tarot.observer.managers.event_type import EventType
+from french_tarot.observer.managers.manager import Manager
+from french_tarot.observer.subscriber import Subscriber
 from french_tarot.play_games.datastructures import ModelUpdate
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, FrenchTarotEnvironmentSubscriber, \
     ActionResult, TrainerSubscriber
@@ -23,7 +26,7 @@ def test_agent_subscriber(environment: FrenchTarotEnvironment, request):
     manager = Manager()
 
     agent_subscriber = AllPhaseAgentSubscriber(_create_all_phase_agent(), manager)
-    action_subscriber = DummySubscriber()
+    action_subscriber = DummySubscriber(manager)
 
     request.addfinalizer(create_teardown_func(agent_subscriber, action_subscriber))
     manager.add_subscriber(agent_subscriber, EventType.OBSERVATION)
@@ -40,8 +43,8 @@ def test_agent_subscriber(environment: FrenchTarotEnvironment, request):
 def test_environment_subscriber(request):
     manager = Manager()
     environment_subscriber = FrenchTarotEnvironmentSubscriber(manager)
-    observation_subscriber = DummySubscriber()
-    action_result_subscriber = DummySubscriber()
+    observation_subscriber = DummySubscriber(manager)
+    action_result_subscriber = DummySubscriber(manager)
 
     request.addfinalizer(create_teardown_func(environment_subscriber, action_result_subscriber, observation_subscriber))
     manager.add_subscriber(environment_subscriber, EventType.ACTION)
@@ -85,7 +88,7 @@ def test_trainer_and_agent_subscribers(environment: FrenchTarotEnvironment, requ
     dog_phase_trainer = DogPhaseAgentTrainer(dog_phase_agent_model)
     trainer_subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer, manager,
                                            steps_per_update=steps_per_update)
-    dummy_subscriber = DummySubscriber()
+    dummy_subscriber = DummySubscriber(manager)
     manager.add_subscriber(trainer_subscriber, EventType.ACTION_RESULT)
     manager.add_subscriber(agent_subscriber, EventType.MODEL_UPDATE)
     manager.add_subscriber(dummy_subscriber, EventType.MODEL_UPDATE)
@@ -101,7 +104,7 @@ def test_trainer_and_agent_subscribers(environment: FrenchTarotEnvironment, requ
     _, reward, done, _ = environment.step(action)
 
     for _ in range(batch_size):
-        manager.publish(Message(EventType.ACTION_RESULT, ActionResult(action, observation, reward, done)))
+        manager.publish(Message(EventType.ACTION_RESULT, ActionResult(None, action, observation, reward, done)))
 
     assert subscriber_receives_data(dummy_subscriber, ModelUpdate)
     untrained_bid_phase_model_weights = _retrieve_parameter_subset(untrained_policy_net)
@@ -112,8 +115,8 @@ def test_trainer_and_agent_subscribers(environment: FrenchTarotEnvironment, requ
 
 class DummySubscriber(Subscriber):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, message: Message):
+        super().__init__(message)
         self.data = None
 
     def update(self, data: any):
