@@ -85,12 +85,13 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
         raise NotImplementedError
 
     @update.register
-    def _(self, action: ActionWithGroup):
-        observation, reward, done, _ = self._environment.step(action)
-        new_group = action.observation_action_reward_group + 1
-        action_result = ActionResult(new_group, action, observation, reward, done)
+    def _(self, action_with_group: ActionWithGroup):
+        observation, reward, done, _ = self._environment.step(action_with_group.action)
+        new_group = action_with_group.observation_action_reward_group + 1
+        action_result = ActionResult(new_group, action_with_group, observation, reward, done)
         self._manager.publish(Message(EventType.ACTION_RESULT, action_result))
-        self._manager.publish(Message(EventType.OBSERVATION, ObservationWithGroup(new_group, observation)))
+        if not done:
+            self._manager.publish(Message(EventType.OBSERVATION, ObservationWithGroup(new_group, observation)))
 
     @update.register
     def _(self, _: ResetEnvironment):
