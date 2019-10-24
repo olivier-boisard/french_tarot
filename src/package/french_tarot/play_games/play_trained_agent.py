@@ -11,9 +11,6 @@ from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber,
 
 class ActionResultSubscriber(Subscriber):
 
-    def __init__(self):
-        super().__init__()
-
     def wait_for_episode_done(self):
         self.loop()
 
