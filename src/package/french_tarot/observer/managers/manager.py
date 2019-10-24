@@ -1,12 +1,12 @@
 from typing import Dict, List
 
 from french_tarot.observer.core import Message
-from french_tarot.observer.managers.abstract_manager import AbstractManager
 from french_tarot.observer.managers.event_type import EventType
+from french_tarot.observer.managers.publisher import Publisher
 from french_tarot.observer.subscriber import Subscriber
 
 
-class Manager(AbstractManager):
+class Manager(Publisher):
 
     def __init__(self):
         super().__init__()

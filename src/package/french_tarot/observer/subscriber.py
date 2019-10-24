@@ -3,8 +3,8 @@ from queue import Queue
 from threading import Thread
 
 from french_tarot.observer.core import Message
-from french_tarot.observer.managers.abstract_manager import AbstractManager
 from french_tarot.observer.managers.event_type import EventType
+from french_tarot.observer.managers.publisher import Publisher
 
 
 class Kill:
@@ -12,7 +12,7 @@ class Kill:
 
 
 class Subscriber(ABC):
-    def __init__(self, manager: AbstractManager):
+    def __init__(self, manager: Publisher):
         self._queue = Queue()
         self._thread = Thread(target=self.loop)
         self._manager = manager
