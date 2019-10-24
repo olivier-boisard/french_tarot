@@ -1,21 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from queue import Queue
 from threading import Thread
 
 from french_tarot.observer.core import Message
+from french_tarot.observer.managers.abstract_manager import AbstractManager
+from french_tarot.observer.managers.abstract_subscriber import AbstractSubscriber
 from french_tarot.observer.managers.event_type import EventType
-from french_tarot.observer.managers.publisher import Publisher
 
 
 class Kill:
     pass
 
 
-class Subscriber(ABC):
-    def __init__(self, manager: Publisher):
+class Subscriber(AbstractSubscriber):
+    def __init__(self, manager: AbstractManager):
         self._queue = Queue()
         self._thread = Thread(target=self.loop)
         self._manager = manager
+        self._manager.add_subscriber(self, EventType.KILL_ALL)
 
     def start(self):
         self.setup()
@@ -41,12 +43,11 @@ class Subscriber(ABC):
                     self.update(message)
                 else:
                     run = False
-            finally:
+            except Exception as e:
                 self._manager.publish(Message(EventType.KILL_ALL, Kill()))
+                raise e
+            finally:
                 self._queue.task_done()
-
-    def push(self, data: any):
-        self._queue.put(data)
 
     @abstractmethod
     def update(self, data: any):
