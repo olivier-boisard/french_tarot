@@ -1,6 +1,6 @@
 from attr import dataclass
 
-from french_tarot.observer.manager import EventType
+from french_tarot.observer.managers.manager import EventType
 
 
 @dataclass
