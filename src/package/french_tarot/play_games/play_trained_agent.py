@@ -20,7 +20,7 @@ class ActionResultSubscriber(Subscriber):
     def loop(self):
         run = True
         while run:
-            action_result, _ = self._queue.get()
+            action_result = self._queue.get()
             run = not action_result.done
             self._queue.task_done()
 
