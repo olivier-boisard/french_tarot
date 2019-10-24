@@ -52,3 +52,6 @@ class Subscriber(AbstractSubscriber):
     @abstractmethod
     def update(self, data: any):
         pass
+
+    def push(self, data: any):
+        self._queue.put(data)
