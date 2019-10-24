@@ -4,7 +4,9 @@ from french_tarot.agents.common import set_all_seeds, CoreCardNeuralNet
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
-from french_tarot.observer import Manager, Subscriber, EventType, Message
+from french_tarot.observer.core import Message
+from french_tarot.observer.managers.manager import Manager, EventType
+from french_tarot.observer.subscriber import Subscriber
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, TrainerSubscriber, \
     FrenchTarotEnvironmentSubscriber, ActionResult, ResetEnvironment
 
