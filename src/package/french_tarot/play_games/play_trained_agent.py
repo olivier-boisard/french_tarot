@@ -7,7 +7,7 @@ from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentT
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.event_type import EventType
 from french_tarot.observer.managers.manager import Manager
-from french_tarot.observer.subscriber import Subscriber
+from french_tarot.observer.subscriber import Subscriber, Kill
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, TrainerSubscriber, \
     FrenchTarotEnvironmentSubscriber, ActionResult, ResetEnvironment
 
@@ -21,6 +21,8 @@ class ActionResultSubscriber(Subscriber):
         run = True
         while run:
             action_result = self._queue.get()
+            if isinstance(action_result, Kill):
+                break
             run = not action_result.done
             self._queue.task_done()
 
