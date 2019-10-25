@@ -10,7 +10,6 @@ from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer, BidPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhaseAgent
-from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.event_type import EventType
@@ -55,18 +54,18 @@ def test_environment_subscriber(request):
     observation_subscriber.start()
 
     # Test publish data on start
-    assert subscriber_receives_data(observation_subscriber, Observation)
-    observation = observation_subscriber.data
+    assert subscriber_receives_data(observation_subscriber, ObservationWithGroup)
+    observation = observation_subscriber.data.observation
 
     # Test publish data after action
     manager.publish(Message(EventType.OBSERVATION, None))
     while observation_subscriber.data is not None:
         pass
-    manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
-    assert subscriber_receives_data(observation_subscriber, Observation)
+    manager.publish(Message(EventType.ACTION, ActionWithGroup(0, RandomPlayer().get_action(observation))))
+    assert subscriber_receives_data(observation_subscriber, ObservationWithGroup)
 
     # Test publish action result after action
-    observation = observation_subscriber.data
+    observation = observation_subscriber.data.observation
     manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
     assert subscriber_receives_data(action_result_subscriber, ActionResult)
 
