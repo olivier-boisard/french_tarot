@@ -1,5 +1,4 @@
 import copy
-import datetime
 from time import sleep
 
 import pytest
@@ -14,11 +13,10 @@ from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.event_type import EventType
 from french_tarot.observer.managers.manager import Manager
-from french_tarot.observer.subscriber import Subscriber
 from french_tarot.play_games.datastructures import ModelUpdate
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, FrenchTarotEnvironmentSubscriber, \
     ActionResult, TrainerSubscriber, ObservationWithGroup, ActionWithGroup
-from src.tests.conftest import create_teardown_func
+from src.tests.conftest import create_teardown_func, subscriber_receives_data, DummySubscriber
 
 
 def test_agent_subscriber(environment: FrenchTarotEnvironment, request):
@@ -112,16 +110,6 @@ def test_trainer_and_agent_subscribers(environment: FrenchTarotEnvironment, requ
     assert torch.any(trained_bid_phase_model_weights != untrained_bid_phase_model_weights)
 
 
-class DummySubscriber(Subscriber):
-
-    def __init__(self, message: Message):
-        super().__init__(message)
-        self.data = None
-
-    def update(self, data: any):
-        self.data = data
-
-
 def _create_all_phase_agent():
     base_card_neural_net = CoreCardNeuralNet()
     bid_phase_agent_model = BidPhaseAgent.create_dqn(base_card_neural_net)
@@ -130,16 +118,6 @@ def _create_all_phase_agent():
     dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
     agent = AllPhaseAgent(bid_phase_agent, dog_phase_agent)
     return agent
-
-
-def subscriber_receives_data(subscriber, data_type, timeout_seconds=1):
-    start_time = datetime.datetime.now()
-    received = False
-    timeout = False
-    while not (received or timeout):
-        received = isinstance(subscriber.data, data_type)
-        timeout = (datetime.datetime.now() - start_time) >= datetime.timedelta(seconds=timeout_seconds)
-    return received
 
 
 def _retrieve_parameter_subset(model):

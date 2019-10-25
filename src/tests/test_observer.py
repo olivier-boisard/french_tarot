@@ -3,17 +3,7 @@ import pytest
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.event_type import EventType
 from french_tarot.observer.managers.manager import Manager
-from french_tarot.observer.subscriber import Subscriber
-from src.tests.conftest import create_teardown_func
-
-
-class DummySubscriber(Subscriber):
-    def __init__(self, message: Message):
-        super().__init__(message)
-        self.state = None
-
-    def update(self, data: any):
-        self.state = data
+from src.tests.conftest import create_teardown_func, DummySubscriber
 
 
 @pytest.fixture
@@ -31,7 +21,7 @@ def test_lifecycle(dummy_message, manager, request):
 
     manager.publish(dummy_message)
     _wait_for_subscriber_is_updated(subscriber)
-    assert subscriber.state == dummy_message.data
+    assert subscriber.data == dummy_message.data
 
 
 def _wait_for_subscriber_is_updated(subscriber):

@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from collections import deque
 from queue import Queue
 from threading import Thread
 
@@ -19,6 +20,7 @@ class Subscriber(AbstractSubscriber):
         self._thread = Thread(target=self.loop)
         self._manager = manager
         self._manager.add_subscriber(self, EventType.KILL_ALL)
+        self.input_history = deque(maxlen=128)
 
     def start(self):
         self.setup()
@@ -48,6 +50,7 @@ class Subscriber(AbstractSubscriber):
                 self._manager.publish(Message(EventType.KILL_ALL, Kill(error=True)))
                 raise e
             finally:
+                self.input_history.append(message)
                 self._queue.task_done()
 
     @abstractmethod
