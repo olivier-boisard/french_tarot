@@ -35,7 +35,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             xx = torch.cat([encode_cards(hand), selected_cards]).unsqueeze(0)
             xx = self._policy_net(xx.to(self.device)).squeeze()
 
-            xx[DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
+            xx[~DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()
             selected_cards[selected_card_index] = 1
             hand.remove(CARDS[selected_card_index])
@@ -43,17 +43,17 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         return list(np.array(CARDS)[np.array(selected_cards, dtype=bool)])
 
     def get_random_action(self, observation: DogPhaseObservation):
-        cards_ok_in_dog = filter(_card_is_ok_in_dog, observation.player.hand)
-        shuffled_cards_ok_in_dog = self._random_state.permutation(cards_ok_in_dog)
-        return shuffled_cards_ok_in_dog[:observation.dog_size]
+        cards_ok_in_dog = self._get_card_selection_mask(observation.player.hand)
+        index = self._random_state.choice(np.where(cards_ok_in_dog)[0], size=observation.dog_size, replace=False)
+        return list(np.array(CARDS)[index])
 
     @staticmethod
-    def _get_card_selection_mask(hand: List[Card]) -> List[bool]:
-        mask = [card not in hand or card not in DogPhaseAgent.CARDS_OK_IN_DOG for card in Card]
+    def _get_card_selection_mask(hand: List[Card]) -> np.ndarray:
+        mask = [card in hand and card in DogPhaseAgent.CARDS_OK_IN_DOG for card in Card]
         if len(mask) == np.sum(mask):
             mask = [card not in hand or card not in DogPhaseAgent.CARDS_OK_IN_DOG_WITH_TRUMPS for card in Card]
         assert np.sum(mask) > 0
-        return mask
+        return np.array(mask)
 
     @staticmethod
     def _cards_selection_mask(model_output: torch.Tensor, n_cards: int) -> torch.Tensor:

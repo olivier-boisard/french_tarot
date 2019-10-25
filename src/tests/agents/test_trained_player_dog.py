@@ -1,7 +1,15 @@
+import pytest
+
 from french_tarot.agents.common import encode_cards, CoreCardNeuralNet
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.core import Bid
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
+
+
+@pytest.fixture
+def dog_phase_agent():
+    return DogPhaseAgent(DogPhaseAgent.create_dqn(CoreCardNeuralNet()))
 
 
 def test_dog_phase_observation_encoder():
@@ -12,19 +20,23 @@ def test_dog_phase_observation_encoder():
     assert state.sum() == 24
 
 
-def test_create_dog_phase_player():
-    player = DogPhaseAgent(DogPhaseAgent.create_dqn(CoreCardNeuralNet()))
+def test_create_dog_phase_player(dog_phase_agent):
     observation = _prepare_environment()
-    action = player.get_action(observation)
+    action = dog_phase_agent.get_action(observation)
     assert isinstance(action, list)
     assert len(action) == 6
 
 
-def _prepare_environment():
+def test_random_action(dog_phase_agent):
+    observation = _prepare_environment()
+    action = dog_phase_agent.get_random_action(observation)
+    assert len(action) == observation.dog_size
+
+
+def _prepare_environment() -> DogPhaseObservation:
     environment = FrenchTarotEnvironment()
     environment.reset()
     environment.step(Bid.PETITE)
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
-    observation = environment.step(Bid.PASS)[0]
-    return observation
+    return environment.step(Bid.PASS)[0]
