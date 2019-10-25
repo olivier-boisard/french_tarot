@@ -21,3 +21,6 @@ class Manager(AbstractManager):
         if message.event_type in self._event_subscriber_map:
             for subscriber in self._event_subscriber_map[message.event_type]:
                 subscriber.push(message.data)
+
+    def dump_history(self, output_path: str):
+        pass
