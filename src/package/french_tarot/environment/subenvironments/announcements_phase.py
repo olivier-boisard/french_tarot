@@ -73,8 +73,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
             raise FrenchTarotException("Invalid cards in poignee")
         n_trumps_in_hand = count_trumps_and_excuse(current_player_hand)
         if Card.EXCUSE in announcement.revealed_cards and n_trumps_in_hand != n_cards:
-            raise FrenchTarotException(
-                "Excuse can be revealed only if player does not have any other trumps")
+            raise FrenchTarotException("Excuse can be revealed only if player does not have any other trumps")
         elif count_trumps_and_excuse(announcement.revealed_cards) != n_cards:
             raise FrenchTarotException("Revealed cards should be only trumps or excuse")
         elif np.any([card not in current_player_hand for card in announcement.revealed_cards]):
