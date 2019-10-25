@@ -10,7 +10,7 @@ from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer, BidPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhaseAgent
-from french_tarot.environment.core import Bid, Observation
+from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.event_type import EventType
@@ -18,7 +18,7 @@ from french_tarot.observer.managers.manager import Manager
 from french_tarot.observer.subscriber import Subscriber
 from french_tarot.play_games.datastructures import ModelUpdate
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, FrenchTarotEnvironmentSubscriber, \
-    ActionResult, TrainerSubscriber
+    ActionResult, TrainerSubscriber, ObservationWithGroup, ActionWithGroup
 from src.tests.conftest import create_teardown_func
 
 
@@ -35,8 +35,8 @@ def test_agent_subscriber(environment: FrenchTarotEnvironment, request):
     action_subscriber.start()
 
     observation = environment.reset()
-    manager.publish(Message(EventType.OBSERVATION, observation))
-    assert subscriber_receives_data(action_subscriber, Bid)
+    manager.publish(Message(EventType.OBSERVATION, ObservationWithGroup(0, observation)))
+    assert subscriber_receives_data(action_subscriber, ActionWithGroup)
 
 
 @pytest.mark.timeout(5)
