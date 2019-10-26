@@ -1,3 +1,5 @@
+import datetime
+
 from tqdm import tqdm
 
 from french_tarot.agents.common import set_all_seeds, CoreCardNeuralNet
@@ -74,6 +76,10 @@ def main(n_episodes_training: int = 200000):
         for _ in tqdm(range(n_episodes_training)):
             action_subscriber.wait_for_episode_done()
             if action_subscriber.error:
+                timestamp = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d-%H-%M-%S")
+                output_path = "history_" + timestamp + ".dill"
+                print("Dumping history at", output_path)
+                manager.dump_history(output_path)
                 break
             manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
     finally:
