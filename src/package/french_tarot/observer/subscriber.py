@@ -50,7 +50,7 @@ class Subscriber(AbstractSubscriber):
                 self._manager.publish(Message(EventType.KILL_ALL, Kill(error=True)))
                 raise e
             finally:
-                self.input_history.append(message)
+                self.input_history.appendleft(message)
                 self._queue.task_done()
 
     @abstractmethod

@@ -1,4 +1,7 @@
+import itertools
 from typing import Dict, List
+
+import dill
 
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.abstract_manager import AbstractManager
@@ -23,4 +26,13 @@ class Manager(AbstractManager):
                 subscriber.push(message.data)
 
     def dump_history(self, output_path: str):
-        pass
+        subscribers = set(itertools.chain(*self._event_subscriber_map.values()))
+        output = {subscriber.__class__.__name__: subscriber.input_history for subscriber in subscribers}
+        with open(output_path, "wb") as f:
+            dill.dump(output, f)
+
+    @classmethod
+    def load_history(cls, path):
+        with open(path, "rb") as f:
+            history = dill.load(f)
+        return history
