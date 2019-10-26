@@ -30,4 +30,4 @@ def _wait_for_subscriber_is_updated(subscriber):
 
 
 def _is_updated(subscriber):
-    return subscriber.state is not None
+    return subscriber.data is not None
