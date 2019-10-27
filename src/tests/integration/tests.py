@@ -15,7 +15,7 @@ class FrenchTarotEnvironmentSubscriberNoSetup(FrenchTarotEnvironmentSubscriber):
     def setup(self):
         pass
 
-    def dump(self):
+    def dump(self, *args, **kwargs):
         pass
 
 
