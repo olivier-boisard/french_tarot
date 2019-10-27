@@ -15,6 +15,9 @@ class FrenchTarotEnvironmentSubscriberNoSetup(FrenchTarotEnvironmentSubscriber):
     def setup(self):
         pass
 
+    def dump(self):
+        pass
+
 
 def test_01(request):
     state_path = os.path.join(os.path.dirname(__file__), os.pardir, "resources",
