@@ -30,4 +30,3 @@ def test_01(request):
     request.addfinalizer(create_teardown_func(subscriber))
 
     subscriber.push(subscriber_input)
-    assert False
