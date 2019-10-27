@@ -49,16 +49,23 @@ class Subscriber(AbstractSubscriber):
                     run = False
             except Exception as e:
                 self._manager.publish(Message(EventType.KILL_ALL, Kill(error=True)))
-                state_filepath = "_".join([self.__class__.__name__, str(id(self))])
-                print("Dumping state at", state_filepath)
-                self.dump(state_filepath)
-                input_filepath = state_filepath + "_input.dill"
-                print("Dumping input at", input_filepath)
-                with open(input_filepath) as f:
-                    dill.dump(message, f)
+                filepath = "_".join([self.__class__.__name__, str(id(self))])
+                self._dump_state(filepath)
+                self._dump_input(message, filepath)
                 raise e
             finally:
                 self._queue.task_done()
+
+    def _dump_state(self, state_filepath):
+        print("Dumping state at", state_filepath)
+        self.dump(state_filepath)
+
+    @staticmethod
+    def _dump_input(message, state_filepath):
+        input_filepath = state_filepath + "_input.dill"
+        print("Dumping input at", input_filepath)
+        with open(input_filepath, "wb") as f:
+            dill.dump(message, f)
 
     @abstractmethod
     def dump(self, path: str):
