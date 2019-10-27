@@ -36,6 +36,9 @@ class ActionResultSubscriber(Subscriber):
     def update(self, data: ActionResult):
         pass
 
+    def dump(self, path: str):
+        pass
+
 
 def main(n_episodes_training: int = 200000):
     set_all_seeds()

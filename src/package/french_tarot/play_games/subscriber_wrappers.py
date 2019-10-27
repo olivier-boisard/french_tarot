@@ -4,6 +4,7 @@ from queue import Queue, Empty
 from threading import Thread
 from typing import Union, List
 
+import dill
 from attr import dataclass
 
 from french_tarot.agents.meta import singledispatchmethod
@@ -71,6 +72,10 @@ class AllPhaseAgentSubscriber(Subscriber):
     def _(self, model_update: ModelUpdate):
         self._agent.update_model(model_update)
 
+    def dump(self, path: str):
+        with open(path, "wb") as f:
+            dill.dump(self._agent, f)
+
 
 class FrenchTarotEnvironmentSubscriber(Subscriber):
 
@@ -99,6 +104,10 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
     @update.register
     def _(self, _: ResetEnvironment):
         self.setup()
+
+    def dump(self, path: str):
+        with open(path, "wb") as f:
+            dill.dump(self._environment, f)
 
 
 class TrainerSubscriber(Subscriber):
@@ -133,6 +142,9 @@ class TrainerSubscriber(Subscriber):
     def _(self, observation_with_group: ObservationWithGroup):
         self._observations[observation_with_group.observation_action_reward_group] = observation_with_group
         self._match_action_results_and_observation()
+
+    def dump(self, path: str):
+        pass
 
     def _match_action_results_and_observation(self):
         keys = filter(lambda k: k in self._observations, self._action_results.keys())

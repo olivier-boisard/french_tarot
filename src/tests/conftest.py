@@ -40,6 +40,9 @@ class DummySubscriber(Subscriber):
     def update(self, data: any):
         self.data = data
 
+    def dump(self, path: str):
+        pass
+
 
 def subscriber_receives_data(subscriber, data_type, timeout_seconds=1):
     start_time = datetime.datetime.now()

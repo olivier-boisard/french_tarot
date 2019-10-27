@@ -2,8 +2,6 @@ from abc import abstractmethod
 from queue import Queue
 from threading import Thread
 
-import dill
-
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.abstract_manager import AbstractManager
 from french_tarot.observer.managers.abstract_subscriber import AbstractSubscriber
@@ -48,13 +46,16 @@ class Subscriber(AbstractSubscriber):
                     run = False
             except Exception as e:
                 self._manager.publish(Message(EventType.KILL_ALL, Kill(error=True)))
-                output_filepath = "_".join([self.__class__.__name__, str(id(self)), ".dill"])
+                output_filepath = "_".join([self.__class__.__name__, str(id(self))])
                 print("Dumping state and input at", output_filepath)
-                with open(output_filepath, "wb") as f:
-                    dill.dump((self, message), f)
+                self.dump(output_filepath)
                 raise e
             finally:
                 self._queue.task_done()
+
+    @abstractmethod
+    def dump(self, path: str):
+        pass
 
     @abstractmethod
     def update(self, data: any):
