@@ -76,6 +76,12 @@ class AllPhaseAgentSubscriber(Subscriber):
         with open(path, "wb") as f:
             dill.dump(self._agent, f)
 
+    @classmethod
+    def load(cls, path: str, manager: Manager):
+        with open(path, "rb") as f:
+            agent = dill.load(f)
+        return cls(agent, manager)
+
 
 class FrenchTarotEnvironmentSubscriber(Subscriber):
 
@@ -108,6 +114,14 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
     def dump(self, path: str):
         with open(path, "wb") as f:
             dill.dump(self._environment, f)
+
+    @classmethod
+    def load(cls, path: str, manager: Manager):
+        with open(path, "rb") as f:
+            environment = dill.load(f)
+        obj = cls(manager)
+        obj._environment = environment
+        return obj
 
 
 class TrainerSubscriber(Subscriber):
@@ -144,6 +158,10 @@ class TrainerSubscriber(Subscriber):
         self._match_action_results_and_observation()
 
     def dump(self, path: str):
+        pass
+
+    @classmethod
+    def load(cls, path: str, manager: Manager):
         pass
 
     def _match_action_results_and_observation(self):

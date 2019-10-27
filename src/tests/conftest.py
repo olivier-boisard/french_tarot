@@ -41,7 +41,11 @@ class DummySubscriber(Subscriber):
         self.data = data
 
     def dump(self, path: str):
-        pass
+        raise NotImplementedError
+
+    @classmethod
+    def load(cls, path: str, manager: Manager):
+        raise NotImplementedError
 
 
 def subscriber_receives_data(subscriber, data_type, timeout_seconds=1):

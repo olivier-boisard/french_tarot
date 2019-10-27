@@ -6,6 +6,7 @@ from french_tarot.observer.core import Message
 from french_tarot.observer.managers.abstract_manager import AbstractManager
 from french_tarot.observer.managers.abstract_subscriber import AbstractSubscriber
 from french_tarot.observer.managers.event_type import EventType
+from french_tarot.observer.managers.manager import Manager
 
 
 class Kill:
@@ -55,6 +56,11 @@ class Subscriber(AbstractSubscriber):
 
     @abstractmethod
     def dump(self, path: str):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def load(cls, path: str, manager: Manager):
         pass
 
     @abstractmethod

@@ -37,7 +37,11 @@ class ActionResultSubscriber(Subscriber):
         pass
 
     def dump(self, path: str):
-        pass
+        raise NotImplementedError
+
+    @classmethod
+    def load(cls, path: str, manager: Manager):
+        raise NotImplementedError
 
 
 def main(n_episodes_training: int = 200000):
