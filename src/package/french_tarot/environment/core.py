@@ -153,7 +153,13 @@ class PoigneeAnnouncement(Announcement, ABC):
                 valid_poignees,
                 cls
             )
-            poignee = cls(trumps_and_excuse[-cls.expected_length():])
+
+            revealed_cards_start_idx = 0
+            revealed_cards_stop_idx = cls.expected_length()
+            if Card.TRUMP_1 in trumps_and_excuse:
+                revealed_cards_start_idx += 1
+                revealed_cards_stop_idx += 1
+            poignee = cls(trumps_and_excuse[revealed_cards_start_idx:revealed_cards_stop_idx])
 
         return poignee
 

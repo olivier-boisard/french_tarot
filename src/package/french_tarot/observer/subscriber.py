@@ -22,6 +22,7 @@ class Subscriber(AbstractSubscriber):
         self._thread = Thread(target=self.loop)
         self._manager = manager
         self._manager.add_subscriber(self, EventType.KILL_ALL)
+        self.exception = None
 
     def start(self):
         self.setup()
@@ -52,6 +53,7 @@ class Subscriber(AbstractSubscriber):
                 filepath = "_".join([self.__class__.__name__, str(id(self))])
                 self._dump_state(filepath)
                 self._dump_input(message, filepath)
+                self.exception = e
                 raise e
             finally:
                 self._queue.task_done()
