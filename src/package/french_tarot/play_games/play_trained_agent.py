@@ -50,10 +50,11 @@ def main(n_episodes_training: int = 200000, device="cuda"):
     steps_per_update = 100
 
     manager = Manager()
-    # noinspection PyUnresolvedReferences
     base_card_neural_net = CoreCardNeuralNet()
+    # noinspection PyUnresolvedReferences
     bid_phase_agent_model = BidPhaseAgent.create_dqn(base_card_neural_net).to(device)
     bid_phase_agent = BidPhaseAgent(bid_phase_agent_model)
+    # noinspection PyUnresolvedReferences
     dog_phase_agent_model = DogPhaseAgent.create_dqn(base_card_neural_net).to(device)
     dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
     agent = AllPhaseAgent(bid_phase_agent, dog_phase_agent)

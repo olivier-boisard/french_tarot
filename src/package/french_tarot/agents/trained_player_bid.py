@@ -53,9 +53,11 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         return self._policy_net.output_layer[-2].out_features
 
     @staticmethod
-    def create_dqn(base_neural_net: nn.Module) -> nn.Module:
+    def create_dqn(base_neural_net: torch.nn.Module) -> nn.Module:
         width = base_neural_net.output_dimensions
-        output_layer = nn.Sequential(
+        return nn.Sequential(
+            base_neural_net,
+
             nn.BatchNorm1d(width),
             nn.Linear(width, 2 * width),
             nn.ReLU(),
@@ -74,7 +76,6 @@ class BidPhaseAgent(BaseNeuralNetAgent):
             nn.Linear(4 * width, 1),
             nn.Sigmoid()
         )
-        return nn.Sequential(base_neural_net, output_layer)
 
 
 class BidPhaseAgentTrainer(Trainer):
