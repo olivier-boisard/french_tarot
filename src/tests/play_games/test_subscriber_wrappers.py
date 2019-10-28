@@ -69,15 +69,14 @@ def test_environment_subscriber(request):
 
 
 @pytest.mark.timeout(5)
-def test_trainer_and_agent_subscribers(environment: FrenchTarotEnvironment, request):
+def test_trainer_and_agent_subscribers_independent_models(environment: FrenchTarotEnvironment, request):
     batch_size = 64
     steps_per_update = 10
 
     manager = Manager()
-    base_card_neural_net = CoreCardNeuralNet()
-    bid_phase_agent_model = BidPhaseAgent.create_dqn(base_card_neural_net)
+    bid_phase_agent_model = BidPhaseAgent.create_dqn(CoreCardNeuralNet())
     bid_phase_agent = BidPhaseAgent(bid_phase_agent_model)
-    dog_phase_agent_model = DogPhaseAgent.create_dqn(base_card_neural_net)
+    dog_phase_agent_model = DogPhaseAgent.create_dqn(CoreCardNeuralNet())
     dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
     agent = AllPhaseAgent(bid_phase_agent, dog_phase_agent)
     agent_subscriber = AllPhaseAgentSubscriber(agent, manager)
@@ -116,8 +115,7 @@ def _create_all_phase_agent():
     bid_phase_agent = BidPhaseAgent(bid_phase_agent_model)
     dog_phase_agent_model = DogPhaseAgent.create_dqn(base_card_neural_net)
     dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
-    agent = AllPhaseAgent(bid_phase_agent, dog_phase_agent)
-    return agent
+    return AllPhaseAgent(bid_phase_agent, dog_phase_agent)
 
 
 def _retrieve_parameter_subset(model):
