@@ -1,21 +1,16 @@
-import copy
-from time import sleep
-
 import pytest
-import torch
 
 from french_tarot.agents.common import CoreCardNeuralNet
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
-from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer, BidPhaseAgent
-from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhaseAgent
+from french_tarot.agents.trained_player_bid import BidPhaseAgent
+from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.event_type import EventType
 from french_tarot.observer.managers.manager import Manager
-from french_tarot.play_games.datastructures import ModelUpdate
 from french_tarot.play_games.subscriber_wrappers import AllPhaseAgentSubscriber, FrenchTarotEnvironmentSubscriber, \
-    ActionResult, TrainerSubscriber, ObservationWithGroup, ActionWithGroup
+    ActionResult, ObservationWithGroup, ActionWithGroup
 from src.tests.conftest import create_teardown_func, subscriber_receives_data, DummySubscriber
 
 
@@ -66,47 +61,6 @@ def test_environment_subscriber(request):
     observation = observation_subscriber.data.observation
     manager.publish(Message(EventType.ACTION, RandomPlayer().get_action(observation)))
     assert subscriber_receives_data(action_result_subscriber, ActionResult)
-
-
-@pytest.mark.timeout(5)
-def test_trainer_and_agent_subscribers_independent_models(environment: FrenchTarotEnvironment, request):
-    batch_size = 64
-    steps_per_update = 10
-
-    manager = Manager()
-    bid_phase_agent_model = BidPhaseAgent.create_dqn(CoreCardNeuralNet())
-    bid_phase_agent = BidPhaseAgent(bid_phase_agent_model)
-    dog_phase_agent_model = DogPhaseAgent.create_dqn(CoreCardNeuralNet())
-    dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
-    agent = AllPhaseAgent(bid_phase_agent, dog_phase_agent)
-    agent_subscriber = AllPhaseAgentSubscriber(agent, manager)
-    bid_phase_trainer = BidPhaseAgentTrainer(bid_phase_agent_model)
-    dog_phase_trainer = DogPhaseAgentTrainer(dog_phase_agent_model)
-    trainer_subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer, manager,
-                                           steps_per_update=steps_per_update)
-    dummy_subscriber = DummySubscriber(manager)
-    manager.add_subscriber(trainer_subscriber, EventType.ACTION_RESULT)
-    manager.add_subscriber(agent_subscriber, EventType.MODEL_UPDATE)
-    manager.add_subscriber(dummy_subscriber, EventType.MODEL_UPDATE)
-
-    untrained_policy_net = copy.deepcopy(bid_phase_agent_model)
-    request.addfinalizer(create_teardown_func(trainer_subscriber, dummy_subscriber, agent_subscriber))
-    agent_subscriber.start()
-    dummy_subscriber.start()
-    trainer_subscriber.start()
-
-    observation = environment.reset()
-    action = agent.get_action(observation)
-    _, reward, done, _ = environment.step(action)
-
-    for _ in range(batch_size):
-        manager.publish(Message(EventType.ACTION_RESULT, ActionResult(None, action, observation, reward, done)))
-
-    assert subscriber_receives_data(dummy_subscriber, ModelUpdate)
-    untrained_bid_phase_model_weights = _retrieve_parameter_subset(untrained_policy_net)
-    trained_bid_phase_model_weights = _retrieve_parameter_subset(bid_phase_agent_model)
-    sleep(1)  # TODO ugly
-    assert torch.any(trained_bid_phase_model_weights != untrained_bid_phase_model_weights)
 
 
 def _create_all_phase_agent():
