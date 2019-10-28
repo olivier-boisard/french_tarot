@@ -44,13 +44,14 @@ class ActionResultSubscriber(Subscriber):
         raise NotImplementedError
 
 
-def main(n_episodes_training: int = 200000):
+def main(n_episodes_training: int = 200000, device="cuda"):
     set_all_seeds()
 
     steps_per_update = 100
 
     manager = Manager()
-    base_card_neural_net = CoreCardNeuralNet()
+    # noinspection PyUnresolvedReferences
+    base_card_neural_net = CoreCardNeuralNet().to(device)
     bid_phase_agent_model = BidPhaseAgent.create_dqn(base_card_neural_net)
     bid_phase_agent = BidPhaseAgent(bid_phase_agent_model)
     dog_phase_agent_model = DogPhaseAgent.create_dqn(base_card_neural_net)
