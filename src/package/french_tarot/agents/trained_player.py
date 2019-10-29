@@ -15,11 +15,11 @@ from french_tarot.play_games.datastructures import ModelUpdate
 class AllPhaseAgent(Agent):
     _agents: Dict[type, Agent]
 
-    def __init__(self, bid_phase_agent: BidPhaseAgent, dog_phase_agent: DogPhaseAgent, **kwargs):
+    def __init__(self, bid_phase_agent: BidPhaseAgent = None, dog_phase_agent: DogPhaseAgent = None, **kwargs):
         super().__init__(**kwargs)
         self._agents: Dict[Observation, Union[BaseNeuralNetAgent, Agent]] = {
-            BidPhaseObservation: bid_phase_agent,
-            DogPhaseObservation: dog_phase_agent,
+            BidPhaseObservation: RandomPlayer() if bid_phase_agent is None else bid_phase_agent,
+            DogPhaseObservation: RandomPlayer() if dog_phase_agent is None else dog_phase_agent,
             AnnouncementPhaseObservation: RandomPlayer(),
             CardPhaseObservation: RandomPlayer()
         }

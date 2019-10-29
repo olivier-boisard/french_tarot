@@ -1,8 +1,8 @@
 from tqdm import tqdm
 
 from french_tarot.agents.common import set_all_seeds, CoreCardNeuralNet
+from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
-from french_tarot.agents.trained_player_bid import BidPhaseAgent, BidPhaseAgentTrainer
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.abstract_manager import AbstractManager
@@ -50,20 +50,15 @@ def main(n_episodes_training: int = 200000, device="cuda"):
     steps_per_update = 100
 
     manager = Manager()
-    base_card_neural_net = CoreCardNeuralNet()
     # noinspection PyUnresolvedReferences
-    bid_phase_agent_model = BidPhaseAgent.create_dqn(base_card_neural_net).to(device)
-    bid_phase_agent = BidPhaseAgent(bid_phase_agent_model)
-    # noinspection PyUnresolvedReferences
-    dog_phase_agent_model = DogPhaseAgent.create_dqn(base_card_neural_net).to(device)
+    dog_phase_agent_model = DogPhaseAgent.create_dqn(CoreCardNeuralNet()).to(device)
     dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
-    agent = AllPhaseAgent(bid_phase_agent, dog_phase_agent)
+    agent = AllPhaseAgent(bid_phase_agent=RandomPlayer(), dog_phase_agent=dog_phase_agent)
     agent_subscriber = AllPhaseAgentSubscriber(agent, manager)
 
-    bid_phase_trainer = BidPhaseAgentTrainer(bid_phase_agent_model)
     dog_phase_trainer = DogPhaseAgentTrainer(dog_phase_agent_model)
-    trainer_subscriber = TrainerSubscriber(bid_phase_trainer, dog_phase_trainer, manager,
-                                           steps_per_update=steps_per_update)
+    observation_trainers_map = {DogPhaseAgentTrainer: dog_phase_trainer}
+    trainer_subscriber = TrainerSubscriber(observation_trainers_map, manager, steps_per_update=steps_per_update)
 
     environment_subscriber = FrenchTarotEnvironmentSubscriber(manager)
 

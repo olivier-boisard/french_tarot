@@ -2,15 +2,16 @@ import copy
 from abc import ABC
 from queue import Queue, Empty
 from threading import Thread
-from typing import Union, List
+from typing import Union, List, Dict
 
 import dill
 from attr import dataclass
 
+from french_tarot.agents.common import Trainer
 from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.agents.trained_player import AllPhaseAgent
-from french_tarot.agents.trained_player_bid import BidPhaseAgentTrainer, BidPhaseAgent
-from french_tarot.agents.trained_player_dog import DogPhaseAgentTrainer, DogPhaseAgent
+from french_tarot.agents.trained_player_bid import BidPhaseAgent
+from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
@@ -126,8 +127,7 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
 
 class TrainerSubscriber(Subscriber):
 
-    def __init__(self, bid_phase_trainer: BidPhaseAgentTrainer, dog_phase_trainer: DogPhaseAgentTrainer,
-                 manager: Manager, steps_per_update: int = 100):
+    def __init__(self, observation_trainers_map: Dict[type, Trainer], manager: Manager, steps_per_update: int = 100):
         super().__init__(manager)
         self._pre_card_phase_observations_and_action_results = []
         self._training_queue = Queue()
@@ -136,10 +136,7 @@ class TrainerSubscriber(Subscriber):
         self._manager = manager
         self._action_results = {}
         self._observations = {}
-        self._trainers = {
-            BidPhaseObservation: bid_phase_trainer,
-            DogPhaseObservation: dog_phase_trainer
-        }
+        self._trainers = observation_trainers_map
 
     @singledispatchmethod
     def update(self, data: any):
