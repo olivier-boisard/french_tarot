@@ -28,7 +28,7 @@ class AllPhaseAgent(Agent):
         return self._agents[observation.__class__].get_action(observation)
 
     def update_model(self, model_update: ModelUpdate):
-        type_to_agent = {agent.policy_net.__class__: agent for agent in self._agents.values() if
-                         isinstance(agent, BaseNeuralNetAgent)}
+        neural_net_agents = filter(lambda agent: isinstance(agent, BaseNeuralNetAgent), self._agents.values())
+        type_to_agent = {agent.policy_net.__class__: agent for agent in neural_net_agents}
         for new_model in model_update.models:
             type_to_agent[new_model.__class__].update_policy_net(new_model)
