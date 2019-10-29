@@ -4,6 +4,7 @@ from french_tarot.agents.common import set_all_seeds, CoreCardNeuralNet
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
+from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.abstract_manager import AbstractManager
 from french_tarot.observer.managers.event_type import EventType
@@ -57,7 +58,7 @@ def main(n_episodes_training: int = 200000, device="cuda"):
     agent_subscriber = AllPhaseAgentSubscriber(agent, manager)
 
     dog_phase_trainer = DogPhaseAgentTrainer(dog_phase_agent_model)
-    observation_trainers_map = {DogPhaseAgentTrainer: dog_phase_trainer}
+    observation_trainers_map = {DogPhaseObservation: dog_phase_trainer}
     trainer_subscriber = TrainerSubscriber(observation_trainers_map, manager, steps_per_update=steps_per_update)
 
     environment_subscriber = FrenchTarotEnvironmentSubscriber(manager)

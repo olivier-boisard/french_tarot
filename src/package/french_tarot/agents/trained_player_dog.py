@@ -33,7 +33,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         selected_cards = torch.zeros(len(CARDS))
         for _ in range(observation.dog_size):
             xx = torch.cat([encode_cards(hand), selected_cards]).unsqueeze(0)
-            xx = self._policy_net(xx.to(self.device)).squeeze()
+            xx = self.policy_net(xx.to(self.device)).squeeze()
 
             xx[~DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf
             selected_card_index = xx.argmax()

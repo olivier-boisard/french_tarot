@@ -10,19 +10,15 @@ from attr import dataclass
 from french_tarot.agents.common import Trainer
 from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.agents.trained_player import AllPhaseAgent
-from french_tarot.agents.trained_player_bid import BidPhaseAgent
-from french_tarot.agents.trained_player_dog import DogPhaseAgent
+from french_tarot.datastructures import ModelUpdate
 from french_tarot.environment.core import Observation
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
-from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.event_type import EventType
 from french_tarot.observer.managers.manager import Manager
 from french_tarot.observer.subscriber import Subscriber, Kill
-from french_tarot.play_games.datastructures import ModelUpdate
 
 
 @dataclass
@@ -201,11 +197,8 @@ class TrainerSubscriber(Subscriber):
                 pass
 
             if step % self._steps_per_update == 0:
-                new_models = ModelUpdate({
-                    BidPhaseAgent: copy.deepcopy(self._trainers[BidPhaseObservation].model),
-                    DogPhaseAgent: copy.deepcopy(self._trainers[DogPhaseObservation].model)
-                })
-                self._manager.publish(Message(EventType.MODEL_UPDATE, new_models))
+                model_updates = [trainer.model for trainer in self._trainers.values()]
+                self._manager.publish(Message(EventType.MODEL_UPDATE, ModelUpdate(model_updates)))
 
     def _push_early_actions_to_replay_memory(self):
         for observation, registered_action_result in self._pre_card_phase_observations_and_action_results:
