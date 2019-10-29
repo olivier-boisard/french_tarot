@@ -156,6 +156,8 @@ class PoigneeAnnouncement(Announcement, ABC):
 
             revealed_cards_start_idx = 0
             revealed_cards_stop_idx = cls.expected_length()
+            if len(trumps_and_excuse) > cls.expected_length() and Card.EXCUSE in trumps_and_excuse:
+                trumps_and_excuse.remove(Card.EXCUSE)
             if Card.TRUMP_1 in trumps_and_excuse and cls.expected_length() != len(trumps_and_excuse):
                 revealed_cards_start_idx += 1
                 revealed_cards_stop_idx += 1
