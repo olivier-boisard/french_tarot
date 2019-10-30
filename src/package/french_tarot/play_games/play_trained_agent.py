@@ -76,6 +76,7 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="
     try:
         agent_subscriber.start()
         environment_subscriber.start()
+        trainer_subscriber.stop()
 
         # This is necessary to avoid having model update overwhelming trainable agent subscriber, which makes it
         # unable to process observations and prevent training to continue
@@ -87,18 +88,17 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="
             manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
 
         print("Start trainer subscriber")
-        try:
-            trainer_subscriber.start()
-            for _ in tqdm(range(n_episodes_training)):
-                action_subscriber.wait_for_episode_done()
-                if action_subscriber.error:
-                    break
-                manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
-        finally:
-            trainer_subscriber.stop()
+        trainer_subscriber.start()
+        for _ in tqdm(range(n_episodes_training)):
+            action_subscriber.wait_for_episode_done()
+            if action_subscriber.error:
+                break
+            manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
+
     finally:
-        agent_subscriber.stop()
+        trainer_subscriber.stop()
         environment_subscriber.stop()
+        agent_subscriber.stop()
 
 
 if __name__ == "__main__":
