@@ -76,7 +76,7 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="
     try:
         agent_subscriber.start()
         environment_subscriber.start()
-        
+
         # This is necessary to avoid having model update overwhelming trainable agent subscriber, which makes it
         # unable to process observations and prevent training to continue
         print("Wait for initial {} episodes to be complete before proceeding")
@@ -84,6 +84,7 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="
             action_subscriber.wait_for_episode_done()
             if action_subscriber.error:
                 break
+            manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
 
         print("Start trainer subscriber")
         try:
