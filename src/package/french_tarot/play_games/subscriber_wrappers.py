@@ -181,8 +181,6 @@ class TrainerSubscriber(Subscriber):
         step = 0
         while True:
             step += 1
-            for trainer in self._trainers.values():
-                trainer.optimize_model()
 
             try:
                 new_entry = self._training_queue.get_nowait()
@@ -195,6 +193,10 @@ class TrainerSubscriber(Subscriber):
                 self._training_queue.task_done()
             except Empty:
                 pass
+
+            # TODO use synced flag to enable/disable training
+            for trainer in self._trainers.values():
+                trainer.optimize_model()
 
             if step % self._steps_per_update == 0:
                 model_updates = [trainer.model for trainer in self._trainers.values()]
