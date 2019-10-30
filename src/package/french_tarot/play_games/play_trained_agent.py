@@ -45,7 +45,7 @@ class ActionResultSubscriber(Subscriber):
         raise NotImplementedError
 
 
-def main(n_episodes_training: int = 200000, device="cuda"):
+def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="cuda"):
     set_all_seeds()
 
     steps_per_update = 100
@@ -72,18 +72,31 @@ def main(n_episodes_training: int = 200000, device="cuda"):
     manager.add_subscriber(trainer_subscriber, EventType.ACTION_RESULT)
     manager.add_subscriber(action_subscriber, EventType.ACTION_RESULT)
 
+    # TODO clean up this mess
     try:
         agent_subscriber.start()
-        trainer_subscriber.start()
         environment_subscriber.start()
-        for _ in tqdm(range(n_episodes_training)):
+        
+        # This is necessary to avoid having model update overwhelming trainable agent subscriber, which makes it
+        # unable to process observations and prevent training to continue
+        print("Wait for initial {} episodes to be complete before proceeding")
+        for _ in tqdm(range(n_episodes_cold_start)):
             action_subscriber.wait_for_episode_done()
             if action_subscriber.error:
                 break
-            manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
+
+        print("Start trainer subscriber")
+        try:
+            trainer_subscriber.start()
+            for _ in tqdm(range(n_episodes_training)):
+                action_subscriber.wait_for_episode_done()
+                if action_subscriber.error:
+                    break
+                manager.publish(Message(EventType.RESET_ENVIRONMENT, ResetEnvironment()))
+        finally:
+            trainer_subscriber.stop()
     finally:
         agent_subscriber.stop()
-        trainer_subscriber.stop()
         environment_subscriber.stop()
 
 
