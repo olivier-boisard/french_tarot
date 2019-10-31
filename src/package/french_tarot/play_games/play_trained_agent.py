@@ -1,3 +1,5 @@
+import copy
+
 from tqdm import tqdm
 
 from french_tarot.agents.common import set_all_seeds, CoreCardNeuralNet
@@ -55,7 +57,7 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="
     agent = AllPhaseAgent(dog_phase_agent=dog_phase_agent)
     agent_subscriber = AllPhaseAgentSubscriber(agent, manager)
 
-    dog_phase_trainer = DogPhaseAgentTrainer(dog_phase_agent_model)
+    dog_phase_trainer = DogPhaseAgentTrainer(copy.deepcopy(dog_phase_agent_model).to(device))
     observation_trainers_map = {DogPhaseObservation: dog_phase_trainer}
     trainer_subscriber = TrainerSubscriber(observation_trainers_map, manager, steps_per_update=steps_per_update)
 
