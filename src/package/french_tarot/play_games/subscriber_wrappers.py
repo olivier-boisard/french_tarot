@@ -1,11 +1,11 @@
 import copy
 from abc import ABC
-from queue import Queue, Empty
-from threading import Thread
+from queue import Empty
 from typing import Union, List, Dict
 
 import dill
 from attr import dataclass
+from torch.multiprocessing import Process, Queue
 
 from french_tarot.agents.common import Trainer
 from french_tarot.agents.meta import singledispatchmethod
@@ -127,7 +127,7 @@ class TrainerSubscriber(Subscriber):
         super().__init__(manager)
         self._pre_card_phase_observations_and_action_results = []
         self._training_queue = Queue()
-        self._training_thread = Thread(target=self._train)
+        self._training_process = Process(target=self._train)
         self._steps_per_update = steps_per_update
         self._manager = manager
         self._action_results = {}
@@ -171,12 +171,12 @@ class TrainerSubscriber(Subscriber):
 
     def start(self):
         super().start()
-        self._training_thread.start()
+        self._training_process.start()
 
     def stop(self):
         self._training_queue.put(Kill())
         super().stop()
-        self._training_thread.join()
+        self._training_process.join()
 
     def enable_training(self):
         self._training_enabled = True
@@ -192,7 +192,6 @@ class TrainerSubscriber(Subscriber):
                                                                          action_result.reward)
                 else:
                     break
-                self._training_queue.task_done()
             except Empty:
                 pass
 

@@ -1,8 +1,7 @@
 from abc import abstractmethod
-from queue import Queue
-from threading import Thread
 
 import dill
+from torch.multiprocessing import Process, Queue
 
 from french_tarot.observer.core import Message
 from french_tarot.observer.managers.abstract_manager import AbstractManager
@@ -19,18 +18,18 @@ class Kill:
 class Subscriber(AbstractSubscriber):
     def __init__(self, manager: AbstractManager):
         self._queue = Queue()
-        self._thread = Thread(target=self.loop)
+        self._process = Process(target=self.loop)
         self._manager = manager
         self._manager.add_subscriber(self, EventType.KILL_ALL)
         self.exception = None
 
     def start(self):
         self.setup()
-        self._thread.start()
+        self._process.start()
 
     def stop(self):
         self.push(Kill())
-        self._thread.join()
+        self._process.join()
         self.teardown()
 
     def setup(self):
@@ -55,8 +54,6 @@ class Subscriber(AbstractSubscriber):
                 self._dump_input(message, filepath)
                 self.exception = e
                 raise e
-            finally:
-                self._queue.task_done()
 
     def _dump_state(self, state_filepath):
         print("Dumping state at", state_filepath)
