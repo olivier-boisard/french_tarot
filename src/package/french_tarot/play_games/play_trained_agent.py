@@ -1,7 +1,6 @@
 from tqdm import tqdm
 
 from french_tarot.agents.common import set_all_seeds, CoreCardNeuralNet
-from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
@@ -51,9 +50,9 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="
 
     manager = Manager()
     # noinspection PyUnresolvedReferences
-    dog_phase_agent_model = DogPhaseAgent.create_dqn(CoreCardNeuralNet()).to(device)
+    dog_phase_agent_model = DogPhaseAgent.create_dqn(CoreCardNeuralNet())
     dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
-    agent = AllPhaseAgent(bid_phase_agent=RandomPlayer(), dog_phase_agent=dog_phase_agent)
+    agent = AllPhaseAgent(dog_phase_agent=dog_phase_agent)
     agent_subscriber = AllPhaseAgentSubscriber(agent, manager)
 
     dog_phase_trainer = DogPhaseAgentTrainer(dog_phase_agent_model)
