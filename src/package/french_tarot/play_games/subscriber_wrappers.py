@@ -201,7 +201,7 @@ class TrainerSubscriber(Subscriber):
                     trainer.optimize_model()
 
                 if step % self._steps_per_update == 0:
-                    model_updates = [trainer.model for trainer in self._trainers.values()]
+                    model_updates = [trainer.model.state_dict() for trainer in self._trainers.values()]
                     self._manager.publish(Message(EventType.MODEL_UPDATE, ModelUpdate(model_updates)))
 
     def _push_early_actions_to_replay_memory(self):

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 
 @dataclass
 class ModelUpdate:
-    models: List
+    models: List[Dict]

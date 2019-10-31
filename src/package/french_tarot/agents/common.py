@@ -2,7 +2,7 @@ import math
 import random
 from abc import abstractmethod, ABC
 from collections import namedtuple
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import numpy as np
 import torch
@@ -169,8 +169,8 @@ class BaseNeuralNetAgent(Agent, ABC):
         self._step = 0
         self._random_action_policy = Policy()
 
-    def update_policy_net(self, policy_net: torch.nn.Module):
-        self.policy_net.load_state_dict(policy_net.state_dict())
+    def update_policy_net(self, policy_net_state_dict: Dict):
+        self.policy_net.load_state_dict(policy_net_state_dict)
 
     def get_action(self, observation):
         self._step += 1
