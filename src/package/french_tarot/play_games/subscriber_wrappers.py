@@ -98,11 +98,14 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
     @update.register
     def _(self, action_with_group: ActionWithGroup):
         observation, reward, done, _ = self._environment.step(action_with_group.action)
-        new_group = action_with_group.observation_action_reward_group + 1
-        action_result = ActionResult(new_group, action_with_group, observation, reward, done)
+        action_result = ActionResult(action_with_group.observation_action_reward_group, action_with_group, observation,
+                                     reward, done)
         self._manager.publish(Message(EventType.ACTION_RESULT, action_result))
         if not done:
-            self._manager.publish(Message(EventType.OBSERVATION, ObservationWithGroup(new_group, observation)))
+            self._manager.publish(
+                Message(EventType.OBSERVATION,
+                        ObservationWithGroup(action_with_group.observation_action_reward_group + 1, observation))
+            )
 
     @update.register
     def _(self, _: ResetEnvironment):
@@ -147,7 +150,7 @@ class TrainerSubscriber(Subscriber):
         self._action_results[action_result.observation_action_reward_group] = action_result
         self._match_action_results_and_observation()
         if action_result.done:
-            self._push_early_actions_to_replay_memory()
+            self._push_early_actions_to_replay_memory(action_result.reward)
 
     @update.register
     def _(self, observation_with_group: ObservationWithGroup):
@@ -162,7 +165,7 @@ class TrainerSubscriber(Subscriber):
         pass
 
     def _match_action_results_and_observation(self):
-        keys = filter(lambda k: k in self._observations, self._action_results.keys())
+        keys = list(filter(lambda k: k in self._observations, self._action_results.keys()))
         for key in keys:
             observation = self._observations.pop(key)
             action_result = self._action_results.pop(key)
@@ -193,9 +196,11 @@ class TrainerSubscriber(Subscriber):
                 if isinstance(new_entry, StartTraining):
                     training_enabled = True
                 elif not isinstance(new_entry, Kill):
-                    observation, action_result = new_entry
-                    self._trainers[observation.__class__].push_to_memory(observation, action_result.action,
-                                                                         action_result.reward)
+                    observation_with_group, action_result = new_entry
+                    key = observation_with_group.observation.__class__
+                    if key in self._trainers:
+                        self._trainers[key].push_to_memory(observation_with_group.observation,
+                                                           action_result.action.action, action_result.reward)
                 else:
                     break
             except Empty:
@@ -210,9 +215,9 @@ class TrainerSubscriber(Subscriber):
                     model_updates = [trainer.model.state_dict() for trainer in self._trainers.values()]
                     self._manager.publish(Message(EventType.MODEL_UPDATE, ModelUpdate(model_updates)))
 
-    def _push_early_actions_to_replay_memory(self):
-        for observation, registered_action_result in self._pre_card_phase_observations_and_action_results:
+    def _push_early_actions_to_replay_memory(self, rewards):
+        for observation_with_group, registered_action_result in self._pre_card_phase_observations_and_action_results:
             action_result_with_updated_reward = copy.copy(registered_action_result)
-            index = observation.player.position_towards_taker
-            action_result_with_updated_reward.reward = registered_action_result.reward[index]
-            self._training_queue.put((observation, action_result_with_updated_reward))
+            index = observation_with_group.observation.player.position_towards_taker
+            action_result_with_updated_reward.reward = rewards[index]
+            self._training_queue.put((observation_with_group, action_result_with_updated_reward))

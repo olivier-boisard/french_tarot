@@ -45,7 +45,7 @@ class ActionResultSubscriber(Subscriber):
         raise NotImplementedError
 
 
-def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="cuda"):
+def main(n_episodes_training: int = 200000, n_episodes_cold_start=100, device="cuda"):
     set_all_seeds()
 
     steps_per_update = 100
@@ -70,6 +70,7 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=1000, device="
     manager.add_subscriber(environment_subscriber, EventType.ACTION)
     manager.add_subscriber(environment_subscriber, EventType.RESET_ENVIRONMENT)
     manager.add_subscriber(trainer_subscriber, EventType.ACTION_RESULT)
+    manager.add_subscriber(trainer_subscriber, EventType.OBSERVATION)
     manager.add_subscriber(action_subscriber, EventType.ACTION_RESULT)
 
     # TODO clean up this mess
