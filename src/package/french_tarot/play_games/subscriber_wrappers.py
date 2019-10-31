@@ -121,6 +121,10 @@ class FrenchTarotEnvironmentSubscriber(Subscriber):
         return obj
 
 
+class StartTraining:
+    pass
+
+
 class TrainerSubscriber(Subscriber):
 
     def __init__(self, observation_trainers_map: Dict[type, Trainer], manager: Manager, steps_per_update: int = 100):
@@ -133,7 +137,6 @@ class TrainerSubscriber(Subscriber):
         self._action_results = {}
         self._observations = {}
         self._trainers = observation_trainers_map
-        self._training_enabled = False
 
     @singledispatchmethod
     def update(self, data: any):
@@ -179,14 +182,17 @@ class TrainerSubscriber(Subscriber):
         self._training_process.join()
 
     def enable_training(self):
-        self._training_enabled = True
+        self._training_queue.put(StartTraining())
 
     def _train(self):
         step = 0
+        training_enabled = False
         while True:
             try:
                 new_entry = self._training_queue.get_nowait()
-                if not isinstance(new_entry, Kill):
+                if isinstance(new_entry, StartTraining):
+                    training_enabled = True
+                elif not isinstance(new_entry, Kill):
                     observation, action_result = new_entry
                     self._trainers[observation.__class__].push_to_memory(observation, action_result.action,
                                                                          action_result.reward)
@@ -195,7 +201,7 @@ class TrainerSubscriber(Subscriber):
             except Empty:
                 pass
 
-            if self._training_enabled:
+            if training_enabled:
                 step += 1
                 for trainer in self._trainers.values():
                     trainer.optimize_model()
