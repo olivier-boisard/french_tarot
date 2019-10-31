@@ -133,6 +133,7 @@ class TrainerSubscriber(Subscriber):
         self._action_results = {}
         self._observations = {}
         self._trainers = observation_trainers_map
+        self._training_enabled = False
 
     @singledispatchmethod
     def update(self, data: any):
@@ -177,11 +178,12 @@ class TrainerSubscriber(Subscriber):
         super().stop()
         self._training_thread.join()
 
+    def enable_training(self):
+        self._training_enabled = True
+
     def _train(self):
         step = 0
         while True:
-            step += 1
-
             try:
                 new_entry = self._training_queue.get_nowait()
                 if not isinstance(new_entry, Kill):
@@ -194,13 +196,14 @@ class TrainerSubscriber(Subscriber):
             except Empty:
                 pass
 
-            # TODO use synced flag to enable/disable training
-            for trainer in self._trainers.values():
-                trainer.optimize_model()
+            if self._training_enabled:
+                step += 1
+                for trainer in self._trainers.values():
+                    trainer.optimize_model()
 
-            if step % self._steps_per_update == 0:
-                model_updates = [trainer.model for trainer in self._trainers.values()]
-                self._manager.publish(Message(EventType.MODEL_UPDATE, ModelUpdate(model_updates)))
+                if step % self._steps_per_update == 0:
+                    model_updates = [trainer.model for trainer in self._trainers.values()]
+                    self._manager.publish(Message(EventType.MODEL_UPDATE, ModelUpdate(model_updates)))
 
     def _push_early_actions_to_replay_memory(self):
         for observation, registered_action_result in self._pre_card_phase_observations_and_action_results:
