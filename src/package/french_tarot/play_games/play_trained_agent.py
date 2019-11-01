@@ -45,10 +45,13 @@ class ActionResultSubscriber(Subscriber):
         raise NotImplementedError
 
 
-def main(n_episodes_training: int = 200000, n_episodes_cold_start=100, device="cuda"):
+def main():
     set_all_seeds()
 
     steps_per_update = 100
+    n_episodes_training: int = 200000
+    n_episodes_cold_start = 100
+    device = "cuda"
 
     manager = Manager()
     # noinspection PyUnresolvedReferences

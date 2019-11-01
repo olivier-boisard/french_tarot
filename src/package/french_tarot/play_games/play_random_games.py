@@ -10,18 +10,20 @@ from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
-def main(n_jobs=-1, n_iterations=1000, plot_scores=True):
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial-seed", default=0, type=int)
     args = parser.parse_args()
 
+    n_jobs = -1
+    n_iterations = 1000
+    
     scores = Parallel(n_jobs=n_jobs, verbose=1)(
         delayed(_run_game)(i, initial_seed=args.initial_seed) for i in range(n_iterations)
     )
 
     _print_final_scores(scores)
-    if plot_scores:
-        _plot_scores(scores)
+    _plot_scores(scores)
 
 
 def _run_game(iteration: int, initial_seed: int = 0) -> np.array:
