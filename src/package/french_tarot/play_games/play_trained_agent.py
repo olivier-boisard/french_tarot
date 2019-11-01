@@ -54,7 +54,6 @@ def main():
     device = "cuda"
 
     manager = Manager()
-    # noinspection PyUnresolvedReferences
     dog_phase_agent_model = DogPhaseAgent.create_dqn(CoreCardNeuralNet())
     dog_phase_agent = DogPhaseAgent(dog_phase_agent_model)
     agent = AllPhaseAgent(dog_phase_agent=dog_phase_agent)
