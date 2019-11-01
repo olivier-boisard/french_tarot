@@ -30,7 +30,6 @@ class Subscriber(AbstractSubscriber):
     def stop(self):
         self.push(Kill())
         self._process.join()
-        self.teardown()
 
     def setup(self):
         pass
@@ -40,6 +39,7 @@ class Subscriber(AbstractSubscriber):
 
     def loop(self):
         run = True
+        self.setup()
         while run:
             message = self._queue.get()
             try:
@@ -54,6 +54,7 @@ class Subscriber(AbstractSubscriber):
                 self._dump_input(message, filepath)
                 self.exception = e
                 raise e
+        self.teardown()
 
     def _dump_state(self, state_filepath):
         print("Dumping state at", state_filepath)
