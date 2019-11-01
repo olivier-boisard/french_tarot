@@ -24,7 +24,6 @@ class Subscriber(AbstractSubscriber):
         self.exception = None
 
     def start(self):
-        self.setup()
         self._process.start()
 
     def stop(self):
