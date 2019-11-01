@@ -130,7 +130,8 @@ class StartTraining:
 
 class TrainerSubscriber(Subscriber):
 
-    def __init__(self, observation_trainers_map: Dict[type, Trainer], manager: Manager, steps_per_update: int = 100):
+    def __init__(self, observation_trainers_map: Dict[type, Trainer], manager: Manager, steps_per_update: int = 100,
+                 device=None):
         super().__init__(manager)
         self._pre_card_phase_observations_and_action_results = []
         self._training_queue = Queue()
@@ -140,6 +141,11 @@ class TrainerSubscriber(Subscriber):
         self._action_results = {}
         self._observations = {}
         self._trainers = observation_trainers_map
+        self._device = device
+
+    def setup(self):
+        for trainer in self._trainers.values():
+            trainer.model.to(self._device)  # TODO this breaks the demeter law
 
     @singledispatchmethod
     def update(self, data: any):

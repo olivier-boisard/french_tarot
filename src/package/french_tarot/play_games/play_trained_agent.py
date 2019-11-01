@@ -57,9 +57,10 @@ def main(n_episodes_training: int = 200000, n_episodes_cold_start=100, device="c
     agent = AllPhaseAgent(dog_phase_agent=dog_phase_agent)
     agent_subscriber = AllPhaseAgentSubscriber(agent, manager)
 
-    dog_phase_trainer = DogPhaseAgentTrainer(copy.deepcopy(dog_phase_agent_model).to(device))
+    dog_phase_trainer = DogPhaseAgentTrainer(copy.deepcopy(dog_phase_agent_model))
     observation_trainers_map = {DogPhaseObservation: dog_phase_trainer}
-    trainer_subscriber = TrainerSubscriber(observation_trainers_map, manager, steps_per_update=steps_per_update)
+    trainer_subscriber = TrainerSubscriber(observation_trainers_map, manager, steps_per_update=steps_per_update,
+                                           device=device)
 
     environment_subscriber = FrenchTarotEnvironmentSubscriber(manager)
 
