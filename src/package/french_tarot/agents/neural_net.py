@@ -1,56 +1,12 @@
-import math
-import random
-from abc import abstractmethod, ABC
-from collections import namedtuple
-from typing import List, Tuple, Dict
+from abc import ABC, abstractmethod
+from typing import Tuple, Dict
 
-import numpy as np
 import torch
-from attr import dataclass
-from torch import nn, tensor
+from torch import nn
 from torch.optim import Adam
 
-from french_tarot.environment.core import Card, CARDS
-
-Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
-
-
-class Policy:
-    def __init__(self, eps_start: float = 0.9, eps_end: float = 0.05, eps_decay: int = 500, random_seed: int = 1988):
-        self._eps_start = eps_start
-        self._eps_end = eps_end
-        self._eps_decay = eps_decay
-        self._random_state = np.random.RandomState(random_seed)
-
-    def should_play_randomly(self, step):
-        threshold = self._eps_end + (self._eps_start - self._eps_end) * math.exp(-1. * step / self._eps_decay)
-        plays_at_random = self._random_state.rand(1, 1) > threshold
-        return plays_at_random
-
-
-class ReplayMemory:
-    """
-    Got from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
-    """
-
-    def __init__(self, capacity: int, random_seed: int = 1988):
-        self.capacity = capacity
-        self.memory = []
-        self.position = 0
-        self._random_state = random.Random(random_seed)
-
-    def push_message(self, state: torch.Tensor, action: int, next_state: torch.Tensor, reward: float):
-        """Saves a transition."""
-        if len(self.memory) < self.capacity:
-            self.memory.append(None)
-        self.memory[self.position] = Transition(state, action, next_state, reward)
-        self.position = (self.position + 1) % self.capacity
-
-    def sample(self, batch_size: int) -> List[Transition]:
-        return self._random_state.sample(self.memory, batch_size)
-
-    def __len__(self) -> int:
-        return len(self.memory)
+from french_tarot.agents.agent import Agent
+from french_tarot.agents.training import ReplayMemory, Policy
 
 
 class CoreCardNeuralNet(nn.Module):
@@ -100,13 +56,6 @@ class CoreCardNeuralNet(nn.Module):
         x = torch.cat([x_color_1, x_color_2, x_color_3, x_color_4, x_trumps], dim=1)
         x = self.merge_tower(x)
         return x
-
-
-class Agent(ABC):
-
-    @abstractmethod
-    def get_action(self, observation):
-        pass
 
 
 class Trainer(ABC):
@@ -193,19 +142,3 @@ class BaseNeuralNetAgent(Agent, ABC):
     @property
     def device(self) -> str:
         return "cuda" if next(self.policy_net.parameters()).is_cuda else "cpu"
-
-
-def encode_cards(cards: List[Card]) -> torch.Tensor:
-    return tensor([card in cards for card in CARDS]).float()
-
-
-def set_all_seeds(seed: int = 1988):
-    torch.manual_seed(seed)
-    # noinspection PyUnresolvedReferences
-    torch.cuda.manual_seed_all(seed)
-
-
-@dataclass
-class Round:
-    starting_player_id: int
-    played_cards: List[Card]

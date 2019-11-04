@@ -1,6 +1,7 @@
 from typing import Dict, Union
 
-from french_tarot.agents.common import Agent, BaseNeuralNetAgent
+from french_tarot.agents.agent import Agent
+from french_tarot.agents.neural_net import BaseNeuralNetAgent
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_bid import BidPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgent

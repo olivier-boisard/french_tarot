@@ -1,6 +1,6 @@
 import pytest
 
-from french_tarot.agents.common import BaseNeuralNetAgent
+from french_tarot.agents.neural_net import BaseNeuralNetAgent
 
 
 def test_create_abstract_agent(mock):

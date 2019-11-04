@@ -7,8 +7,8 @@ import dill
 from attr import dataclass
 from torch.multiprocessing import Process, Queue
 
-from french_tarot.agents.common import Trainer
 from french_tarot.agents.meta import singledispatchmethod
+from french_tarot.agents.neural_net import Trainer
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.datastructures import ModelUpdate
 from french_tarot.environment.core import Observation

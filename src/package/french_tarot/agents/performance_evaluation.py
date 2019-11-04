@@ -3,7 +3,8 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from french_tarot.agents.common import Agent, BaseNeuralNetAgent
+from french_tarot.agents.agent import Agent
+from french_tarot.agents.neural_net import BaseNeuralNetAgent
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.environment.core import rotate_list
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment

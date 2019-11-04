@@ -1,4 +1,5 @@
-from french_tarot.agents.common import encode_cards, CoreCardNeuralNet
+from french_tarot.agents.encoding import encode_cards
+from french_tarot.agents.neural_net import CoreCardNeuralNet
 from french_tarot.agents.trained_player_bid import BidPhaseAgent
 from french_tarot.environment.core import Bid
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment

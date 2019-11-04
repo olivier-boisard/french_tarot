@@ -5,7 +5,8 @@ import torch
 from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
-from french_tarot.agents.common import BaseNeuralNetAgent, CoreCardNeuralNet, encode_cards, Trainer
+from french_tarot.agents.encoding import encode_cards
+from french_tarot.agents.neural_net import CoreCardNeuralNet, Trainer, BaseNeuralNetAgent
 from french_tarot.environment.core import CARDS, Observation
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 

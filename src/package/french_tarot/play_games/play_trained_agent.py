@@ -1,8 +1,9 @@
 import copy
 
+import torch
 from tqdm import tqdm
 
-from french_tarot.agents.common import set_all_seeds, CoreCardNeuralNet
+from french_tarot.agents.neural_net import CoreCardNeuralNet
 from french_tarot.agents.trained_player import AllPhaseAgent
 from french_tarot.agents.trained_player_dog import DogPhaseAgent, DogPhaseAgentTrainer
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
@@ -107,3 +108,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def set_all_seeds(seed: int = 1988):
+    torch.manual_seed(seed)
+    # noinspection PyUnresolvedReferences
+    torch.cuda.manual_seed_all(seed)

@@ -4,7 +4,6 @@ from typing import List, Tuple
 import numpy as np
 from attr import dataclass
 
-from french_tarot.agents.common import Round
 from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, compute_card_set_points, \
     is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, Observation, PlayerData
 from french_tarot.environment.subenvironments.core import SubEnvironment
@@ -254,3 +253,9 @@ class CardPhaseEnvironment(SubEnvironment):
         rewards[2] += bonus
         rewards[3] += bonus
         return rewards
+
+
+@dataclass
+class Round:
+    starting_player_id: int
+    played_cards: List[Card]

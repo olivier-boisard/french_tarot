@@ -1,6 +1,6 @@
 import numpy as np
 
-from french_tarot.agents.common import Agent
+from french_tarot.agents.agent import Agent
 from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.environment.core import Bid, ChelemAnnouncement, PoigneeAnnouncement, get_minimum_allowed_bid, \
     check_card_is_allowed, is_oudler, CARDS, BIDS

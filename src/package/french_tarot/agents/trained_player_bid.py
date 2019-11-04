@@ -6,7 +6,9 @@ from numpy.random.mtrand import RandomState
 from torch import nn
 from torch.nn.modules.loss import BCELoss
 
-from french_tarot.agents.common import BaseNeuralNetAgent, encode_cards, Transition, Trainer
+from french_tarot.agents.encoding import encode_cards
+from french_tarot.agents.neural_net import Trainer, BaseNeuralNetAgent
+from french_tarot.agents.training import Transition
 from french_tarot.environment.core import Bid
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 
