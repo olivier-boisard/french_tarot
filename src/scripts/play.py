@@ -6,13 +6,14 @@ from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 
 
 def main():
-    n_episodes_training: int = 200000
+    n_episodes: int = 200000
 
     _set_all_seeds()
-    _run_episodes(AllPhaseAgent(), n_episodes_training)
+    _run_episodes(n_episodes)
 
 
-def _run_episodes(agent: AllPhaseAgent, n_episodes: int):
+def _run_episodes(n_episodes: int):
+    agent = AllPhaseAgent()
     environment = FrenchTarotEnvironment()
     for _ in tqdm.tqdm(range(n_episodes)):
         observation = environment.reset()
