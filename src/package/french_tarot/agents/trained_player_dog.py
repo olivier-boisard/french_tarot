@@ -26,7 +26,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
     CARDS_OK_IN_DOG = [card for card in CARDS if _card_is_ok_in_dog(card)]
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
 
-    def __init__(self, policy_net: torch.nn.Module, seed: int = 1988):
+    def __init__(self, policy_net: torch.nn.Module, seed: int = 0):
         super().__init__(policy_net)
         self._random_state = np.random.RandomState(seed)
 

@@ -15,7 +15,7 @@ from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservati
 
 class BidPhaseAgent(BaseNeuralNetAgent):
 
-    def __init__(self, policy_net: nn.Module, seed: int = 1988):
+    def __init__(self, policy_net: nn.Module, seed: int = 0):
         super().__init__(policy_net)
         self._epoch = 0
         self._random_state = RandomState(seed)

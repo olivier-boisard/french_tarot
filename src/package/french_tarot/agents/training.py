@@ -1,8 +1,8 @@
-import math
 import random
 from collections import namedtuple
 from typing import List
 
+import math
 import numpy as np
 import torch
 
@@ -10,7 +10,7 @@ Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'
 
 
 class Policy:
-    def __init__(self, eps_start: float = 0.9, eps_end: float = 0.05, eps_decay: int = 500, random_seed: int = 1988):
+    def __init__(self, eps_start: float = 0.9, eps_end: float = 0.05, eps_decay: int = 500, random_seed: int = 0):
         self._eps_start = eps_start
         self._eps_end = eps_end
         self._eps_decay = eps_decay
@@ -27,7 +27,7 @@ class ReplayMemory:
     Got from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
     """
 
-    def __init__(self, capacity: int, random_seed: int = 1988):
+    def __init__(self, capacity: int, random_seed: int = 0):
         self.capacity = capacity
         self.memory = []
         self.position = 0
