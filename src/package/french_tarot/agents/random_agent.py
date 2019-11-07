@@ -13,7 +13,7 @@ from french_tarot.exceptions import FrenchTarotException
 
 class RandomPlayer(Agent):
 
-    def __init__(self, seed: int = 0):
+    def __init__(self, seed: int = 1988):
         super().__init__()
         self._random_state = np.random.RandomState(seed)
 

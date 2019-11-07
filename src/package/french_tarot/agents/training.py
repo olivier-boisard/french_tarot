@@ -7,7 +7,7 @@ Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'
 
 
 class Policy:
-    def __init__(self, eps_start: float = 0.9, eps_end: float = 0.05, eps_decay: int = 500, random_seed: int = 0):
+    def __init__(self, eps_start: float = 0.9, eps_end: float = 0.05, eps_decay: int = 500, random_seed: int = 1988):
         self._eps_start = eps_start
         self._eps_end = eps_end
         self._eps_decay = eps_decay

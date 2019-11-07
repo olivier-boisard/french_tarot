@@ -17,7 +17,7 @@ class FrenchTarotEnvironment:
     n_players = 4
     _dog_size = 6
 
-    def __init__(self, seed: int = 0):
+    def __init__(self, seed: int = 1988):
         self._random_state = np.random.RandomState(seed)
         self._current_phase_environment = None
         self._hand_per_player = None
