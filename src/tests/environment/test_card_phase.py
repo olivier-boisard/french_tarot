@@ -3,37 +3,10 @@ import copy
 import numpy as np
 import pytest
 
-from french_tarot.environment.core import compute_card_set_points, CARDS, ChelemAnnouncement, Bid, Card, \
-    PoigneeAnnouncement
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.core import compute_card_set_points, CARDS, ChelemAnnouncement, Card
 from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
 from french_tarot.exceptions import FrenchTarotException
-
-
-def setup_environment(taker=0, shuffled_deck=None, chelem=False, poignee=False):
-    environment = FrenchTarotEnvironment()
-
-    observation = environment.reset(shuffled_card_deck=shuffled_deck)
-    good = False
-    for i in range(environment.n_players):
-        if i == taker:
-            observation = environment.step(Bid.GARDE_SANS)[0]
-            good = True
-        else:
-            observation = environment.step(Bid.PASS)[0]
-    if not good:
-        raise FrenchTarotException("No taking player")
-
-    announcements = []
-    if chelem:
-        announcements.append(ChelemAnnouncement())
-    if poignee:
-        announcements.append(PoigneeAnnouncement.largest_possible_poignee_factory(observation.player.hand[-11:-1]))
-    environment.step(announcements)
-    environment.step([])
-    environment.step([])
-    observation = environment.step([])[0]
-    return environment, observation
+from src.tests.conftest import setup_environment
 
 
 def test_start_valid_card():
