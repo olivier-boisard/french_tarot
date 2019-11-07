@@ -5,3 +5,7 @@ exclude_lines =
     pass
     plt.*
     _main()
+
+omit:
+    *venv*
+    *pycharm*
