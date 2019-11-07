@@ -1,7 +1,7 @@
 import pytest
+from torch import nn
 
 from french_tarot.agents.encoding import encode_cards
-from french_tarot.agents.neural_net import CoreCardNeuralNet
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.core import Bid
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
@@ -10,7 +10,7 @@ from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservati
 
 @pytest.fixture
 def dog_phase_agent():
-    return DogPhaseAgent(DogPhaseAgent.create_dqn(CoreCardNeuralNet()))
+    return DogPhaseAgent(nn.Linear(156, 78))
 
 
 def test_dog_phase_observation_encoder():
