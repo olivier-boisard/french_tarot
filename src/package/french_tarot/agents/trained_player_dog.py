@@ -8,7 +8,7 @@ from torch import nn
 from torch.nn.functional import smooth_l1_loss
 
 from french_tarot.agents.encoding import encode_cards
-from french_tarot.agents.neural_net import CoreCardNeuralNet, Trainer, BaseNeuralNetAgent
+from french_tarot.agents.neural_net import BaseNeuralNetAgent
 from french_tarot.agents.training import Transition
 from french_tarot.environment.core import Card, CARDS
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
@@ -73,7 +73,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         return TrainedPlayerDogNeuralNet(base_neural_net)
 
 
-class DogPhaseAgentTrainer(Trainer):
+class DogPhaseAgentTrainer:
 
     def __init__(self, net: torch.nn.Module, **kwargs):
         # noinspection PyArgumentList
@@ -108,35 +108,3 @@ class DogPhaseAgentTrainer(Trainer):
         action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
         return_batch = torch.tensor(batch.reward).float().to(self.device) * self._return_scale_factor
         return state_batch, action_batch, return_batch
-
-
-class TrainedPlayerDogNeuralNet(nn.Module):
-
-    def __init__(self, base_card_neural_net: CoreCardNeuralNet):
-        super().__init__()
-        self.base_card_neural_net = base_card_neural_net
-        nn_width = base_card_neural_net.output_dimensions
-        self.merge_tower = nn.Sequential(
-            nn.BatchNorm1d(2 * nn_width),
-            nn.Linear(2 * nn_width, 4 * nn_width),
-            nn.ReLU(),
-            nn.BatchNorm1d(4 * nn_width),
-            nn.Linear(4 * nn_width, 4 * nn_width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(4 * nn_width),
-            nn.Linear(4 * nn_width, 8 * nn_width),
-            nn.ReLU(),
-            nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, 8 * nn_width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(8 * nn_width),
-            nn.Linear(8 * nn_width, len(CARDS))
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        hand_end_idx = x.size(1) // 2
-        x_hand = self.base_card_neural_net(x[:, :hand_end_idx])
-        x_feedback = self.base_card_neural_net(x[:, hand_end_idx:])
-        return self.merge_tower(torch.cat([x_hand, x_feedback], dim=1))

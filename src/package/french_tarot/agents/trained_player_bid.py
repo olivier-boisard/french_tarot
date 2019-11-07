@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn.modules.loss import BCELoss
 
 from french_tarot.agents.encoding import encode_cards
-from french_tarot.agents.neural_net import Trainer, BaseNeuralNetAgent
+from french_tarot.agents.neural_net import BaseNeuralNetAgent
 from french_tarot.agents.training import Transition
 from french_tarot.environment.core import Bid
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
@@ -54,33 +54,8 @@ class BidPhaseAgent(BaseNeuralNetAgent):
     def output_dimension(self) -> int:
         return self.policy_net.output_layer[-2].out_features
 
-    @staticmethod
-    def create_dqn(base_neural_net: torch.nn.Module) -> nn.Module:
-        width = base_neural_net.output_dimensions
-        return nn.Sequential(
-            base_neural_net,
 
-            nn.BatchNorm1d(width),
-            nn.Linear(width, 2 * width),
-            nn.ReLU(),
-            nn.BatchNorm1d(2 * width),
-            nn.Linear(2 * width, 2 * width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(2 * width),
-            nn.Linear(2 * width, 4 * width),
-            nn.ReLU(),
-            nn.BatchNorm1d(4 * width),
-            nn.Linear(4 * width, 4 * width),
-            nn.ReLU(),
-
-            nn.BatchNorm1d(4 * width),
-            nn.Linear(4 * width, 1),
-            nn.Sigmoid()
-        )
-
-
-class BidPhaseAgentTrainer(Trainer):
+class BidPhaseAgentTrainer():
 
     def _get_input_and_target_tensors(self):
         transitions = self._memory.sample(self._batch_size)
