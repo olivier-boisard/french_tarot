@@ -1,15 +1,11 @@
 import copy
-import itertools
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 import torch
-from torch import nn
-from torch.nn.functional import smooth_l1_loss
 
 from french_tarot.agents.encoding import encode_cards
 from french_tarot.agents.neural_net import BaseNeuralNetAgent
-from french_tarot.agents.training import Transition
 from french_tarot.environment.core import Card, CARDS
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 
@@ -67,44 +63,3 @@ class DogPhaseAgent(BaseNeuralNetAgent):
             selections[i] = 1
         assert selections.sum().item() == n_cards
         return selections
-
-    @staticmethod
-    def create_dqn(base_neural_net: nn.Module) -> nn.Module:
-        return TrainedPlayerDogNeuralNet(base_neural_net)
-
-
-class DogPhaseAgentTrainer:
-
-    def __init__(self, net: torch.nn.Module, **kwargs):
-        # noinspection PyArgumentList
-        super().__init__(net, **kwargs)
-        self._return_scale_factor = 0.001
-
-    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        state_batch, action_batch, target = self._get_batches()
-        model_output = self.model(state_batch).gather(1, action_batch)
-        return model_output, target
-
-    def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss = smooth_l1_loss(model_output.squeeze(), target)
-        return loss
-
-    def push_to_memory(self, observation: DogPhaseObservation, action, reward):
-        selected_cards = torch.zeros(len(CARDS))
-        for permuted_action in itertools.permutations(action):
-            hand = list(observation.player.hand)
-            for card in permuted_action:
-                xx = torch.cat((encode_cards(hand), selected_cards)).unsqueeze(0)
-                action_id = DogPhaseAgent.CARDS_OK_IN_DOG.index(card)
-                self._memory.push_message(xx, action_id, None, reward)
-
-                selected_cards[action_id] = 1
-                hand.remove(DogPhaseAgent.CARDS_OK_IN_DOG[action_id])
-
-    def _get_batches(self):
-        transitions = self._memory.sample(self._batch_size)
-        batch = Transition(*zip(*transitions))
-        state_batch = torch.cat(batch.state).to(self.device)
-        action_batch = torch.tensor(batch.action).unsqueeze(1).to(self.device)
-        return_batch = torch.tensor(batch.reward).float().to(self.device) * self._return_scale_factor
-        return state_batch, action_batch, return_batch

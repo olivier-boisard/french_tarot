@@ -1,14 +1,9 @@
-from typing import Tuple
-
 import numpy as np
-import torch
 from numpy.random.mtrand import RandomState
 from torch import nn
-from torch.nn.modules.loss import BCELoss
 
 from french_tarot.agents.encoding import encode_cards
 from french_tarot.agents.neural_net import BaseNeuralNetAgent
-from french_tarot.agents.training import Transition
 from french_tarot.environment.core import Bid
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
 
@@ -53,26 +48,3 @@ class BidPhaseAgent(BaseNeuralNetAgent):
     @property
     def output_dimension(self) -> int:
         return self.policy_net.output_layer[-2].out_features
-
-
-class BidPhaseAgentTrainer():
-
-    def _get_input_and_target_tensors(self):
-        transitions = self._memory.sample(self._batch_size)
-        batch = Transition(*zip(*transitions))
-        input_vectors = torch.cat(batch.state).to(self.device)
-        targets = torch.tensor(batch.reward).float().to(self.device)
-        targets[targets >= 0] = 1.
-        targets[targets < 0.] = 0
-        return input_vectors, targets
-
-    def get_model_output_and_target(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        input_vectors, target = self._get_input_and_target_tensors()
-        model_output = self.model(input_vectors)
-        return model_output, target
-
-    def compute_loss(self, model_output: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return BCELoss()(model_output.flatten(), target.flatten())
-
-    def push_to_memory(self, observation: BidPhaseObservation, action, reward):
-        self._memory.push_message(encode_cards(observation.player.hand).unsqueeze(0), action, None, reward)
