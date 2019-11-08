@@ -122,12 +122,6 @@ class ChelemAnnouncement(Announcement):
     pass
 
 
-class Poignee:
-    SIMPLE_POIGNEE_SIZE = 10
-    DOUBLE_POIGNEE_SIZE = 13
-    TRIPLE_POIGNEE_SIZE = 15
-
-
 class PoigneeAnnouncement(Announcement, ABC):
 
     def __init__(self, revealed_cards: List[Card]):

@@ -1,9 +1,5 @@
-from collections import namedtuple
-
 import math
 import numpy as np
-
-Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
 class Policy:
