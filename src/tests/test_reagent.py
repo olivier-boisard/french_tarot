@@ -2,10 +2,12 @@ import datetime
 import re
 from _ast import Dict
 from dataclasses import dataclass
+from typing import List, Union
 
 import numpy as np
+import pandas as pd
 
-from french_tarot.environment.core import Card
+from french_tarot.environment.core import Card, CARDS
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from src.tests.conftest import setup_environment
 
@@ -14,7 +16,21 @@ from src.tests.conftest import setup_environment
 class ReAgentDataRow:
     mdp_id: int
     sequence_number: str
-    state_feature: Dict
+    state_features: Dict
+    action: int
+    reward: float
+    possible_actions: List[int]
+    action_probability: Union[int, None]
+    ds: str
+
+    @property
+    def dictionary(self):
+        self_as_dict = vars(self)
+        self_as_dict["mdp_id"] = str(self_as_dict["mdp_id"])
+        self_as_dict["state_features"] = list(map(str, self_as_dict["state_features"]))
+        self_as_dict["action"] = self_as_dict["action"]
+        self_as_dict["possible_actions"] = list(map(str, self_as_dict["possible_actions"]))
+        return self_as_dict
 
 
 class CardPhaseObservationEncoder:
@@ -26,13 +42,27 @@ class CardPhaseStateActionEncoder:
     def __init__(self, observation_encoder: CardPhaseObservationEncoder):
         self._episode_id = 0
         self._observation_encoder = observation_encoder
+        self._dataset_id = self._timestamp()
 
     def encode(self, observation: CardPhaseObservation, action: Card, reward: float):
         return ReAgentDataRow(
             mdp_id=0,
-            sequence_number=datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M:%S.%f"),
-            state_feature=self._observation_encoder.encode(observation)
+            sequence_number=self._timestamp(),
+            state_features={key: value for key, value in enumerate(self._observation_encoder.encode(observation))},
+            action=CARDS.index(action),
+            reward=reward,
+            possible_actions=sorted(map(lambda card: CARDS.index(card), observation.player.hand)),
+            action_probability=None,
+            ds=self._timestamp()
         )
+
+    @staticmethod
+    def _timestamp():
+        return datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M:%S.%f")
+
+    @staticmethod
+    def convert_reagent_datarow_list_to_pandas_dataframe(input_list: List[ReAgentDataRow]):
+        return pd.DataFrame(map(lambda row: row.dictionary, input_list))
 
 
 def test_encoder(mock):
@@ -50,10 +80,25 @@ def test_encoder(mock):
     later_output = encoder.encode(observation, action, reward)
 
     assert output.mdp_id == 0
-    assert len(re.findall(timestamp_format, output.sequence_number))
+    assert _timestamp_format_is_valid(timestamp_format, output.sequence_number)
     assert later_output.sequence_number > output.sequence_number
-    assert output.state_feature == {0: 0, 1: 1, 2: 2, 3: 3}
+    assert output.state_features == {0: 0, 1: 1, 2: 2, 3: 3}
+    assert output.action == 28
+    assert output.reward == reward
+    assert output.possible_actions == [2, 5, 6, 13, 18, 25, 26, 28, 30, 36, 42, 47, 51, 59, 66, 68, 70, 77]
+    assert output.action_probability is None
+    assert _timestamp_format_is_valid(timestamp_format, output.ds)
+    assert isinstance(output.dictionary, dict)
+    assert isinstance(output.dictionary["state_features"], dict)
+
+    rows = [encoder.encode(observation, action, reward) for _ in range(10)]
+    df = CardPhaseStateActionEncoder.convert_reagent_datarow_list_to_pandas_dataframe(rows)
+    assert isinstance(df, pd.DataFrame)
 
 
 def test_encode_2_episode():
     raise NotImplementedError
+
+
+def _timestamp_format_is_valid(timestamp_format, ds):
+    return len(re.findall(timestamp_format, ds))
