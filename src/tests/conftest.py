@@ -17,7 +17,7 @@ def random_agent():
 
 
 # TODO replace by fixture
-def setup_environment(taker=0, shuffled_deck=None, chelem=False, poignee=False):
+def setup_environment_for_card_phase(taker=0, shuffled_deck=None, chelem=False, poignee=False):
     environment = FrenchTarotEnvironment()
 
     observation = environment.reset(shuffled_card_deck=shuffled_deck)

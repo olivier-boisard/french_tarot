@@ -6,11 +6,11 @@ import pytest
 from french_tarot.environment.core import compute_card_set_points, CARDS, ChelemAnnouncement, Card
 from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
 from french_tarot.exceptions import FrenchTarotException
-from src.tests.conftest import setup_environment
+from src.tests.conftest import setup_environment_for_card_phase
 
 
 def test_start_valid_card():
-    environment, observation = setup_environment()
+    environment, observation = setup_environment_for_card_phase()
     played_card = observation.player.hand[0]
     observation, reward, done, _ = environment.step(played_card)
     assert observation.played_cards_in_round == [played_card]
@@ -19,20 +19,20 @@ def test_start_valid_card():
 
 
 def test_start_invalid_action():
-    environment = setup_environment()[0]
+    environment = setup_environment_for_card_phase()[0]
     with pytest.raises(FrenchTarotException):
         environment.step(ChelemAnnouncement())
 
 
 def test_start_invalid_card_not_in_hand():
-    environment, observation = setup_environment()
+    environment, observation = setup_environment_for_card_phase()
     played_card = filter(lambda card: card not in observation.player.hand, CARDS)
     with pytest.raises(FrenchTarotException):
         environment.step(played_card)
 
 
 def test_play_complete_round_valid_last_player_team_wins():
-    environment = setup_environment()[0]
+    environment = setup_environment_for_card_phase()[0]
     environment.step(Card.HEART_1)
     environment.step(Card.HEART_KING)
     environment.step(Card.HEART_4)
@@ -47,7 +47,7 @@ def test_play_complete_round_valid_last_player_team_wins():
 
 
 def test_play_complete_round_valid_last_player_team_loses():
-    environment = setup_environment(taker=1)[0]
+    environment = setup_environment_for_card_phase(taker=1)[0]
     environment.step(Card.HEART_1)
     environment.step(Card.HEART_KING)
     environment.step(Card.HEART_4)
@@ -65,7 +65,7 @@ def test_play_excuse_in_round():
     shuffled_deck = list(np.random.RandomState(seed=1988).permutation(CARDS))
     shuffled_deck[15] = Card.DIAMOND_KING
     shuffled_deck[40] = Card.EXCUSE
-    environment, observation_0 = setup_environment(shuffled_deck=shuffled_deck)
+    environment, observation_0 = setup_environment_for_card_phase(shuffled_deck=shuffled_deck)
     observation_1 = environment.step(Card.HEART_1)[0]
     observation_2 = environment.step(Card.HEART_5)[0]
     observation_3 = environment.step(Card.EXCUSE)[0]
@@ -82,7 +82,7 @@ def test_play_excuse_in_round():
 
 
 def test_play_excuse_first():
-    environment = setup_environment()[0]
+    environment = setup_environment_for_card_phase()[0]
     environment.step(Card.EXCUSE)
     environment.step(Card.HEART_KING)
     environment.step(Card.HEART_4)
@@ -155,7 +155,7 @@ def test_play_trump_win():
 
 
 def test_play_complete_game():
-    environment = setup_environment()[0]
+    environment = setup_environment_for_card_phase()[0]
     environment.step(Card.HEART_1)
     environment.step(Card.HEART_KING)
     environment.step(Card.HEART_4)
@@ -236,7 +236,7 @@ def test_play_complete_game():
 
 
 def test_petit_au_bout_taker():
-    environment = setup_environment(taker=3, shuffled_deck=CARDS, chelem=True)[0]
+    environment = setup_environment_for_card_phase(taker=3, shuffled_deck=CARDS, chelem=True)[0]
     environment.step(Card.TRUMP_2)
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
@@ -316,7 +316,7 @@ def test_petit_au_bout_taker():
 
 
 def test_poignee():
-    environment = setup_environment(taker=3, shuffled_deck=CARDS, poignee=True)[0]
+    environment = setup_environment_for_card_phase(taker=3, shuffled_deck=CARDS, poignee=True)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
@@ -396,7 +396,7 @@ def test_poignee():
 
 
 def test_chelem_unannounced():
-    environment = setup_environment(taker=3, shuffled_deck=CARDS)[0]
+    environment = setup_environment_for_card_phase(taker=3, shuffled_deck=CARDS)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
@@ -476,7 +476,7 @@ def test_chelem_unannounced():
 
 
 def test_chelem_announced():
-    environment = setup_environment(taker=3, shuffled_deck=CARDS, chelem=True)[0]
+    environment = setup_environment_for_card_phase(taker=3, shuffled_deck=CARDS, chelem=True)[0]
     environment.step(Card.TRUMP_2)
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
@@ -559,7 +559,7 @@ def test_chelem_announced_with_excuse():
     deck = copy.copy(CARDS)
     deck[56] = Card.EXCUSE
     deck[77] = Card.TRUMP_1
-    environment = setup_environment(taker=3, shuffled_deck=deck, chelem=True)[0]
+    environment = setup_environment_for_card_phase(taker=3, shuffled_deck=deck, chelem=True)[0]
     environment.step(Card.TRUMP_2)
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
@@ -639,7 +639,7 @@ def test_chelem_announced_with_excuse():
 
 
 def test_pee_unallowed():
-    environment = setup_environment(taker=0, shuffled_deck=CARDS)[0]
+    environment = setup_environment_for_card_phase(taker=0, shuffled_deck=CARDS)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
@@ -651,7 +651,7 @@ def test_chelem_announced_and_failed():
     deck = copy.copy(CARDS)
     deck[70] = Card.SPADES_1
     deck[0] = Card.TRUMP_15
-    environment = setup_environment(taker=3, shuffled_deck=deck, chelem=True)[0]
+    environment = setup_environment_for_card_phase(taker=3, shuffled_deck=deck, chelem=True)[0]
 
     environment.step(Card.TRUMP_2)
     environment.step(Card.TRUMP_15)
@@ -732,7 +732,7 @@ def test_chelem_announced_and_failed():
 
 
 def test_chelem_unannounced_and_achieved_by_other_team():
-    environment = setup_environment(taker=0, shuffled_deck=CARDS)[0]
+    environment = setup_environment_for_card_phase(taker=0, shuffled_deck=CARDS)[0]
     environment.step(Card.SPADES_1)
     environment.step(Card.CLOVER_5)
     environment.step(Card.HEART_9)
