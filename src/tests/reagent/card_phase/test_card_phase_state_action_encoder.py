@@ -122,6 +122,9 @@ def test_encoder(card_phase_observation, action, reward, state_feature_expected_
     assert isinstance(output.dictionary, dict)
     assert isinstance(output.dictionary["state_features"], dict)
 
+
+def test_convert_reagent_datarow_list_to_pandas_dataframe(card_phase_observation, action, reward):
+    encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
     rows = [encoder.encode(card_phase_observation, action, reward) for _ in range(10)]
     df = CardPhaseStateActionEncoder.convert_reagent_datarow_list_to_pandas_dataframe(rows)
     assert isinstance(df, pd.DataFrame)
