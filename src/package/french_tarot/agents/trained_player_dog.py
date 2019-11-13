@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 import torch
 
-from french_tarot.agents.encoding import encode_cards
+from french_tarot.agents.encoding import encode_cards_as_tensor
 from french_tarot.agents.neural_net import BaseNeuralNetAgent
 from french_tarot.environment.core import Card, CARDS
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
@@ -30,7 +30,7 @@ class DogPhaseAgent(BaseNeuralNetAgent):
         hand = copy.copy(observation.player.hand)
         selected_cards = torch.zeros(len(CARDS))
         for _ in range(observation.dog_size):
-            xx = torch.cat([encode_cards(hand), selected_cards]).unsqueeze(0)
+            xx = torch.cat([encode_cards_as_tensor(hand), selected_cards]).unsqueeze(0)
             xx = self.policy_net(xx.to(self.device)).squeeze()
 
             xx[~DogPhaseAgent._get_card_selection_mask(hand)] = -np.inf

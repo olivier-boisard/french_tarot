@@ -41,3 +41,8 @@ def setup_environment_for_card_phase(taker=0, shuffled_deck=None, chelem=False, 
     environment.step([])
     observation = environment.step([])[0]
     return environment, observation
+
+
+@pytest.fixture
+def card_phase_observation():
+    return setup_environment_for_card_phase()[1]

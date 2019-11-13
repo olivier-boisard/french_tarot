@@ -1,7 +1,7 @@
 import pytest
 from torch import nn
 
-from french_tarot.agents.encoding import encode_cards
+from french_tarot.agents.encoding import encode_cards_as_tensor
 from french_tarot.agents.trained_player_dog import DogPhaseAgent
 from french_tarot.environment.core import Bid
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
@@ -15,7 +15,7 @@ def dog_phase_agent():
 
 def test_dog_phase_observation_encoder():
     observation = _prepare_environment()
-    state = encode_cards(observation.player.hand)
+    state = encode_cards_as_tensor(observation.player.hand)
 
     assert state.shape[0] == 78
     assert state.sum() == 24

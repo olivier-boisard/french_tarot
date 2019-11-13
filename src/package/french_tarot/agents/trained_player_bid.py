@@ -2,7 +2,7 @@ import numpy as np
 from numpy.random.mtrand import RandomState
 from torch import nn
 
-from french_tarot.agents.encoding import encode_cards
+from french_tarot.agents.encoding import encode_cards_as_tensor
 from french_tarot.agents.neural_net import BaseNeuralNetAgent
 from french_tarot.environment.core import Bid
 from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
@@ -16,7 +16,7 @@ class BidPhaseAgent(BaseNeuralNetAgent):
         self._random_state = RandomState(seed)
 
     def get_max_return_action(self, observation: BidPhaseObservation):
-        state = encode_cards(observation.player.hand)
+        state = encode_cards_as_tensor(observation.player.hand)
         self._step += 1
         output = self.policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
         bid = self._get_bid_value(output, observation.bid_per_player)

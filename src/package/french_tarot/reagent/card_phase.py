@@ -3,14 +3,10 @@ from typing import List
 
 import pandas as pd
 
+from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
 from french_tarot.environment.core import Card, CARDS
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from french_tarot.reagent.data import ReAgentDataRow
-
-
-class CardPhaseObservationEncoder:
-    def encode(self, observation: CardPhaseObservation):
-        pass
 
 
 class CardPhaseStateActionEncoder:

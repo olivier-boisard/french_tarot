@@ -9,11 +9,6 @@ from src.tests.conftest import setup_environment_for_card_phase
 
 
 @pytest.fixture
-def card_phase_observation():
-    return setup_environment_for_card_phase()[1]
-
-
-@pytest.fixture
 def action(card_phase_observation):
     return card_phase_observation.player.hand[0]
 
