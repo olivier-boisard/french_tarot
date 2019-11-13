@@ -7,7 +7,7 @@ from french_tarot.environment.core import Card, CARDS
 
 
 def encode_cards(cards):
-    return [card in cards for card in CARDS]
+    return [float(card in cards) for card in CARDS]
 
 
 def encode_cards_as_tensor(cards: List[Card]) -> torch.Tensor:
