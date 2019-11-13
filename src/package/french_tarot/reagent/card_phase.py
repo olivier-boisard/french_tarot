@@ -31,6 +31,9 @@ class CardPhaseStateActionEncoder:
             ds=self._timestamp()
         )
 
+    def episode_done(self):
+        self._current_episode_id += 1
+
     @staticmethod
     def _timestamp():
         return datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M:%S.%f")
@@ -38,6 +41,3 @@ class CardPhaseStateActionEncoder:
     @staticmethod
     def convert_reagent_datarow_list_to_pandas_dataframe(input_list: List[ReAgentDataRow]):
         return pd.DataFrame(map(lambda row: row.dictionary, input_list))
-
-    def episode_done(self):
-        self._current_episode_id += 1
