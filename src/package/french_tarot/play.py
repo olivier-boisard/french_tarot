@@ -1,5 +1,8 @@
 import itertools
 
+import pyarrow as pa
+import pyarrow.parquet as pq
+
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
@@ -27,3 +30,12 @@ def play_rounds(n_rounds: int):
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
     output = [play_round(encoder) for _ in range(n_rounds)]
     return list(itertools.chain(*output))
+
+
+def create_batch(n_rounds, output_file_path: str):
+    output = play_rounds(n_rounds)
+    df = CardPhaseStateActionEncoder.convert_reagent_datarow_list_to_pandas_dataframe(output)
+
+    print("Save batch at", output_file_path)
+    table = pa.Table.from_pandas(df)
+    pq.write_table(table, output_file_path)
