@@ -3,5 +3,6 @@ from french_tarot.environment.subenvironments.card_phase import CardPhaseObserva
 
 
 class CardPhaseObservationEncoder:
-    def encode(self, observation: CardPhaseObservation):
+    @staticmethod
+    def encode(observation: CardPhaseObservation):
         return encode_cards(observation.player.hand)
