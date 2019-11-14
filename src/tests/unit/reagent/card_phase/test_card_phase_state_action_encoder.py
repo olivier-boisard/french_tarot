@@ -136,7 +136,7 @@ def test_encode_2_episodes(card_phase_observation, action, reward):
     output = encoder.encode(card_phase_observation, action, reward)
     encoder.episode_done()
     output_later = encoder.encode(card_phase_observation, action, reward)
-    
+
     assert output.mdp_id == 0
     assert output_later.mdp_id == 1
 
