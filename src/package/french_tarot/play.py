@@ -28,6 +28,7 @@ def play_round(encoder: CardPhaseStateActionEncoder(CardPhaseObservationEncoder(
 
 def play_rounds(n_rounds: int):
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
+    # TODO bug: catch that there need to be different mdp_id
     output = [play_round(encoder) for _ in range(n_rounds)]
     return list(itertools.chain(*output))
 

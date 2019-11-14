@@ -13,6 +13,8 @@ def test_play_rounds():
 
     assert all(map(lambda row: row.mdp_id == 0, round_1_output))
     assert all(map(lambda row: row.mdp_id == 1, round_2_output))
+    # TODO check rewards
+    assert False
 
 
 def test_play_n_rounds():
