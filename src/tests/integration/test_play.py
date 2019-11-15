@@ -23,7 +23,7 @@ def test_play_episodes():
     expected_len = n_players * n_cards_played_per_player * n_rounds
     rounds_output = play_episodes(n_rounds)
     assert len(rounds_output) == expected_len
-    assert len(set(map(lambda round_output: round_output.mdp_id, rounds_output))) == 10
+    assert len(set(map(lambda round_output: round_output.mdp_id, rounds_output))) == n_players * n_rounds
 
 
 def test_create_batch(request):
