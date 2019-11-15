@@ -1,5 +1,3 @@
-import itertools
-
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -28,9 +26,11 @@ def play_round(encoder: CardPhaseStateActionEncoder(CardPhaseObservationEncoder(
 
 def play_rounds(n_rounds: int):
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
-    # TODO bug: catch that there need to be different mdp_id
-    output = [play_round(encoder) for _ in range(n_rounds)]
-    return list(itertools.chain(*output))
+    output = []
+    for _ in range(n_rounds):
+        output.extend(play_round(encoder))
+        encoder.episode_done()
+    return output
 
 
 def create_batch(n_rounds, output_file_path: str):

@@ -24,6 +24,7 @@ def test_play_n_rounds():
     expected_len = n_players * n_cards_played_per_player * n_rounds
     rounds_output = play_rounds(n_rounds)
     assert len(rounds_output) == expected_len
+    assert len(set(map(lambda round_output: round_output.mdp_id, rounds_output))) == 10
 
 
 def test_create_batch(request):
