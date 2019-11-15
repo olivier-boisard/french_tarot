@@ -104,10 +104,11 @@ def state_feature_expected_output():
 
 def test_encoder(card_phase_observation, action, reward, state_feature_expected_output):
     timestamp_format = "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}$"
+    player_position_towards_taker = 0
 
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
-    output = encoder.encode(card_phase_observation, action, reward)
-    later_output = encoder.encode(card_phase_observation, action, reward)
+    output = encoder.encode(player_position_towards_taker, card_phase_observation, action, reward)
+    later_output = encoder.encode(player_position_towards_taker, card_phase_observation, action, reward)
 
     assert output.mdp_id == 0
     assert _timestamp_format_is_valid(timestamp_format, output.sequence_number)
@@ -124,21 +125,22 @@ def test_encoder(card_phase_observation, action, reward, state_feature_expected_
 
 
 def test_convert_reagent_datarow_list_to_pandas_dataframe(card_phase_observation, action, reward):
+    player_position_towards_taker = 0
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
-    rows = [encoder.encode(card_phase_observation, action, reward) for _ in range(10)]
+    rows = [encoder.encode(player_position_towards_taker, card_phase_observation, action, reward) for _ in range(10)]
     df = CardPhaseStateActionEncoder.convert_reagent_datarow_list_to_pandas_dataframe(rows)
     assert isinstance(df, pd.DataFrame)
 
 
 def test_encode_2_episodes(card_phase_observation, action, reward):
+    player_position_towards_taker = 0
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
 
-    output = encoder.encode(card_phase_observation, action, reward)
+    output_a = encoder.encode(player_position_towards_taker, card_phase_observation, action, reward)
     encoder.episode_done()
-    output_later = encoder.encode(card_phase_observation, action, reward)
+    output_b = encoder.encode(player_position_towards_taker, card_phase_observation, action, reward)
 
-    assert output.mdp_id == 0
-    assert output_later.mdp_id == 1
+    assert output_a.mdp_id != output_b.mdp_id
 
 
 def _timestamp_format_is_valid(timestamp_format, ds):
