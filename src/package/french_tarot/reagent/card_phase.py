@@ -15,9 +15,10 @@ class CardPhaseStateActionEncoder:
         self._observation_encoder = observation_encoder
         self._dataset_id = self._timestamp()
 
-    def encode(self, observation: CardPhaseObservation, action: Card, reward: float):
+    def encode(self, position_towards_taker, observation: CardPhaseObservation, action: Card, reward: float):
+        current_episode_id_multiplier = 10
         return ReAgentDataRow(
-            mdp_id=self._current_episode_id,
+            mdp_id=self._current_episode_id * current_episode_id_multiplier + position_towards_taker,
             sequence_number=self._timestamp(),
             state_features={key: value for key, value in enumerate(self._observation_encoder.encode(observation))},
             action=CARDS.index(action),
