@@ -130,6 +130,14 @@ def test_convert_reagent_datarow_list_to_pandas_dataframe(card_phase_observation
     rows = [encoder.encode(player_position_towards_taker, card_phase_observation, action, reward) for _ in range(10)]
     df = CardPhaseStateActionEncoder.convert_reagent_datarow_list_to_pandas_dataframe(rows)
     assert isinstance(df, pd.DataFrame)
+    assert df["mdp_id"].dtype == object
+    assert df["sequence_number"].dtype == int
+    assert df["state_features"].dtype == object
+    assert isinstance(df["state_features"][0], dict)
+    assert isinstance(df["state_features"][0], dict)
+    assert isinstance(list(df["state_features"][0].keys())[0], str)
+    assert isinstance(list(df["state_features"][0].values())[0], float)
+    #TODO assert other fields
 
 
 def test_encode_2_episodes(card_phase_observation, action, reward):
