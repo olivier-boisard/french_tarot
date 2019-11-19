@@ -13,14 +13,15 @@ class CardPhaseStateActionEncoder:
         self._dataset_id = str(self._create_timestamp())
 
     def encode(self, position_towards_taker, observation: CardPhaseObservation, action: Card, reward: float):
+        possible_actions = self._retrieve_possible_actions(observation)
         return ReAgentDataRow(
             mdp_id=self._generate_episode_id(position_towards_taker),
             sequence_number=self._create_timestamp(),
             state_features=self._retrieve_state_features(observation),
             action=CARDS.index(action),
             reward=reward,
-            possible_actions=self._retrieve_possible_actions(observation),
-            action_probability=None,
+            possible_actions=possible_actions,
+            action_probability=1. / len(possible_actions),
             ds=self._dataset_id
         )
 

@@ -114,7 +114,7 @@ def test_encoder(card_phase_observation, action, reward, state_feature_expected_
     assert output.action == 28
     assert output.reward == reward
     assert output.possible_actions == [2, 5, 6, 13, 18, 25, 26, 28, 30, 36, 42, 47, 51, 59, 66, 68, 70, 77]
-    assert output.action_probability is None
+    assert isinstance(output.action_probability, float)
     assert isinstance(output.dictionary, dict)
     assert isinstance(output.dictionary["state_features"], dict)
 
