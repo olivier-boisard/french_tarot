@@ -1,3 +1,5 @@
+import json
+
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
@@ -42,5 +44,7 @@ def play_episodes(n_rounds: int):
 
 def create_batch(n_rounds, output_file_path: str):
     output = play_episodes(n_rounds)
-
+    json_objects = map(lambda row: json.dumps(row.dictionary), output)
     print("Save batch at", output_file_path)
+    with open(output_file_path, "w") as f:
+        f.writelines(json_objects)

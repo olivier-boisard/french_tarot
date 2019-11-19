@@ -28,7 +28,7 @@ def test_play_episodes():
 
 def test_create_batch(request):
     n_rounds = 10
-    output_file_path = ".tmp.parquet"
+    output_file_path = ".tmp.json"
     create_batch(n_rounds, output_file_path)
     request.addfinalizer(lambda: os.remove(output_file_path))
 
