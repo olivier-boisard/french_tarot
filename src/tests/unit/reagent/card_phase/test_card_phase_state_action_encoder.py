@@ -1,5 +1,3 @@
-import re
-
 import pandas as pd
 import pytest
 
@@ -110,8 +108,7 @@ def test_encoder(card_phase_observation, action, reward, state_feature_expected_
     output = encoder.encode(player_position_towards_taker, card_phase_observation, action, reward)
     later_output = encoder.encode(player_position_towards_taker, card_phase_observation, action, reward)
 
-    assert output.mdp_id == 0
-    assert _timestamp_format_is_valid(timestamp_format, output.sequence_number)
+    assert output.mdp_id == "0_0"
     assert later_output.sequence_number > output.sequence_number
     assert output.state_features == state_feature_expected_output
     assert all(map(lambda x: isinstance(x, float), output.state_features.values()))
@@ -119,7 +116,6 @@ def test_encoder(card_phase_observation, action, reward, state_feature_expected_
     assert output.reward == reward
     assert output.possible_actions == [2, 5, 6, 13, 18, 25, 26, 28, 30, 36, 42, 47, 51, 59, 66, 68, 70, 77]
     assert output.action_probability is None
-    assert _timestamp_format_is_valid(timestamp_format, output.ds)
     assert isinstance(output.dictionary, dict)
     assert isinstance(output.dictionary["state_features"], dict)
 
@@ -155,7 +151,3 @@ def test_encode_2_episodes(card_phase_observation, action, reward):
     output_b = encoder.encode(player_position_towards_taker, card_phase_observation, action, reward)
 
     assert output_a.mdp_id != output_b.mdp_id
-
-
-def _timestamp_format_is_valid(timestamp_format, ds):
-    return len(re.findall(timestamp_format, ds))
