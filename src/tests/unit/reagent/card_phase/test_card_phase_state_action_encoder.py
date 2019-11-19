@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
@@ -118,28 +117,6 @@ def test_encoder(card_phase_observation, action, reward, state_feature_expected_
     assert output.action_probability is None
     assert isinstance(output.dictionary, dict)
     assert isinstance(output.dictionary["state_features"], dict)
-
-
-def test_convert_reagent_datarow_list_to_pandas_dataframe(card_phase_observation, action, reward):
-    player_position_towards_taker = 0
-    encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
-    rows = [encoder.encode(player_position_towards_taker, card_phase_observation, action, reward) for _ in range(10)]
-    df = CardPhaseStateActionEncoder.convert_reagent_datarow_list_to_pandas_dataframe(rows)
-    assert isinstance(df, pd.DataFrame)
-    assert df["mdp_id"].dtype == object
-    assert df["sequence_number"].dtype == int
-    assert df["state_features"].dtype == object
-    assert isinstance(df["state_features"][0], dict)
-    assert isinstance(df["state_features"][0], dict)
-    assert isinstance(list(df["state_features"][0].keys())[0], str)
-    assert isinstance(list(df["state_features"][0].values())[0], float)
-    assert df["action"].dtype == object
-    assert isinstance(eval(df["action"][0]), int)
-    assert isinstance(df["possible_actions"][0], list)
-    assert isinstance(df["possible_actions"][0][0], str)
-    assert isinstance(eval(df["possible_actions"][0][0]), int)
-    assert isinstance(df["action_probability"][0], float) or df["action_probability"][0] is None
-    assert df["ds"].dtype == object
 
 
 def test_encode_2_episodes(card_phase_observation, action, reward):

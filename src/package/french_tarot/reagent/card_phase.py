@@ -1,7 +1,4 @@
 import time
-from typing import List
-
-import pandas as pd
 
 from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
 from french_tarot.environment.core import Card, CARDS
@@ -43,7 +40,3 @@ class CardPhaseStateActionEncoder:
     @staticmethod
     def _create_timestamp():
         return int(time.time() * 1000000)
-
-    @staticmethod
-    def convert_reagent_datarow_list_to_pandas_dataframe(input_list: List[ReAgentDataRow]):
-        return pd.DataFrame(map(lambda row: row.dictionary, input_list))
