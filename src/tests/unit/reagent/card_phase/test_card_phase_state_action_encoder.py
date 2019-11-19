@@ -137,7 +137,13 @@ def test_convert_reagent_datarow_list_to_pandas_dataframe(card_phase_observation
     assert isinstance(df["state_features"][0], dict)
     assert isinstance(list(df["state_features"][0].keys())[0], str)
     assert isinstance(list(df["state_features"][0].values())[0], float)
-    #TODO assert other fields
+    assert df["action"].dtype == object
+    assert isinstance(eval(df["action"][0]), int)
+    assert isinstance(df["possible_actions"][0], list)
+    assert isinstance(df["possible_actions"][0][0], str)
+    assert isinstance(eval(df["possible_actions"][0][0]), int)
+    assert isinstance(df["action_probability"][0], float) or df["action_probability"][0] is None
+    assert df["ds"].dtype == object
 
 
 def test_encode_2_episodes(card_phase_observation, action, reward):

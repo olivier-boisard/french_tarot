@@ -1,4 +1,4 @@
-import datetime
+import time
 from typing import List
 
 import pandas as pd
@@ -13,27 +13,36 @@ class CardPhaseStateActionEncoder:
     def __init__(self, observation_encoder: CardPhaseObservationEncoder):
         self._current_episode_id = 0
         self._observation_encoder = observation_encoder
-        self._dataset_id = self._timestamp()
+        self._dataset_id = str(self._create_timestamp())
 
     def encode(self, position_towards_taker, observation: CardPhaseObservation, action: Card, reward: float):
-        current_episode_id_multiplier = 10
         return ReAgentDataRow(
-            mdp_id=self._current_episode_id * current_episode_id_multiplier + position_towards_taker,
-            sequence_number=self._timestamp(),
-            state_features={key: value for key, value in enumerate(self._observation_encoder.encode(observation))},
+            mdp_id=self._generate_episode_id(position_towards_taker),
+            sequence_number=self._create_timestamp(),
+            state_features=self._retrieve_state_features(observation),
             action=CARDS.index(action),
             reward=reward,
-            possible_actions=sorted(map(lambda card: CARDS.index(card), observation.player.hand)),
+            possible_actions=self._retrieve_possible_actions(observation),
             action_probability=None,
-            ds=self._timestamp()
+            ds=self._dataset_id
         )
+
+    def _generate_episode_id(self, position_towards_taker):
+        return "_".join([str(self._current_episode_id), str(position_towards_taker)])
 
     def episode_done(self):
         self._current_episode_id += 1
 
+    def _retrieve_state_features(self, observation):
+        return {key: value for key, value in enumerate(self._observation_encoder.encode(observation))}
+
     @staticmethod
-    def _timestamp():
-        return datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M:%S.%f")
+    def _retrieve_possible_actions(observation):
+        return sorted(map(lambda card: CARDS.index(card), observation.player.hand))
+
+    @staticmethod
+    def _create_timestamp():
+        return int(time.time() * 1000000)
 
     @staticmethod
     def convert_reagent_datarow_list_to_pandas_dataframe(input_list: List[ReAgentDataRow]):
