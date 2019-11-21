@@ -6,6 +6,12 @@ from the French Tarot Federation.
 The aim is to train this agent based on DQN, although this is not
 implemented yet.
 
+# Dependencies
+- docker
+- ReAgent
+- python3.7
+- virtualenv
+
 # Game introduction
 TODO
 
