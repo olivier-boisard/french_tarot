@@ -6,6 +6,5 @@ ARG WORKDIR
 
 RUN groupadd $USERGROUP
 RUN useradd -g $USERGROUP $USERID
-RUN mkdir -p $WORKDIR
-RUN chown -R $USERID:$USERGROUP $WORKDIR
+RUN chown $USERID:$USERGROUP /home/miniconda/lib/python3.7/site-packages/
 USER $USERID

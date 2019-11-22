@@ -18,7 +18,7 @@ build: ReAgent/preprocessing/target/ run_tests
 
 ReAgent/preprocessing/target/: ReAgent/
 	docker build -f ReAgent/docker/cuda.Dockerfile -t ${BASE_DOCKER_IMAGE} ReAgent/
-	docker build -f Dockerfile --build-arg USERID=$(shell id -u) --build-arg USERGROUP=$(shell id -g) --build-arg WORKDIR=$(shell pwd) -t ${DOCKER_IMAGE} .
+	docker build -f Dockerfile --build-arg USERID=$(shell id -u) --build-arg USERGROUP=$(shell id -g) -t ${DOCKER_IMAGE} .
 	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
 
