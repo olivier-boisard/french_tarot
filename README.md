@@ -7,7 +7,7 @@ The aim is to train this agent based on DQN, although this is not
 implemented yet.
 
 # Dependencies
-- docker
+- docker with nvidia runtime
 - ReAgent
 - python3.7
 - virtualenv
