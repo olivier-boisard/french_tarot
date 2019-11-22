@@ -1,0 +1,8 @@
+FROM horizon:dev
+
+ARG USERID
+ARG USERGROUP
+
+RUN groupadd $USERGROUP
+RUN useradd -g $USERGROUP $USERID
+USER $USERID
