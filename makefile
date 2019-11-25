@@ -10,6 +10,7 @@ DOCKER_RUN_COMMAND=docker run \
     -p 0.0.0.0:6006:6006 \
     -it \
     ${DOCKER_IMAGE}
+VENV_BIN_FOLDER=${PWD}/venv/bin
 
 export PYTHONPATH=${PWD}/src/package
 VIRTUALENV_VALIDATION_SCRIPT=${PYTHON_VIRTUAL_ENV_DIR}/bin/activate
@@ -18,17 +19,17 @@ build: ReAgent/preprocessing/target/ run_tests
 
 ReAgent/preprocessing/target/: ReAgent/
 	docker build -f ReAgent/docker/cuda.Dockerfile -t ${BASE_DOCKER_IMAGE} ReAgent/
-	docker build -f Dockerfile --build-arg USERID=$(shell id -u) --build-arg USERGROUP=$(shell id -g) -t ${DOCKER_IMAGE} .
+	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) -t ${DOCKER_IMAGE} .
 	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
 
 run_tests: build_french_tarot
-	(cd src/tests && pytest --cov --cov-report=term-missing)
+	(cd src/tests && ${VENV_BIN_FOLDER}/pytest --cov --cov-report=term-missing)
 
-build_french_tarot: venv/bin/pip
-	venv/bin/pip install -r requirements.txt
+build_french_tarot: ${VENV_BIN_FOLDER}/pip
+	${VENV_BIN_FOLDER}/pip install -r requirements.txt
 
-venv/bin/pip:
+${VENV_BIN_FOLDER}/pip:
 	virtualenv --python=python3.7 ${PYTHON_VIRTUAL_ENV_DIR}
 	. ${VIRTUALENV_VALIDATION_SCRIPT}
 
