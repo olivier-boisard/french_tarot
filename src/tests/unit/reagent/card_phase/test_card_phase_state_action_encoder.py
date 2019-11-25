@@ -100,7 +100,6 @@ def state_feature_expected_output():
 
 
 def test_encoder(card_phase_observation, action, reward, state_feature_expected_output):
-    timestamp_format = "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}$"
     player_position_towards_taker = 0
 
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
