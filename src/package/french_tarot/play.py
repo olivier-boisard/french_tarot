@@ -42,8 +42,8 @@ def play_episodes(n_rounds: int):
     return output
 
 
-def create_batch(n_rounds, output_file_path: str):
-    output = play_episodes(n_rounds)
+def create_batch(n_episodes: int, output_file_path: str):
+    output = play_episodes(n_episodes)
     json_objects = map(lambda row: json.dumps(row.dictionary), output)
     print("Save batch at", output_file_path)
     with open(output_file_path, "w") as f:
