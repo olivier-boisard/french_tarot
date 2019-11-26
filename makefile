@@ -8,7 +8,6 @@ DOCKER_RUN_COMMAND=docker run \
     -v ${PWD}:${PWD} \
     -w ${PWD}/ReAgent \
     -p 0.0.0.0:6006:6006 \
-    -it \
     ${DOCKER_IMAGE}
 VENV_BIN_FOLDER=${PWD}/venv/bin
 
