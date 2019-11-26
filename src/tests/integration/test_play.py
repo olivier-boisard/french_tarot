@@ -1,7 +1,5 @@
-import os
-
 from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
-from french_tarot.play import play_episode, play_episodes, create_batch
+from french_tarot.play import play_episode, play_episodes
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 
 
@@ -24,12 +22,3 @@ def test_play_episodes():
     rounds_output = play_episodes(n_rounds)
     assert len(rounds_output) == expected_len
     assert len(set(map(lambda round_output: round_output.mdp_id, rounds_output))) == n_players * n_rounds
-
-
-def test_create_batch(request):
-    n_rounds = 10
-    output_file_path = ".tmp.json"
-    create_batch(n_rounds, output_file_path)
-    request.addfinalizer(lambda: os.remove(output_file_path))
-
-    assert os.path.isfile(output_file_path)
