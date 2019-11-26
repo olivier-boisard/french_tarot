@@ -5,6 +5,7 @@ from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
 from french_tarot.environment.french_tarot import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
+from french_tarot.reagent.data import ReAgentDataRow
 
 
 def play_episode(encoder: CardPhaseStateActionEncoder(CardPhaseObservationEncoder())):
@@ -33,7 +34,7 @@ def play_episode(encoder: CardPhaseStateActionEncoder(CardPhaseObservationEncode
     return reagent_entries_per_player
 
 
-def play_episodes(n_rounds: int):
+def play_episodes(n_rounds: int) -> List[ReAgentDataRow]:
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
     output = []
     for _ in range(n_rounds):

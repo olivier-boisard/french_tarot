@@ -12,7 +12,8 @@ class CardPhaseStateActionEncoder:
         self._observation_encoder = observation_encoder
         self._dataset_id = str(self._create_timestamp())
 
-    def encode(self, position_towards_taker, observation: CardPhaseObservation, action: Card, reward: float):
+    def encode(self, position_towards_taker, observation: CardPhaseObservation, action: Card,
+               reward: float) -> ReAgentDataRow:
         possible_actions = self._retrieve_possible_actions(observation)
         return ReAgentDataRow(
             mdp_id=self._generate_episode_id(position_towards_taker),
