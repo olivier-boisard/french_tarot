@@ -25,7 +25,7 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str):
     docker_run_command = [
         os.path.join("/", "usr", "local", "spark", "bin", "spark-submit"),
         "--class com.facebook.spark.rl.Preprocessor preprocessing/target/rl-preprocessing-1.1.jar",
-        "{}".format(json.dumps(generate_timeline(batch)))
+        "{}".format(json.dumps(vars(generate_timeline(batch))))
     ]
 
 
