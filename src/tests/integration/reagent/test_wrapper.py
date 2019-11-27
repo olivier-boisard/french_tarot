@@ -5,7 +5,7 @@ import shutil
 import pytest
 
 from french_tarot.play import play_episodes
-from french_tarot.reagent.wrapper import convert_to_timeline_format, generate_timeline
+from french_tarot.reagent.wrapper import convert_to_timeline_format, _generate_timeline, _get_reagent_directory
 
 
 @pytest.fixture
@@ -16,6 +16,7 @@ def batch():
 def test_convert_to_timeline_format(request, batch):
     output_folder = "dummy_training_data"
     request.addfinalizer(lambda: shutil.rmtree(output_folder))
+    request.addfinalizer(lambda: shutil.rmtree(os.path.join(_get_reagent_directory(), "french_tarot_discrete*")))
 
     convert_to_timeline_format(batch, output_folder)
     assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline.json"))
@@ -23,7 +24,7 @@ def test_convert_to_timeline_format(request, batch):
 
 
 def test_generate_timeline(batch):
-    output = generate_timeline(batch)
+    output = _generate_timeline(batch, "dummy_table_name")
     timeline = output.timeline
     query = output.query
     assert isinstance(timeline["startDs"], str)
