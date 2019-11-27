@@ -1,4 +1,4 @@
-from typing import List
+import json
 
 from french_tarot.agents.random_agent import RandomPlayer
 from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
@@ -41,3 +41,11 @@ def play_episodes(n_rounds: int) -> List[ReAgentDataRow]:
         output.extend(play_episode(encoder))
         encoder.episode_done()
     return output
+
+
+def create_batch(n_episodes: int, output_file_path: str):
+    output = play_episodes(n_episodes)
+    json_objects = map(lambda row: json.dumps(row.dictionary), output)
+    print("Save batch at", output_file_path)
+    with open(output_file_path, "w") as f:
+        f.writelines(json_objects)
