@@ -30,13 +30,13 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str):
 
 
 def generate_timeline(batch: List[ReAgentDataRow]) -> 'Timeline':
-    datasets_ids = [row.ds for row in batch]
+    dataset_ids = [row.ds for row in batch]
 
     # We use a dict instead of a dataclass here because attribute names must be lowerCamelCase and this would break
     # PEP8
     timeline = {
-        "startDs": min(datasets_ids),
-        "endDs": max(datasets_ids),
+        "startDs": min(dataset_ids),
+        "endDs": max(dataset_ids),
         "addTerminalStateRow": True,  # final row in each MDP is corresponds to the terminal state
         "actionDiscrete": True,
         "inputTableName": "french_tarot_discrete",
