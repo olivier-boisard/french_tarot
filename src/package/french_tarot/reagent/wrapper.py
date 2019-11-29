@@ -9,6 +9,7 @@ from french_tarot.environment.core import CARDS
 from french_tarot.reagent.data import ReAgentDataRow
 
 
+# TODO convert to class
 def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, table_sample: int = 100):
     docker_workdir = _get_docker_working_directory()
     reagent_dir = _get_reagent_directory()
