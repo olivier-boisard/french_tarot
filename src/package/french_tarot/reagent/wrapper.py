@@ -9,7 +9,7 @@ from french_tarot.environment.core import CARDS
 from french_tarot.reagent.data import ReAgentDataRow
 
 
-def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str):
+def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, table_sample: int = 100):
     docker_workdir = _get_docker_working_directory()
     reagent_dir = _get_reagent_directory()
     input_table_name = "french_tarot_discrete"
@@ -17,6 +17,37 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str):
 
     _dump_batch_to_json_file(batch, table_path)
 
+    _cleanup_local_spark_cluster(docker_workdir)
+    _run_preprocessor(batch, docker_workdir, input_table_name, table_sample)
+
+
+def _cleanup_local_spark_cluster(docker_workdir):
+    docker_command = _generate_docker_command(docker_workdir)
+    cleanup_command = [
+        "rm",
+        "-rf",
+        "spark-warehouse",
+        "derby.log",
+        "metastore_db",
+        "preprocessing/spark-warehouse",
+        "preprocessing/metastore_db",
+        "preprocessing/derby.log"
+    ]
+    subprocess.call(docker_command + cleanup_command)
+
+
+def _run_preprocessor(batch, docker_workdir, input_table_name, table_sample):
+    docker_command = _generate_docker_command(docker_workdir)
+    spark_command = [
+        os.path.join("/", "usr", "local", "spark", "bin", "spark-submit"),
+        "--class=com.facebook.spark.rl.Preprocessor",
+        "preprocessing/target/rl-preprocessing-1.1.jar",
+        "{}".format(json.dumps(vars(_generate_timeline(batch, input_table_name, table_sample))))
+    ]
+    subprocess.call(docker_command + spark_command)
+
+
+def _generate_docker_command(docker_workdir):
     docker_command = [
         "docker",
         "run",
@@ -27,14 +58,7 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str):
         "--publish=0.0.0.0:6006:6006",
         "french_tarot:latest"
     ]
-    spark_command = [
-        os.path.join("/", "usr", "local", "spark", "bin", "spark-submit"),
-        "--class=com.facebook.spark.rl.Preprocessor",
-        "preprocessing/target/rl-preprocessing-1.1.jar",
-        "{}".format(json.dumps(vars(_generate_timeline(batch, input_table_name))))
-    ]
-
-    subprocess.call(docker_command + spark_command)
+    return docker_command
 
 
 def _get_reagent_directory():
@@ -46,9 +70,8 @@ def _get_docker_working_directory():
     return os.path.abspath(docker_workdir)
 
 
-def _generate_timeline(batch: List[ReAgentDataRow], input_table_name: str) -> 'Timeline':
+def _generate_timeline(batch: List[ReAgentDataRow], input_table_name: str, table_sample: int) -> 'Timeline':
     dataset_ids = [row.ds for row in batch]
-    output_dir = os.path.dirname(input_table_name)
 
     # We use a dict instead of a dataclass here because attribute names must be lowerCamelCase and this would break
     # PEP8
@@ -63,17 +86,17 @@ def _generate_timeline(batch: List[ReAgentDataRow], input_table_name: str) -> 'T
         "numOutputShards": 1,  # some Spark stuff that should be kept to 1 in case of one machine only process
     }
     query = {
-        "tableSample": 100,
+        "tableSample": table_sample,
         "actions": [str(i) for i in range(len(CARDS))]
     }
     return Timeline(timeline=timeline, query=query)
 
 
 def _dump_batch_to_json_file(batch, output_filename):
-    json_objects = map(lambda row: json.dumps(row.dictionary), batch)
+    json_objects = [json.dumps(row.dictionary) for row in batch]
     print("Dump json object at", output_filename)
     with open(output_filename, "w") as f:
-        f.writelines(json_objects)
+        f.writelines("%s\n" % line for line in json_objects)
 
 
 @dataclass
