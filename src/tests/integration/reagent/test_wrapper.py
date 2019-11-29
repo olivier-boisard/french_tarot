@@ -15,8 +15,11 @@ def batch():
 
 def test_convert_to_timeline_format(request, batch):
     output_folder = "dummy_training_data"
+    base_name = "french_tarot_discrete"
     request.addfinalizer(lambda: shutil.rmtree(output_folder))
-    request.addfinalizer(lambda: shutil.rmtree(os.path.join(_get_reagent_directory(), "french_tarot_discrete*")))
+    request.addfinalizer(lambda: os.remove(os.path.join(_get_reagent_directory(), base_name)))
+    request.addfinalizer(lambda: shutil.rmtree(os.path.join(_get_reagent_directory(), "%s_training" % base_name)))
+    request.addfinalizer(lambda: shutil.rmtree(os.path.join(_get_reagent_directory(), "%s_eval" % base_name)))
 
     convert_to_timeline_format(batch, output_folder)
     assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline.json"))

@@ -17,8 +17,7 @@ VIRTUALENV_VALIDATION_SCRIPT=${PYTHON_VIRTUAL_ENV_DIR}/bin/activate
 build: ReAgent/preprocessing/target/ run_tests
 
 ReAgent/preprocessing/target/: ReAgent/
-	docker build -f ReAgent/docker/cuda.Dockerfile -t ${BASE_DOCKER_IMAGE} ReAgent/
-	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) -t ${DOCKER_IMAGE} .
+	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) --build-arg USERID=$(shell id -u) -t ${DOCKER_IMAGE} .
 	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
 
@@ -34,6 +33,7 @@ ${VENV_BIN_FOLDER}/pip:
 
 ReAgent/:
 	git clone https://github.com/facebookresearch/ReAgent.git
+	docker build -f ReAgent/docker/cuda.Dockerfile -t ${BASE_DOCKER_IMAGE} ReAgent/
 
 clean:
 	rm -rf venv ReAgent
