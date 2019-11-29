@@ -10,7 +10,8 @@ from french_tarot.reagent.wrapper import convert_to_timeline_format, _generate_t
 
 @pytest.fixture
 def batch():
-    return play_episodes(10)
+    n_episodes = 10
+    return play_episodes(n_episodes)
 
 
 def test_convert_to_timeline_format(request, batch):
@@ -27,7 +28,7 @@ def test_convert_to_timeline_format(request, batch):
 
 
 def test_generate_timeline(batch):
-    output = _generate_timeline(batch, "dummy_table_name")
+    output = _generate_timeline(batch, "dummy_table_name", table_sample=5)
     timeline = output.timeline
     query = output.query
     assert isinstance(timeline["startDs"], str)
