@@ -7,6 +7,7 @@ from french_tarot.reagent.data import ReAgentDataRow
 
 class CardPhaseStateActionEncoder:
     def __init__(self, observation_encoder: CardPhaseObservationEncoder):
+        self._current_sequence_number = 0
         self._current_episode_id = 0
         self._observation_encoder = observation_encoder
         self._dataset_id = str(create_timestamp())
@@ -14,9 +15,10 @@ class CardPhaseStateActionEncoder:
     def encode(self, position_towards_taker, observation: CardPhaseObservation, action: Card,
                reward: float) -> ReAgentDataRow:
         possible_actions = self._retrieve_possible_actions(observation)
+        self._current_sequence_number += 1
         return ReAgentDataRow(
             mdp_id=self._generate_episode_id(position_towards_taker),
-            sequence_number=create_timestamp(),
+            sequence_number=self._current_sequence_number,
             state_features=self._retrieve_state_features(observation),
             action=CARDS.index(action),
             reward=reward,
