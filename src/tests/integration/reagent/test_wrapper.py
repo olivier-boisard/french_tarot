@@ -23,7 +23,7 @@ def test_convert_to_timeline_format(request, batch):
     request.addfinalizer(lambda: shutil.rmtree(os.path.join(_get_reagent_directory(), "%s_eval" % base_name)))
 
     convert_to_timeline_format(batch, output_folder)
-    assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline.json"))
+    assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline_training.json"))
     assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline_eval.json"))
 
 
