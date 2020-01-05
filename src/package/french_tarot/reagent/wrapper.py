@@ -33,7 +33,7 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, 
 
 def _merge_generated_files(table_name, step, output_folder):
     input_filepaths = glob.glob(os.path.join(_get_reagent_folder(), table_name + '_' + step, 'part*'))
-    output_filepath = os.path.join(_get_reagent_folder(), output_folder, table_name + '_timeline_' + step + '.json')
+    output_filepath = os.path.join(output_folder, table_name + '_timeline_' + step + '.json')
     merge_files(input_filepaths, output_filepath)
 
 
