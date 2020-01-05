@@ -1,9 +1,11 @@
+import glob
 import json
 import os
 import subprocess
 from dataclasses import dataclass
 from typing import List, Dict
 
+from french_tarot.core import merge_files
 from french_tarot.environment import french_tarot
 from french_tarot.environment.core import CARDS
 from french_tarot.reagent.data import ReAgentDataRow
@@ -20,6 +22,26 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, 
 
     _cleanup_local_spark_cluster(docker_workdir)
     _run_preprocessor(batch, docker_workdir, input_table_name, table_sample)
+
+    os.makedirs(output_folder, exist_ok=True)
+    _merge_generated_files(input_table_name, 'training', output_folder)
+    _merge_generated_files(input_table_name, 'eval', output_folder)
+
+    # TODO Remove the output data folder
+    # rm -Rf cartpole_discrete_training cartpole_discrete_eval
+
+
+def _merge_generated_files(table_name, step, output_folder):
+    input_filepaths = glob.glob(os.path.join(_get_reagent_folder(), table_name + '_' + step, 'part*'))
+    output_filepath = os.path.join(_get_reagent_folder(), output_folder, table_name + '_timeline_' + step + '.json')
+    merge_files(input_filepaths, output_filepath)
+
+
+def _get_reagent_folder():
+    repository_path = os.path.join(os.path.dirname(french_tarot.__file__), os.pardir, os.pardir, os.pardir, os.pardir)
+    repository_realpath = os.path.realpath(repository_path)
+    reagent_folder = os.path.join(repository_realpath, 'ReAgent')
+    return reagent_folder
 
 
 def _cleanup_local_spark_cluster(docker_workdir):
