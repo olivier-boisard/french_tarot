@@ -17,14 +17,19 @@ def batch():
 def test_convert_to_timeline_format(request, batch):
     output_folder = "dummy_training_data"
     base_name = "french_tarot_discrete"
+    tmp_training_data_dir = os.path.join(_get_reagent_directory(), "%s_training" % base_name)
+    tmp_eval_data_dir = os.path.join(_get_reagent_directory(), "%s_eval" % base_name)
+
     request.addfinalizer(lambda: shutil.rmtree(output_folder))
     request.addfinalizer(lambda: os.remove(os.path.join(_get_reagent_directory(), base_name)))
-    request.addfinalizer(lambda: shutil.rmtree(os.path.join(_get_reagent_directory(), "%s_training" % base_name)))
-    request.addfinalizer(lambda: shutil.rmtree(os.path.join(_get_reagent_directory(), "%s_eval" % base_name)))
+    request.addfinalizer(lambda: shutil.rmtree(tmp_training_data_dir, ignore_errors=True))
+    request.addfinalizer(lambda: shutil.rmtree(tmp_eval_data_dir, ignore_errors=True))
 
     convert_to_timeline_format(batch, output_folder)
     assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline_training.json"))
     assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline_eval.json"))
+    assert not os.path.isdir(tmp_training_data_dir)
+    assert not os.path.isdir(tmp_eval_data_dir)
 
 
 def test_generate_timeline(batch):

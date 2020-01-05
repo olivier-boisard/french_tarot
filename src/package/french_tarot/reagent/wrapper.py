@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import List, Dict
@@ -27,14 +28,18 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, 
     _merge_generated_files(input_table_name, 'training', output_folder)
     _merge_generated_files(input_table_name, 'eval', output_folder)
 
-    # TODO Remove the output data folder
-    # rm -Rf cartpole_discrete_training cartpole_discrete_eval
+    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'training'))
+    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'eval'))
 
 
 def _merge_generated_files(table_name, step, output_folder):
-    input_filepaths = glob.glob(os.path.join(_get_reagent_folder(), table_name + '_' + step, 'part*'))
+    input_filepaths = glob.glob(os.path.join(_generate_tmp_data_folder_path(table_name, step), 'part*'))
     output_filepath = os.path.join(output_folder, table_name + '_timeline_' + step + '.json')
     merge_files(input_filepaths, output_filepath)
+
+
+def _generate_tmp_data_folder_path(table_name, step):
+    return os.path.join(_get_reagent_folder(), table_name + '_' + step)
 
 
 def _get_reagent_folder():
