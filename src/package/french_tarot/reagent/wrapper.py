@@ -23,6 +23,16 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, 
     _cleanup(input_table_name)
 
 
+def create_normalization_parameters(config_file_path: str, output_file_path: str):
+    docker_workdir = _get_docker_working_directory()
+    docker_command = _generate_docker_command(docker_workdir)
+    normalization_command = [
+        'python',
+        'ml/rl/workflow/create_normalization_metadata.py',
+        '-p',
+    ]
+
+
 def _cleanup(input_table_name):
     shutil.rmtree(_get_tmp_data_folder_path(input_table_name, 'training'))
     shutil.rmtree(_get_tmp_data_folder_path(input_table_name, 'eval'))

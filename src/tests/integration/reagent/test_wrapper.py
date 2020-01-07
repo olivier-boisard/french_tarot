@@ -5,7 +5,8 @@ import shutil
 import pytest
 
 from french_tarot.play import play_episodes
-from french_tarot.reagent.wrapper import convert_to_timeline_format, _generate_timeline, _get_reagent_directory
+from french_tarot.reagent.wrapper import convert_to_timeline_format, _generate_timeline, _get_reagent_directory, \
+    create_normalization_parameters
 
 
 @pytest.fixture
@@ -30,6 +31,14 @@ def test_convert_to_timeline_format(request, batch):
     assert os.path.isfile(os.path.join(output_folder, "french_tarot_discrete_timeline_eval.json"))
     assert not os.path.isdir(tmp_training_data_dir)
     assert not os.path.isdir(tmp_eval_data_dir)
+
+
+def test_create_normalization_parameters(request, resources_folder):
+    input_file = os.path.join(resources_folder, "french_tarot_discrete.json")
+    output_file = ".normalization_parameters.tmp"
+    request.addfinalizer(lambda: os.remove(output_file))
+    create_normalization_parameters(input_file, output_file)
+    assert os.path.isfile(output_file)
 
 
 # TODO should this unit test be removed?

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from french_tarot.agents.random_agent import RandomPlayer
@@ -41,6 +43,11 @@ def setup_environment_for_card_phase(taker=0, shuffled_deck=None, chelem=False, 
     environment.step([])
     observation = environment.step([])[0]
     return environment, observation
+
+
+@pytest.fixture
+def resources_folder():
+    return os.path.join(os.path.dirname(__file__), os.pardir, 'resources')
 
 
 @pytest.fixture

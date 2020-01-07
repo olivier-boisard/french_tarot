@@ -4,9 +4,8 @@ import os
 from french_tarot.core import merge_files
 
 
-def test_merge_files(request):
-    input_folder = os.path.join(os.path.dirname(__file__), os.pardir, 'resources')
-    input_filepaths = glob.glob(os.path.join(input_folder, '*'))
+def test_merge_files(request, resources_folder):
+    input_filepaths = glob.glob(os.path.join(resources_folder, "merge", '*'))
     output_filepath = 'tmp.txt'
 
     request.addfinalizer(lambda: os.remove(output_filepath))
