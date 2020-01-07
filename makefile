@@ -14,14 +14,14 @@ VENV_BIN_FOLDER=${PWD}/venv/bin
 export PYTHONPATH=${PWD}/src/package
 VIRTUALENV_VALIDATION_SCRIPT=${PYTHON_VIRTUAL_ENV_DIR}/bin/activate
 
-build: ReAgent/preprocessing/target/ run_tests
+build: ReAgent/preprocessing/target/ test
 
 ReAgent/preprocessing/target/: ReAgent/
 	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) --build-arg USERID=$(shell id -u) -t ${DOCKER_IMAGE} .
 	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
 
-run_tests: build_french_tarot
+test: build_french_tarot
 	(cd src/tests && ${VENV_BIN_FOLDER}/pytest --cov --cov-report=term-missing)
 
 build_french_tarot: ${VENV_BIN_FOLDER}/pip
