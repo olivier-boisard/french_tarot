@@ -8,7 +8,7 @@ from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 from french_tarot.reagent.data import ReAgentDataRow
 
 
-def play_episode(encoder: CardPhaseStateActionEncoder(CardPhaseObservationEncoder())):
+def play_episode(encoder: CardPhaseStateActionEncoder):
     player = RandomPlayer()
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
