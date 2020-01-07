@@ -32,6 +32,7 @@ def test_convert_to_timeline_format(request, batch):
     assert not os.path.isdir(tmp_eval_data_dir)
 
 
+# TODO should this unit test be removed?
 def test_generate_timeline(batch):
     output = _generate_timeline(batch, "dummy_table_name", table_sample=5)
     timeline = output.timeline
