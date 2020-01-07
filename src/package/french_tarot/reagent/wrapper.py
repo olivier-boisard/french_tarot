@@ -12,24 +12,32 @@ from french_tarot.environment.core import CARDS
 from french_tarot.reagent.data import ReAgentDataRow
 
 
-# TODO convert to class
 def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, table_sample: int = 100):
-    docker_workdir = _get_docker_working_directory()
-    reagent_dir = _get_reagent_directory()
     input_table_name = "french_tarot_discrete"
-    table_path = os.path.join(reagent_dir, input_table_name)
+    docker_workdir = _get_docker_working_directory()
 
-    _dump_batch_to_json_file(batch, table_path)
-
+    _dump_batch_to_json_file(batch, _get_table_path(input_table_name))
     _cleanup_local_spark_cluster(docker_workdir)
     _run_preprocessor(batch, docker_workdir, input_table_name, table_sample)
+    _compile_output_files(input_table_name, output_folder)
+    _cleanup(input_table_name)
 
+
+def _cleanup(input_table_name):
+    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'training'))
+    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'eval'))
+
+
+def _compile_output_files(input_table_name, output_folder):
     os.makedirs(output_folder, exist_ok=True)
     _merge_generated_files(input_table_name, 'training', output_folder)
     _merge_generated_files(input_table_name, 'eval', output_folder)
 
-    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'training'))
-    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'eval'))
+
+def _get_table_path(input_table_name):
+    reagent_dir = _get_reagent_directory()
+    table_path = os.path.join(reagent_dir, input_table_name)
+    return table_path
 
 
 def _merge_generated_files(table_name, step, output_folder):
@@ -98,7 +106,7 @@ def _get_docker_working_directory():
     return os.path.abspath(docker_workdir)
 
 
-def _generate_timeline(batch: List[ReAgentDataRow], input_table_name: str, table_sample: int) -> 'Timeline':
+def _generate_timeline(batch: List[ReAgentDataRow], input_table_name: str, table_sample: int) -> '_Timeline':
     dataset_ids = [row.ds for row in batch]
 
     # We use a dict instead of a dataclass here because attribute names must be lowerCamelCase and this would break
@@ -117,7 +125,7 @@ def _generate_timeline(batch: List[ReAgentDataRow], input_table_name: str, table
         "tableSample": table_sample,
         "actions": [str(i) for i in range(len(CARDS))]
     }
-    return Timeline(timeline=timeline, query=query)
+    return _Timeline(timeline=timeline, query=query)
 
 
 def _dump_batch_to_json_file(batch, output_filename):
@@ -128,6 +136,6 @@ def _dump_batch_to_json_file(batch, output_filename):
 
 
 @dataclass
-class Timeline:
+class _Timeline:
     timeline: Dict
     query: Dict
