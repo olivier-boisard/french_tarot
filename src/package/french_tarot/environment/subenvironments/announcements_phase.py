@@ -3,11 +3,11 @@ from typing import List, Tuple
 import numpy as np
 from attr import dataclass
 
-from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.environment.core import Card, Announcement, PoigneeAnnouncement, count_trumps_and_excuse, \
     ChelemAnnouncement, Observation, PlayerData
 from french_tarot.environment.subenvironments.core import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
+from french_tarot.meta import singledispatchmethod
 
 
 @dataclass

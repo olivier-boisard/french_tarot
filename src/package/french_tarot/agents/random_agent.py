@@ -1,7 +1,6 @@
 import numpy as np
 
 from french_tarot.agents.agent import Agent
-from french_tarot.agents.meta import singledispatchmethod
 from french_tarot.environment.core import Bid, ChelemAnnouncement, PoigneeAnnouncement, get_minimum_allowed_bid, \
     check_card_is_allowed, is_oudler, CARDS, BIDS
 from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
@@ -9,6 +8,7 @@ from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservati
 from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
 from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
+from french_tarot.meta import singledispatchmethod
 
 
 class RandomPlayer(Agent):
