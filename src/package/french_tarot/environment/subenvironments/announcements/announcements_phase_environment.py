@@ -1,18 +1,13 @@
 from typing import List, Tuple
 
 import numpy as np
-from attr import dataclass
+from french_tarot.environment.subenvironments.announcement_phase_observation import AnnouncementsPhaseObservation
+from french_tarot.environment.subenvironments.core import SubEnvironment
 
 from french_tarot.environment.core import Card, Announcement, PoigneeAnnouncement, count_trumps_and_excuse, \
-    ChelemAnnouncement, Observation, PlayerData
-from french_tarot.environment.subenvironments.core import SubEnvironment
+    ChelemAnnouncement, PlayerData
 from french_tarot.exceptions import FrenchTarotException
 from french_tarot.meta import singledispatchmethod
-
-
-@dataclass
-class AnnouncementPhaseObservation(Observation):
-    pass
 
 
 class AnnouncementPhaseEnvironment(SubEnvironment):
@@ -34,7 +29,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
     def n_players(self):
         return len(self._hand_per_player)
 
-    def step(self, action: List[Announcement]) -> Tuple[AnnouncementPhaseObservation, float, bool, any]:
+    def step(self, action: List[Announcement]) -> Tuple[AnnouncementsPhaseObservation, float, bool, any]:
         self._check(action)
         self.announcements.append(action)
 
@@ -111,7 +106,7 @@ class AnnouncementPhaseEnvironment(SubEnvironment):
     @property
     def observation(self):
         current_player_data = PlayerData(self.current_player_id, self.current_player_hand)
-        return AnnouncementPhaseObservation(current_player_data)
+        return AnnouncementsPhaseObservation(current_player_data)
 
     def _get_next_player(self) -> int:
         return (self.current_player_id + 1) % self.n_players

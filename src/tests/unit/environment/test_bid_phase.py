@@ -1,9 +1,12 @@
 import pytest
 
-from french_tarot.environment.core import CARDS, Bid, Card
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
-from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.announcements.announcements_phase_observation import \
+    AnnouncementsPhaseObservation
+from french_tarot.environment.subenvironments.bid.bid_phase_observation import BidPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 
 
@@ -103,7 +106,7 @@ def test_bid_greater_than_garde(environment):
     environment.step(Bid.PASS)
     environment.step(Bid.PASS)
     observation, _, _, _ = environment.step(Bid.GARDE_SANS)
-    assert isinstance(observation, AnnouncementPhaseObservation)
+    assert isinstance(observation, AnnouncementsPhaseObservation)
 
 
 def test_five_bids(environment):

@@ -2,9 +2,11 @@ import os
 
 import pytest
 
-from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.environment.core import Bid, ChelemAnnouncement, PoigneeAnnouncement
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.agents.random_agent import RandomAgent
+from french_tarot.environment.core.announcements.chelem_announcement import ChelemAnnouncement
+from french_tarot.environment.core.announcements.poignee.poignee_announcement import PoigneeAnnouncement
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
@@ -15,7 +17,7 @@ def environment():
 
 @pytest.fixture
 def random_agent():
-    return RandomPlayer()
+    return RandomAgent()
 
 
 # TODO replace by fixture

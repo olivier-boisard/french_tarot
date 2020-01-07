@@ -3,12 +3,15 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-from french_tarot.environment.core import Card, CARDS, count_trumps_and_excuse, rotate_list, Observation, Bid
-from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseEnvironment
-from french_tarot.environment.subenvironments.bid_phase import BidPhaseEnvironment
-from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
-from french_tarot.environment.subenvironments.core import SubEnvironment
-from french_tarot.environment.subenvironments.dog_phase import DogPhaseEnvironment
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import Observation, rotate_list, CARDS, count_trumps_and_excuse
+from french_tarot.environment.subenvironments.announcements.announcements_phase_environment import \
+    AnnouncementPhaseEnvironment
+from french_tarot.environment.subenvironments.bid.bid_phase_environment import BidPhaseEnvironment
+from french_tarot.environment.subenvironments.card.card_phase_environment import CardPhaseEnvironment
+from french_tarot.environment.subenvironments.dog.dog_phase_environment import DogPhaseEnvironment
+from french_tarot.environment.subenvironments.sub_environment import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 from french_tarot.meta import singledispatchmethod
 

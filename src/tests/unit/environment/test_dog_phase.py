@@ -1,9 +1,12 @@
 import numpy as np
 import pytest
 
-from french_tarot.environment.core import Bid, Card, CARDS
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.announcements.announcements_phase_observation import \
+    AnnouncementsPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 
 
@@ -39,7 +42,7 @@ def test_make_dog():
     observation, reward, done, _ = environment.step(dog)
     assert not done
     assert reward > 0
-    assert isinstance(observation, AnnouncementPhaseObservation)
+    assert isinstance(observation, AnnouncementsPhaseObservation)
     assert np.all([card not in observation.player.hand for card in dog])
 
 
@@ -77,7 +80,7 @@ def test_make_dog_with_trump_valid():
     observation, reward, done, _ = environment.step(dog)
     assert not done
     assert reward > 0
-    assert isinstance(observation, AnnouncementPhaseObservation)
+    assert isinstance(observation, AnnouncementsPhaseObservation)
 
 
 def test_make_dog_without_trump():

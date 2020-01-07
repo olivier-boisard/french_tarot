@@ -2,8 +2,9 @@ import copy
 
 import pytest
 
-from french_tarot.environment.core import CARDS, Card
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 

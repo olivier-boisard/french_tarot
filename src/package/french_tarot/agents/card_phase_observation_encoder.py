@@ -1,5 +1,5 @@
 from french_tarot.agents.encoding import encode_cards
-from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
+from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
 
 
 class CardPhaseObservationEncoder:

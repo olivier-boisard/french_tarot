@@ -1,6 +1,6 @@
 from typing import List
 
-from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
+from french_tarot.agents.card_phase_observation_encoder import CardPhaseObservationEncoder
 from french_tarot.play import play_episode
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 from french_tarot.reagent.data import ReAgentDataRow

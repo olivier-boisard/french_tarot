@@ -2,17 +2,13 @@ import copy
 from typing import List, Tuple
 
 import numpy as np
-from attr import dataclass
+from french_tarot.environment.subenvironments.core import SubEnvironment
 
 from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, compute_card_set_points, \
-    is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, Observation, PlayerData
-from french_tarot.environment.subenvironments.core import SubEnvironment
+    is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, PlayerData
+from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
+from french_tarot.environment.subenvironments.card.round import Round
 from french_tarot.exceptions import FrenchTarotException
-
-
-@dataclass
-class CardPhaseObservation(Observation):
-    played_cards_in_round: List[Card]
 
 
 class CardPhaseEnvironment(SubEnvironment):
@@ -253,9 +249,3 @@ class CardPhaseEnvironment(SubEnvironment):
         rewards[2] += bonus
         rewards[3] += bonus
         return rewards
-
-
-@dataclass
-class Round:
-    starting_player_id: int
-    played_cards: List[Card]

@@ -1,7 +1,8 @@
-from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
+from french_tarot.agents.card_phase_observation_encoder import CardPhaseObservationEncoder
 from french_tarot.core import create_timestamp
-from french_tarot.environment.core import Card, CARDS
-from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS
+from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
 from french_tarot.reagent.data import ReAgentDataRow
 
 

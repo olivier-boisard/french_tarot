@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 import torch
+from french_tarot.agents.training import Policy
 from torch import nn
 
 from french_tarot.agents.agent import Agent
-from french_tarot.agents.training import Policy
 
 
 class NeuralNetAgent(Agent, ABC):
@@ -21,17 +21,17 @@ class NeuralNetAgent(Agent, ABC):
         if not self._random_action_policy.should_play_randomly(self._step):
             self.policy_net.eval()
             with torch.no_grad():
-                action = self.get_max_return_action(observation)
+                action = self.max_return_action(observation)
         else:
-            action = self.get_random_action(observation)
+            action = self.random_action(observation)
         return action
 
     @abstractmethod
-    def get_max_return_action(self, observation):
+    def max_return_action(self, observation):
         pass
 
     @abstractmethod
-    def get_random_action(self, observation):
+    def random_action(self, observation):
         pass
 
     @property

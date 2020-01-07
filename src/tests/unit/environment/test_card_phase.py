@@ -3,8 +3,10 @@ import copy
 import numpy as np
 import pytest
 
-from french_tarot.environment.core import compute_card_set_points, CARDS, ChelemAnnouncement, Card
-from french_tarot.environment.subenvironments.card_phase import CardPhaseEnvironment
+from french_tarot.environment.core.announcements.chelem_announcement import ChelemAnnouncement
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS, compute_card_set_points
+from french_tarot.environment.subenvironments.card.card_phase_environment import CardPhaseEnvironment
 from french_tarot.exceptions import FrenchTarotException
 from src.tests.conftest import setup_environment_for_card_phase
 

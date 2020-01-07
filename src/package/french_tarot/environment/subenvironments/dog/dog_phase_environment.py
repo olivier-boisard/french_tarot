@@ -1,17 +1,11 @@
 from typing import List, Tuple
 
 import numpy as np
-from attr import dataclass
 
-from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, Observation, \
-    PlayerData, compute_card_set_points
-from french_tarot.environment.subenvironments.core import SubEnvironment
+from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, PlayerData, compute_card_set_points
+from french_tarot.environment.subenvironments.dog.dog_phase_observation import DogPhaseObservation
+from french_tarot.environment.subenvironments.sub_environment import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
-
-
-@dataclass
-class DogPhaseObservation(Observation):
-    dog_size: int
 
 
 class DogPhaseEnvironment(SubEnvironment):

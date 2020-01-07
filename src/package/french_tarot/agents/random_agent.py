@@ -1,17 +1,17 @@
 import numpy as np
+from french_tarot.environment.subenvironments.announcement_phase_observation import AnnouncementsPhaseObservation
+from french_tarot.environment.subenvironments.dog.dog_phase import DogPhaseObservation
 
 from french_tarot.agents.agent import Agent
 from french_tarot.environment.core import Bid, ChelemAnnouncement, PoigneeAnnouncement, get_minimum_allowed_bid, \
     check_card_is_allowed, is_oudler, CARDS, BIDS
-from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
-from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
-from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
-from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
+from french_tarot.environment.subenvironments.bid.bid_phase_observation import BidPhaseObservation
+from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 from french_tarot.meta import singledispatchmethod
 
 
-class RandomPlayer(Agent):
+class RandomAgent(Agent):
 
     def __init__(self, seed: int = 1988):
         super().__init__()
@@ -36,7 +36,7 @@ class RandomPlayer(Agent):
         return action
 
     @get_action.register
-    def _(self, observation: AnnouncementPhaseObservation):
+    def _(self, observation: AnnouncementsPhaseObservation):
         announcements = []
         if self._announce_chelem(observation):
             announcements.append(ChelemAnnouncement())

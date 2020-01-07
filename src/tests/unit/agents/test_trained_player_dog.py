@@ -1,11 +1,11 @@
 import pytest
 from torch import nn
 
+from french_tarot.agents.dog_phase_agent import DogPhaseAgent
 from french_tarot.agents.encoding import encode_cards_as_tensor
-from french_tarot.agents.trained_player_dog import DogPhaseAgent
-from french_tarot.environment.core import Bid
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.dog.dog_phase_observation import DogPhaseObservation
 
 
 @pytest.fixture

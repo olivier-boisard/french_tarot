@@ -1,14 +1,17 @@
 import numpy as np
 import pytest
 
-from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.environment.core import Bid, Card, PlayerData
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.environment.subenvironments.announcements_phase import AnnouncementPhaseObservation
+from french_tarot.agents.random_agent import RandomAgent
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import PlayerData
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.announcements.announcements_phase_observation import \
+    AnnouncementsPhaseObservation
 
 
 def test_instantiate_random_player():
-    random_agent = RandomPlayer()
+    random_agent = RandomAgent()
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
     action = random_agent.get_action(observation)
@@ -16,7 +19,7 @@ def test_instantiate_random_player():
 
 
 def test_randomness_when_bidding():
-    random_agent = RandomPlayer()
+    random_agent = RandomAgent()
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
     actions = [random_agent.get_action(observation) for _ in range(10)]
@@ -38,11 +41,11 @@ def test_play_game(random_agent, environment):
 
 
 def test_bugfix_01():
-    agent = RandomPlayer()
+    agent = RandomAgent()
     hand = [Card.TRUMP_14, Card.TRUMP_8, Card.EXCUSE, Card.TRUMP_21, Card.HEART_8, Card.TRUMP_2, Card.CLOVER_KING,
             Card.SPADES_10, Card.DIAMOND_6, Card.SPADES_9, Card.TRUMP_15, Card.SPADES_QUEEN, Card.TRUMP_20,
             Card.SPADES_3, Card.TRUMP_7, Card.TRUMP_10, Card.TRUMP_6, Card.TRUMP_4]
-    action = agent.get_action(AnnouncementPhaseObservation(PlayerData(0, hand)))
+    action = agent.get_action(AnnouncementsPhaseObservation(PlayerData(0, hand)))
     assert Card.EXCUSE not in action[0].revealed_cards
 
 
@@ -50,6 +53,6 @@ def test_bugfix_02():
     hand = [Card.DIAMOND_9, Card.HEART_7, Card.EXCUSE, Card.SPADES_JACK, Card.HEART_KING, Card.TRUMP_4, Card.TRUMP_8,
             Card.TRUMP_21, Card.CLOVER_KING, Card.TRUMP_1, Card.HEART_1, Card.TRUMP_5, Card.TRUMP_6, Card.TRUMP_20,
             Card.TRUMP_19, Card.SPADES_7, Card.TRUMP_9, Card.TRUMP_13]
-    agent = RandomPlayer()
-    action = agent.get_action(AnnouncementPhaseObservation(PlayerData(0, hand)))
+    agent = RandomAgent()
+    action = agent.get_action(AnnouncementsPhaseObservation(PlayerData(0, hand)))
     assert Card.EXCUSE not in action[0].revealed_cards

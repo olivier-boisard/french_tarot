@@ -1,6 +1,6 @@
 import pytest
 
-from french_tarot.agents.trained_player_card import CardPhaseObservationEncoder
+from french_tarot.agents.card_phase_observation_encoder import CardPhaseObservationEncoder
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 from src.tests.conftest import setup_environment_for_card_phase
 

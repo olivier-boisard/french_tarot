@@ -3,29 +3,31 @@ from numpy.random.mtrand import RandomState
 from torch import nn
 
 from french_tarot.agents.encoding import encode_cards_as_tensor
-from french_tarot.agents.neural_net import BaseNeuralNetAgent
+from french_tarot.agents.neural_net_agent import NeuralNetAgent
 from french_tarot.environment.core import Bid
-from french_tarot.environment.subenvironments.bid_phase import BidPhaseObservation
+from french_tarot.environment.subenvironments.bid.bid_phase_observation import BidPhaseObservation
 
 
-class BidPhaseAgent(BaseNeuralNetAgent):
+class BidPhaseAgent(NeuralNetAgent):
 
     def __init__(self, policy_net: nn.Module, seed: int = 1988):
         super().__init__(policy_net)
         self._epoch = 0
         self._random_state = RandomState(seed)
 
-    def get_max_return_action(self, observation: BidPhaseObservation):
+    def max_return_action(self, observation: BidPhaseObservation):
         state = encode_cards_as_tensor(observation.player.hand)
         self._step += 1
         output = self.policy_net(state.unsqueeze(0).to(self.device)).argmax().item()
-        bid = self._get_bid_value(output, observation.bid_per_player)
-        return bid
+        return self._get_bid_value(output, observation.bid_per_player)
 
-    def get_random_action(self, observation: BidPhaseObservation):
+    def random_action(self, observation: BidPhaseObservation):
         output = self._random_state.rand(1, 1)
-        bid = self._get_bid_value(output, observation.bid_per_player)
-        return bid
+        return self._get_bid_value(output, observation.bid_per_player)
+
+    @property
+    def output_dimension(self) -> int:
+        return self.policy_net.output_layer[-2].out_features
 
     @staticmethod
     def _get_bid_value(estimated_win_probability, bid_per_player):
@@ -44,7 +46,3 @@ class BidPhaseAgent(BaseNeuralNetAgent):
             if np.max(bid_per_player) >= bid_value:
                 bid_value = Bid.PASS
         return bid_value
-
-    @property
-    def output_dimension(self) -> int:
-        return self.policy_net.output_layer[-2].out_features

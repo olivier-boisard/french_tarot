@@ -1,11 +1,11 @@
-from french_tarot.agents.random_agent import RandomPlayer
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
+from french_tarot.agents.random_agent import RandomAgent
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 
 
 def play_episode(encoder: CardPhaseStateActionEncoder):
-    player = RandomPlayer()
+    player = RandomAgent()
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
     done = False

@@ -2,10 +2,14 @@ import copy
 
 import pytest
 
-from french_tarot.environment.core import Bid, Card, ChelemAnnouncement, CARDS, PoigneeAnnouncement, \
-    SimplePoigneeAnnouncement
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
-from french_tarot.environment.subenvironments.card_phase import CardPhaseObservation
+from french_tarot.environment.core.announcements.chelem_announcement import ChelemAnnouncement
+from french_tarot.environment.core.announcements.poignee.poignee_announcement import PoigneeAnnouncement
+from french_tarot.environment.core.announcements.poignee.simple_poignee_announcement import SimplePoigneeAnnouncement
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
+from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 
 

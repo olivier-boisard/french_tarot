@@ -1,9 +1,9 @@
 from torch import nn
 
+from french_tarot.agents.bid_phase_agent import BidPhaseAgent
 from french_tarot.agents.encoding import encode_cards_as_tensor
-from french_tarot.agents.trained_player_bid import BidPhaseAgent
-from french_tarot.environment.core import Bid
-from french_tarot.environment.french_tarot import FrenchTarotEnvironment
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
 
 
 def test_bid_phase_observation_encoder():

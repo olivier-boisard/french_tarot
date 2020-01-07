@@ -3,24 +3,30 @@ from typing import List
 
 import numpy as np
 import torch
+from french_tarot.environment.subenvironments.dog.dog_phase import DogPhaseObservation
 
 from french_tarot.agents.encoding import encode_cards_as_tensor
-from french_tarot.agents.neural_net import BaseNeuralNetAgent
+from french_tarot.agents.neural_net_agent import NeuralNetAgent
 from french_tarot.environment.core import Card, CARDS
-from french_tarot.environment.subenvironments.dog_phase import DogPhaseObservation
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:
     return "trump" not in card.value and "king" not in card.value and "excuse" not in card.value
 
 
-class DogPhaseAgent(BaseNeuralNetAgent):
+class DogPhaseAgent(NeuralNetAgent):
     """
     Somewhat inspired from this: https://arxiv.org/pdf/1711.08946.pdf
     """
 
     CARDS_OK_IN_DOG = [card for card in CARDS if _card_is_ok_in_dog(card)]
     CARDS_OK_IN_DOG_WITH_TRUMPS = [card for card in CARDS if _card_is_ok_in_dog(card) or "trump" in card.value]
+
+    def max_return_action(self, observation):
+        raise NotImplementedError
+
+    def random_action(self, observation):
+        raise NotImplementedError
 
     def __init__(self, policy_net: torch.nn.Module, seed: int = 1988):
         super().__init__(policy_net)
