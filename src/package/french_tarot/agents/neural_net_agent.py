@@ -8,14 +8,10 @@ from french_tarot.agents.agent import Agent
 from french_tarot.agents.training import Policy
 
 
-class BaseNeuralNetAgent(Agent, ABC):
+class NeuralNetAgent(Agent, ABC):
     def __init__(self, policy_net: nn.Module):
         self.policy_net = policy_net
         self._initialize_internals()
-
-    def _initialize_internals(self):
-        self._step = 0
-        self._random_action_policy = Policy()
 
     def update_policy_net(self, policy_net_state_dict: Dict):
         self.policy_net.load_state_dict(policy_net_state_dict)
@@ -41,3 +37,7 @@ class BaseNeuralNetAgent(Agent, ABC):
     @property
     def device(self) -> str:
         return "cuda" if next(self.policy_net.parameters()).is_cuda else "cpu"
+
+    def _initialize_internals(self):
+        self._step = 0
+        self._random_action_policy = Policy()
