@@ -24,8 +24,8 @@ def convert_to_timeline_format(batch: List[ReAgentDataRow], output_folder: str, 
 
 
 def _cleanup(input_table_name):
-    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'training'))
-    shutil.rmtree(_generate_tmp_data_folder_path(input_table_name, 'eval'))
+    shutil.rmtree(_get_tmp_data_folder_path(input_table_name, 'training'))
+    shutil.rmtree(_get_tmp_data_folder_path(input_table_name, 'eval'))
 
 
 def _compile_output_files(input_table_name, output_folder):
@@ -41,12 +41,12 @@ def _get_table_path(input_table_name):
 
 
 def _merge_generated_files(table_name, step, output_folder):
-    input_filepaths = glob.glob(os.path.join(_generate_tmp_data_folder_path(table_name, step), 'part*'))
+    input_filepaths = glob.glob(os.path.join(_get_tmp_data_folder_path(table_name, step), 'part*'))
     output_filepath = os.path.join(output_folder, table_name + '_timeline_' + step + '.json')
     merge_files(input_filepaths, output_filepath)
 
 
-def _generate_tmp_data_folder_path(table_name, step):
+def _get_tmp_data_folder_path(table_name, step):
     return os.path.join(_get_reagent_folder(), table_name + '_' + step)
 
 
