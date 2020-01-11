@@ -22,7 +22,9 @@ def test_play_episodes():
     expected_len = n_players * n_cards_played_per_player * n_rounds
 
     rounds_output = []
-    for episode in play_episodes(n_rounds):
+    episode_generator = play_episodes()
+    for _ in range(n_rounds):
+        episode = next(episode_generator)
         rounds_output.extend(episode)
 
     assert len(rounds_output) == expected_len

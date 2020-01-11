@@ -6,8 +6,8 @@ from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 from french_tarot.reagent.data import ReAgentDataRow
 
 
-def play_episodes(n_rounds: int) -> Generator[ReAgentDataRow, None, None]:
+def play_episodes() -> Generator[ReAgentDataRow, None, None]:
     encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
-    for _ in range(n_rounds):
+    while True:
         yield play_episode(encoder)
         encoder.episode_done()
