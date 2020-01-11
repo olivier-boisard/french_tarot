@@ -1,11 +1,7 @@
-from typing import Generator
-
-from french_tarot.agents.card_phase_observation_encoder import CardPhaseObservationEncoder
 from french_tarot.agents.random_agent import RandomAgent
 from french_tarot.environment.french_tarot_environment import FrenchTarotEnvironment
 from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
-from french_tarot.reagent.data import ReAgentDataRow
 
 
 def play_episode(encoder: CardPhaseStateActionEncoder):
@@ -32,10 +28,3 @@ def play_episode(encoder: CardPhaseStateActionEncoder):
                 observations_in_round = []
         observation = new_observation
     return reagent_entries_per_player
-
-
-def play_episodes(n_rounds: int) -> Generator[ReAgentDataRow, None, None]:
-    encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
-    for _ in range(n_rounds):
-        yield play_episode(encoder)
-        encoder.episode_done()
