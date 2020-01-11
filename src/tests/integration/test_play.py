@@ -1,7 +1,6 @@
 from french_tarot.agents.card_phase_observation_encoder import CardPhaseObservationEncoder
-from french_tarot.play import play_episode
+from french_tarot.play import play_episode, play_episodes
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
-from french_tarot.reagent.generate import play_episodes
 
 
 def test_play_episode():

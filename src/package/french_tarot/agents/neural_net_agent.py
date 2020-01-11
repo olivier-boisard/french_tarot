@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 import torch
-from french_tarot.agents.training import Policy
 from torch import nn
 
 from french_tarot.agents.agent import Agent
+from french_tarot.agents.policy import Policy
 
 
 class NeuralNetAgent(Agent, ABC):

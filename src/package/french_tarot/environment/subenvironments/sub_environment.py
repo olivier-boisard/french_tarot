@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Tuple, Union, List
 
-from french_tarot.environment.core import Observation
+from french_tarot.environment.core.core import Observation
 
 
 class SubEnvironment(ABC):

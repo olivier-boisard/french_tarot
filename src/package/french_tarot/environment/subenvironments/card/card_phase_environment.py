@@ -2,12 +2,16 @@ import copy
 from typing import List, Tuple
 
 import numpy as np
-from french_tarot.environment.subenvironments.core import SubEnvironment
 
-from french_tarot.environment.core import Card, ChelemAnnouncement, check_card_is_allowed, compute_card_set_points, \
-    is_oudler, Bid, retrieve_asked_color, PoigneeAnnouncement, PlayerData
+from french_tarot.environment.core.announcements.chelem_announcement import ChelemAnnouncement
+from french_tarot.environment.core.announcements.poignee.poignee_announcement import PoigneeAnnouncement
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import PlayerData, check_card_is_allowed, compute_card_set_points, is_oudler, \
+    retrieve_asked_color
 from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
 from french_tarot.environment.subenvironments.card.round import Round
+from french_tarot.environment.subenvironments.sub_environment import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 

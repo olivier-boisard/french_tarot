@@ -2,7 +2,7 @@ from typing import List
 
 from attr import dataclass
 
-from french_tarot.environment.core import Card
+from french_tarot.environment.core.card import Card
 
 
 @dataclass

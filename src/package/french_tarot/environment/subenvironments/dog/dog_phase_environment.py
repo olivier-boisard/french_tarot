@@ -2,7 +2,8 @@ from typing import List, Tuple
 
 import numpy as np
 
-from french_tarot.environment.core import Card, is_oudler, count_trumps_and_excuse, PlayerData, compute_card_set_points
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import PlayerData, is_oudler, count_trumps_and_excuse, compute_card_set_points
 from french_tarot.environment.subenvironments.dog.dog_phase_observation import DogPhaseObservation
 from french_tarot.environment.subenvironments.sub_environment import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException

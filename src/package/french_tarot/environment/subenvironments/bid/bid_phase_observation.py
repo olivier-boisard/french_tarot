@@ -2,7 +2,8 @@ from typing import List
 
 from attr import dataclass
 
-from french_tarot.environment.core import Observation, Bid
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.core import Observation
 
 
 @dataclass

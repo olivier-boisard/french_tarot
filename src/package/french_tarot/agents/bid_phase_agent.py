@@ -4,7 +4,7 @@ from torch import nn
 
 from french_tarot.agents.encoding import encode_cards_as_tensor
 from french_tarot.agents.neural_net_agent import NeuralNetAgent
-from french_tarot.environment.core import Bid
+from french_tarot.environment.core.bid import Bid
 from french_tarot.environment.subenvironments.bid.bid_phase_observation import BidPhaseObservation
 
 

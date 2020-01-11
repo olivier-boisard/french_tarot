@@ -1,12 +1,15 @@
 import numpy as np
-from french_tarot.environment.subenvironments.announcement_phase_observation import AnnouncementsPhaseObservation
-from french_tarot.environment.subenvironments.dog.dog_phase import DogPhaseObservation
 
 from french_tarot.agents.agent import Agent
-from french_tarot.environment.core import Bid, ChelemAnnouncement, PoigneeAnnouncement, get_minimum_allowed_bid, \
-    check_card_is_allowed, is_oudler, CARDS, BIDS
+from french_tarot.environment.core.announcements.chelem_announcement import ChelemAnnouncement
+from french_tarot.environment.core.announcements.poignee.poignee_announcement import PoigneeAnnouncement
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.core import CARDS, check_card_is_allowed, is_oudler, get_minimum_allowed_bid, BIDS
+from french_tarot.environment.subenvironments.announcements.announcements_phase_observation import \
+    AnnouncementsPhaseObservation
 from french_tarot.environment.subenvironments.bid.bid_phase_observation import BidPhaseObservation
 from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
+from french_tarot.environment.subenvironments.dog.dog_phase_observation import DogPhaseObservation
 from french_tarot.exceptions import FrenchTarotException
 from french_tarot.meta import singledispatchmethod
 

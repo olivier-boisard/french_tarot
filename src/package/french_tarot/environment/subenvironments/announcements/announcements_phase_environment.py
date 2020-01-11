@@ -1,11 +1,15 @@
 from typing import List, Tuple
 
 import numpy as np
-from french_tarot.environment.subenvironments.announcement_phase_observation import AnnouncementsPhaseObservation
-from french_tarot.environment.subenvironments.core import SubEnvironment
 
-from french_tarot.environment.core import Card, Announcement, PoigneeAnnouncement, count_trumps_and_excuse, \
-    ChelemAnnouncement, PlayerData
+from french_tarot.environment.core.announcements.announcement import Announcement
+from french_tarot.environment.core.announcements.chelem_announcement import ChelemAnnouncement
+from french_tarot.environment.core.announcements.poignee.poignee_announcement import PoigneeAnnouncement
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import count_trumps_and_excuse, PlayerData
+from french_tarot.environment.subenvironments.announcements.announcements_phase_observation import \
+    AnnouncementsPhaseObservation
+from french_tarot.environment.subenvironments.sub_environment import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 from french_tarot.meta import singledispatchmethod
 

@@ -3,7 +3,8 @@ from typing import List
 import torch
 from torch import tensor
 
-from french_tarot.environment.core import Card, CARDS
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS
 
 
 def encode_cards(cards):

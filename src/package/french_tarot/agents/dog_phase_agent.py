@@ -3,11 +3,12 @@ from typing import List
 
 import numpy as np
 import torch
-from french_tarot.environment.subenvironments.dog.dog_phase import DogPhaseObservation
 
 from french_tarot.agents.encoding import encode_cards_as_tensor
 from french_tarot.agents.neural_net_agent import NeuralNetAgent
-from french_tarot.environment.core import Card, CARDS
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import CARDS
+from french_tarot.environment.subenvironments.dog.dog_phase_observation import DogPhaseObservation
 
 
 def _card_is_ok_in_dog(card: Card) -> bool:

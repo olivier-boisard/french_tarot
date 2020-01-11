@@ -1,10 +1,12 @@
 from typing import List, Tuple
 
 import numpy as np
-from french_tarot.environment.subenvironments.core import SubEnvironment
 
-from french_tarot.environment.core import Card, Bid, get_minimum_allowed_bid, PlayerData
+from french_tarot.environment.core.bid import Bid
+from french_tarot.environment.core.card import Card
+from french_tarot.environment.core.core import PlayerData, get_minimum_allowed_bid
 from french_tarot.environment.subenvironments.bid.bid_phase_observation import BidPhaseObservation
+from french_tarot.environment.subenvironments.sub_environment import SubEnvironment
 from french_tarot.exceptions import FrenchTarotException
 
 
