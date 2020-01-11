@@ -2,11 +2,12 @@ from typing import List
 
 from french_tarot.reagent.data import ReAgentDataRow
 from french_tarot.reagent.data_producer import DataProducer
-from french_tarot.reagent.saving.data_saver import BaseDataSaver
 
 
 def test_data_producer(mocker):
-    data_generator = fake_generator(mocker.Mock())
+    mocked_data_row = mocker.Mock()
+    mocked_data_row.dictionary = {"a": "b"}
+    data_generator = fake_generator(mocked_data_row)
 
     data_saver = FakeDataSaver()
     producer = DataProducer(data_generator, data_saver)
@@ -16,13 +17,13 @@ def test_data_producer(mocker):
 
 def fake_generator(dummy_data):
     while True:
-        yield dummy_data
+        yield [dummy_data]
 
 
-class FakeDataSaver(BaseDataSaver):
+class FakeDataSaver:
 
     def __init__(self):
         self.rows = None
 
-    def save_list(self, rows: List[ReAgentDataRow]):
+    def writelines(self, rows: List[ReAgentDataRow]):
         self.rows = rows
