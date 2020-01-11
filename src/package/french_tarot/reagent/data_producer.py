@@ -14,7 +14,7 @@ class DataProducer:
         episode = 0
         while running:
             generated_data = next(self._data_generator)
-            generated_data = [json.dumps(row.dictionary) for row in generated_data]
+            generated_data = [json.dumps(row.dictionary) + "\n" for row in generated_data]
             self._writer.writelines(generated_data)
 
             episode += 1
