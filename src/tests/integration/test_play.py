@@ -19,6 +19,10 @@ def test_play_episodes():
     n_cards_played_per_player = 18
     n_rounds = 10
     expected_len = n_players * n_cards_played_per_player * n_rounds
-    rounds_output = play_episodes(n_rounds)
+
+    rounds_output = []
+    for episode in play_episodes(n_rounds):
+        rounds_output.extend(episode)
+
     assert len(rounds_output) == expected_len
     assert len(set(map(lambda round_output: round_output.mdp_id, rounds_output))) == n_players * n_rounds
