@@ -21,6 +21,7 @@ def test_dog_phase_observation_encoder():
     assert state.sum() == 24
 
 
+@pytest.mark.skip
 def test_create_dog_phase_player(dog_phase_agent):
     observation = _prepare_environment()
     action = dog_phase_agent.get_action(observation)
