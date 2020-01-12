@@ -1,4 +1,5 @@
 import argparse
+import signal
 
 from french_tarot.reagent.data_producer import DataProducer
 from french_tarot.reagent.play_episodes import play_episodes
@@ -12,7 +13,8 @@ def main():
 
     with open(args.output_file_path, "w") as f:
         producer = DataProducer(play_episodes(), f)
-        producer.run(args.n_max_episodes)
+        signal.signal(signal.SIGINT, lambda *_: producer.stop())
+        producer.run()
 
 
 if __name__ == "__main__":
