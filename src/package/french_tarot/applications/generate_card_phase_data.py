@@ -14,7 +14,7 @@ def main():
     with open(args.output_file_path, "w") as f:
         producer = DataProducer(play_episodes(), f)
         signal.signal(signal.SIGINT, lambda *_: producer.stop())
-        producer.run()
+        producer.run(args.n_max_episodes)
 
 
 if __name__ == "__main__":
