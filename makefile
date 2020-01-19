@@ -1,12 +1,12 @@
 PYTHON_VIRTUAL_ENV_DIR=venv
-DOCKER_HOME_DIR=/home/ReAgent
 BASE_DOCKER_IMAGE=horizon:dev
+REAGENT_FOLDER=${PWD}/ReAgent
 DOCKER_IMAGE=french_tarot:latest
 DOCKER_RUN_COMMAND=docker run \
     --rm \
     --runtime=nvidia \
-    -v ${PWD}:${PWD} \
-    -w ${PWD}/ReAgent \
+    --volume=${REAGENT_FOLDER}:/home/ReAgent \
+    --workdir=/home/ReAgent \
     -p 0.0.0.0:6006:6006 \
     ${DOCKER_IMAGE}
 VENV_BIN_FOLDER=${PWD}/venv/bin
@@ -14,9 +14,9 @@ VENV_BIN_FOLDER=${PWD}/venv/bin
 export PYTHONPATH=${PWD}/src/package
 VIRTUALENV_VALIDATION_SCRIPT=${PYTHON_VIRTUAL_ENV_DIR}/bin/activate
 
-build: ReAgent/preprocessing/target/ test
+build: build_french_tarot ReAgent/preprocessing/target/ test
 
-ReAgent/preprocessing/target/: ReAgent/
+ReAgent/preprocessing/target/: ReAgent/ build_french_tarot
 	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) --build-arg USERID=$(shell id -u) -t ${DOCKER_IMAGE} .
 	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
