@@ -18,7 +18,6 @@ build: build_french_tarot ReAgent/preprocessing/target/ test
 
 ReAgent/preprocessing/target/: ReAgent/ build_french_tarot
 	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) --build-arg USERID=$(shell id -u) -t ${DOCKER_IMAGE} .
-	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
 
 test: build_french_tarot
@@ -32,7 +31,9 @@ ${VENV_BIN_FOLDER}/pip:
 	. ${VIRTUALENV_VALIDATION_SCRIPT}
 
 ReAgent/:
-	git clone --recurse-submodules https://github.com/facebookresearch/ReAgent.git
+    # We sometimes get a git error here when cloning Reagent. We can actually ignore it and proceed
+	-git clone --recurse-submodules https://github.com/facebookresearch/ReAgent.git
+	(cd ReAgent && git submodule update --force --recursive --init --remote)
 	docker build -f ReAgent/docker/cuda.Dockerfile -t ${BASE_DOCKER_IMAGE} ReAgent/
 
 clean:
