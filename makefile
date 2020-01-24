@@ -33,7 +33,7 @@ ${VENV_BIN_FOLDER}/pip:
 	. ${VIRTUALENV_VALIDATION_SCRIPT}
 
 ReAgent/:
-	git clone https://github.com/facebookresearch/ReAgent.git
+	git clone --recurse-submodules https://github.com/facebookresearch/ReAgent.git
 	docker build -f ReAgent/docker/cuda.Dockerfile -t ${BASE_DOCKER_IMAGE} ReAgent/
 
 clean:
