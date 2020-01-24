@@ -21,6 +21,7 @@ ReAgent/preprocessing/target/: ReAgent/ build_french_tarot
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
 
 test: build_french_tarot
+	${DOCKER_RUN_COMMAND} python setup.py test
 	(cd src/tests && ${VENV_BIN_FOLDER}/pytest --cov --cov-report=term-missing)
 
 build_french_tarot: ${VENV_BIN_FOLDER}/pip
