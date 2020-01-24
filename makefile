@@ -17,6 +17,7 @@ VIRTUALENV_VALIDATION_SCRIPT=${PYTHON_VIRTUAL_ENV_DIR}/bin/activate
 build: build_french_tarot ReAgent/preprocessing/target/ test
 
 ReAgent/preprocessing/target/: ReAgent/ build_french_tarot
+	(cd ReAgent && docker build -f docker/cuda.Dockerfile -t horizon:dev .)
 	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) --build-arg USERID=$(shell id -u) -t ${DOCKER_IMAGE} .
 	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
