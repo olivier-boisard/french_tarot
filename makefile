@@ -18,6 +18,7 @@ build: build_french_tarot ReAgent/preprocessing/target/ test
 
 ReAgent/preprocessing/target/: ReAgent/ build_french_tarot
 	docker build -f Dockerfile --build-arg USERNAME=$(shell whoami) --build-arg USERID=$(shell id -u) -t ${DOCKER_IMAGE} .
+	${DOCKER_RUN_COMMAND} ./scripts/setup.sh
 	${DOCKER_RUN_COMMAND} mvn -f preprocessing/pom.xml clean package
 
 test: build_french_tarot
