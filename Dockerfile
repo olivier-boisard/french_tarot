@@ -35,7 +35,7 @@ RUN git submodule update --force --recursive --init --remote
 RUN conda install -y --file requirements.txt
 
 # Install spark
-ENV JAVA_HOME "$(dirname $(dirname -- `which conda`))"
+ENV JAVA_HOME $INSTALL_DIR/miniconda
 RUN ${WGET_COMMAND} https://archive.apache.org/dist/spark/spark-2.3.3/spark-2.3.3-bin-hadoop2.7.tgz -O ${SPARK_TGZ}
 RUN tar xvzf ${SPARK_TGZ} -C /usr/local/bin/
 RUN mv /usr/local/bin/spark* /usr/local/spark
@@ -62,6 +62,6 @@ RUN mvn -f preprocessing/pom.xml clean package
 
 # Setup user to avoid running reagent as root
 RUN useradd --create-home --user-group --uid $USERID $USERNAME
-RUN chown $USERNAME:$USERNAME /home/miniconda/lib/python3.7/site-packages/
+RUN chown $USERNAME:$USERNAME $INSTALL_DIR/miniconda/lib/python3.7/site-packages/
 RUN chown $REAGENT_HOME
 USER $USERNAME
