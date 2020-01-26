@@ -16,12 +16,12 @@ mkdir -p "$training_folder_tmp"
 (cd "$python_workdir" && $python_exec -m $generation_module "$timeline_filepath" --n-max-episodes=10)
 
 echo "Prepare data for training"
-(cd "$reagent_folder" && rm -Rf spark-warehouse derby.log metastore_db preprocessing/spark-warehouse preprocessing/metastore_db preprocessing/derby.log)
 (
   cd "$reagent_folder" && docker run \
     --volume="$reagent_folder":"$reagent_folder" \
     --volume=$training_folder_tmp:$training_folder_tmp \
     --workdir="$reagent_folder" \
+    --rm \
     french_tarot:latest \
     /usr/local/spark/bin/spark-submit \
     --class com.facebook.spark.rl.Preprocessor preprocessing/target/rl-preprocessing-1.1.jar \
