@@ -12,7 +12,7 @@ rm -rf $training_folder_tmp
 
 echo "Generate data"
 mkdir -p "$training_folder_tmp"
-(cd "$python_workdir" && $python_exec -m $generation_module $timeline_filepath --n-max-episodes=10)
+(cd "$python_workdir" && $python_exec -m $generation_module $timeline_filepath --n-max-episodes=100000)
 
 echo "Prepare data for training"
 spark_command="/usr/local/spark/bin/spark-submit --class com.facebook.spark.rl.Preprocessor preprocessing/target/rl-preprocessing-1.1.jar \"\`cat $repo_dir/timeline.json\`\""
