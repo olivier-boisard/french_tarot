@@ -18,6 +18,7 @@ mkdir -p "$training_folder_tmp"
 echo "Prepare data for training"
 (
   cd "$reagent_folder" && docker run \
+    --runtime=nvidia \
     --volume="$reagent_folder":"$reagent_folder" \
     --volume=$training_folder_tmp:$training_folder_tmp \
     --workdir="$reagent_folder" \
