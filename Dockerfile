@@ -28,6 +28,7 @@ WORKDIR $INSTALL_DIR
 RUN git clone --recurse-submodules https://github.com/facebookresearch/ReAgent.git; exit 0
 ENV REAGENT_HOME $INSTALL_DIR/ReAgent
 WORKDIR $REAGENT_HOME
+RUN git checkout b000663598c42a87d000cf18902cb1c18d6a2c86
 RUN git submodule update --force --recursive --init --remote
 
 # Install required python packages
