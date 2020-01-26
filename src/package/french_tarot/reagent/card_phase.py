@@ -1,5 +1,6 @@
+import time
+
 from french_tarot.agents.card_phase_observation_encoder import CardPhaseObservationEncoder
-from french_tarot.core import create_timestamp
 from french_tarot.environment.core.card import Card
 from french_tarot.environment.core.core import CARDS
 from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
@@ -11,7 +12,7 @@ class CardPhaseStateActionEncoder:
         self._current_sequence_number = 0
         self._current_episode_id = 0
         self._observation_encoder = observation_encoder
-        self._dataset_id = str(create_timestamp())
+        self._dataset_id = str(int(time.time()))
 
     def encode(self, position_towards_taker, observation: CardPhaseObservation, action: Card,
                reward: float) -> ReAgentDataRow:
