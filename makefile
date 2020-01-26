@@ -4,9 +4,7 @@ REAGENT_FOLDER=${PWD}/ReAgent
 DOCKER_IMAGE=french_tarot:latest
 DOCKER_RUN_COMMAND=docker run \
     --rm \
-    --runtime=nvidia \
-    --volume=${REAGENT_FOLDER}:/home/ReAgent \
-    --workdir=/home/ReAgent \
+    --workdir=/opt/ReAgent \
     -p 0.0.0.0:6006:6006 \
     ${DOCKER_IMAGE}
 VENV_BIN_FOLDER=${PWD}/venv/bin
@@ -17,7 +15,6 @@ VIRTUALENV_ACTIVATION_SCRIPT=${PYTHON_VIRTUAL_ENV_DIR}/bin/activate
 build: french_tarot_built reagent_built test
 
 test: french_tarot_built
-	${DOCKER_RUN_COMMAND} python setup.py test
 	(cd src/tests && ${VENV_BIN_FOLDER}/pytest --cov --cov-report=term-missing)
 
 reagent_built: reagent_built french_tarot_built
