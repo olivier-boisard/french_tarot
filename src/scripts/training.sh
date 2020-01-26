@@ -19,6 +19,7 @@ spark_command="/usr/local/spark/bin/spark-submit --class com.facebook.spark.rl.P
 merge_training_command="cat french_tarot_training/part* > $training_folder_tmp/french_tarot_training.json"
 merge_eval_command="cat french_tarot_eval/part* > $training_folder_tmp/french_tarot_eval.json"
 docker run \
+  --runtime=nvidia \
   --volume=$repo_dir:$repo_dir \
   --workdir=/opt/ReAgent \
   --rm \
