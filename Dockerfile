@@ -63,5 +63,5 @@ RUN mvn -f preprocessing/pom.xml clean package
 # Setup user to avoid running reagent as root
 RUN useradd --create-home --user-group --uid $USERID $USERNAME
 RUN chown $USERNAME:$USERNAME $INSTALL_DIR/miniconda/lib/python3.7/site-packages/
-RUN chown $REAGENT_HOME
+RUN chown $USERNAME:$USERNAME $REAGENT_HOME
 USER $USERNAME
