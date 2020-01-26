@@ -55,7 +55,7 @@ RUN make -j
 WORKDIR $REAGENT_HOME
 RUN pip install -e .
 RUN pip install "gym[classic_control,box2d,atari]"
-RUN pytest -n$(cat /proc/cpuinfo | grep processor | wc -l))
+RUN pytest -n$(cat /proc/cpuinfo | grep processor | wc -l)
 
 # Build preprocessing package
 RUN mvn -f preprocessing/pom.xml clean package
