@@ -1,14 +1,14 @@
 {
-  "training_data_path": "french_tarot_training.json",
-  "eval_data_path": "french_tarot_eval.json",
-  "state_norm_data_path": "state_features_norm.json",
-  "model_output_path": "outputs/",
+  "training_data_path": "tmp/french_tarot_training.json",
+  "eval_data_path": "tmp/french_tarot_eval.json",
+  "state_norm_data_path": "tmp/state_features_norm.json",
+  "model_output_path": "tmp/",
   "use_gpu": true,
   "use_all_avail_gpus": true,
   "num_nodes": 1,
   "init_method": "file:///tmp/dqn_example.lock",
   "norm_params": {
-    "output_dir": "training_data/",
+    "output_dir": "tmp/",
     "cols_to_norm": [
       "state_features"
     ],

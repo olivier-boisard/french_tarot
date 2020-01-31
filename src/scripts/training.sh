@@ -8,7 +8,8 @@ training_folder_tmp=$repo_dir/tmp
 generation_module=french_tarot.applications.generate_card_phase_data
 timeline_filepath="$training_folder_tmp/french_tarot"
 reagent_dir=/opt/ReAgent
-docker_run="docker run --runtime=nvidia --volume=$repo_dir:$repo_dir --workdir=$reagent_dir --rm french_tarot:latest"
+dqn_config_file=$config_dir/dqn.json
+docker_run="docker run --runtime=nvidia --volume=$repo_dir:$repo_dir --volume=$training_folder_tmp:$reagent_dir/tmp --workdir=$reagent_dir --rm french_tarot:latest"
 
 echo "Delete previous session tmp folder"
 rm -rf $training_folder_tmp
@@ -24,4 +25,7 @@ merge_eval_command="cat french_tarot_eval/part* > $training_folder_tmp/french_ta
 $docker_run /bin/bash -c "cp $timeline_filepath $reagent_dir && $preprocessing_command && $merge_training_command && $merge_eval_command"
 
 echo "Create normalization parameters"
-$docker_run /bin/bash -c "cp $training_folder_tmp/french_tarot_* $reagent_dir && mkdir training_data outputs && python ml/rl/workflow/create_normalization_metadata.py -p $config_dir/dqn.json && mv training_data/ $training_folder_tmp"
+$docker_run /bin/bash -c "python ml/rl/workflow/create_normalization_metadata.py -p $dqn_config_file && mv training_data/* $training_folder_tmp"
+
+echo "Train model"
+$docker_run /bin/bash -c "python ml/rl/workflow/dqn_workflow.py -p $dqn_config_file"
