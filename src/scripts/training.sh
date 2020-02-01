@@ -28,7 +28,7 @@ echo "Create normalization parameters"
 $docker_run /bin/bash -c "python ml/rl/workflow/create_normalization_metadata.py -p $dqn_config_file"
 
 echo "Train model"
-$docker_run tensorboard --logdir tmp/ &
+$docker_run tensorboard --logdir tmp/ >/dev/null &
 tensorboard_pid="$!"
-kill -SIGINT $tensorboard_pid
 $docker_run /bin/bash -c "python ml/rl/workflow/dqn_workflow.py -p $dqn_config_file"
+kill -SIGINT $tensorboard_pid
