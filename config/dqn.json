@@ -28,7 +28,7 @@
     "softmax_policy": 0
   },
   "rainbow": {
-    "double_q_learning": true,
+    "double_q_learning": false,
     "dueling_architecture": false
   },
   "training": {
