@@ -25,7 +25,7 @@ merge_eval_command="cat french_tarot_eval/part* > $training_folder_tmp/french_ta
 $docker_run /bin/bash -c "cp $timeline_filepath $reagent_dir && $preprocessing_command && $merge_training_command && $merge_eval_command"
 
 echo "Create normalization parameters"
-$docker_run /bin/bash -c "python ml/rl/workflow/create_normalization_metadata.py -p $dqn_config_file && mv training_data/* $training_folder_tmp"
+$docker_run /bin/bash -c "python ml/rl/workflow/create_normalization_metadata.py -p $dqn_config_file"
 
 echo "Train model"
 $docker_run /bin/bash -c "python ml/rl/workflow/dqn_workflow.py -p $dqn_config_file"
