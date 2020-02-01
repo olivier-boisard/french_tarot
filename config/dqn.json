@@ -34,9 +34,13 @@
   "training": {
     "layers": [
       -1,
+      128,
+      64,
       -1
     ],
     "activations": [
+      "relu",
+      "relu",
       "linear"
     ],
     "minibatch_size": 512,
