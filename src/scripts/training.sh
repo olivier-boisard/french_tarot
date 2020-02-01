@@ -9,14 +9,17 @@ generation_module=french_tarot.applications.generate_card_phase_data
 timeline_filepath="$training_folder_tmp/french_tarot"
 reagent_dir=/opt/ReAgent
 dqn_config_file=$config_dir/dqn.json
-docker_run="docker run --runtime=nvidia --volume=$repo_dir:$repo_dir --volume=$training_folder_tmp:$reagent_dir/tmp --workdir=$reagent_dir --rm french_tarot:latest"
+base_docker_command="docker run --runtime=nvidia --volume=$repo_dir:$repo_dir --volume=$training_folder_tmp:$reagent_dir/tmp --workdir=$reagent_dir --rm"
+docker_image="french_tarot:latest"
+docker_run="$base_docker_command $docker_image"
+docker_run_tensorboard="$base_docker_command -p 6006:6006 -d $docker_image"
 
 echo "Delete previous session tmp folder"
 rm -rf $training_folder_tmp
 
 echo "Generate data"
 mkdir -p "$training_folder_tmp"
-(cd "$python_workdir" && $python_exec -m $generation_module $timeline_filepath --n-max-episodes=100000)
+(cd "$python_workdir" && $python_exec -m $generation_module $timeline_filepath --n-max-episodes=10)
 
 echo "Prepare data for training"
 preprocessing_command="/usr/local/spark/bin/spark-submit --class com.facebook.spark.rl.Preprocessor preprocessing/target/rl-preprocessing-1.1.jar \"\`cat $config_dir/timeline.json\`\""
@@ -27,8 +30,8 @@ $docker_run /bin/bash -c "cp $timeline_filepath $reagent_dir && $preprocessing_c
 echo "Create normalization parameters"
 $docker_run /bin/bash -c "python ml/rl/workflow/create_normalization_metadata.py -p $dqn_config_file"
 
+tensorboard_pid=$($docker_run_tensorboard tensorboard --logdir tmp/)
+echo "Started tensorboard in docker container with PID $tensorboard_pid"
 echo "Train model"
-$docker_run tensorboard --logdir tmp/ >/dev/null &
-tensorboard_pid="$!"
 $docker_run /bin/bash -c "python ml/rl/workflow/dqn_workflow.py -p $dqn_config_file"
-kill -SIGINT $tensorboard_pid
+docker stop $tensorboard_pid
