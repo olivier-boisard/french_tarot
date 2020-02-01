@@ -33,6 +33,7 @@ RUN git submodule update --force --recursive --init --remote
 
 # Install required python packages
 RUN conda install -y --file requirements.txt
+RUN conda install -y absl-py
 
 # Install spark
 ENV JAVA_HOME $INSTALL_DIR/miniconda
