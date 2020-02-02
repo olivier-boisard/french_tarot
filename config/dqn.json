@@ -94,7 +94,7 @@
     "76",
     "77"
   ],
-  "epochs": 100,
+  "epochs": 20,
   "rl": {
     "gamma": 0.99,
     "target_update_rate": 0.1,
@@ -123,7 +123,7 @@
       "relu",
       "linear"
     ],
-    "minibatch_size": 512,
+    "minibatch_size": 1024,
     "learning_rate": 0.01,
     "optimizer": "ADAM",
     "lr_decay": 0.999,
