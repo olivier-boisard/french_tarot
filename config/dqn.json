@@ -94,7 +94,7 @@
     "76",
     "77"
   ],
-  "epochs": 10,
+  "epochs": 100,
   "rl": {
     "gamma": 0.99,
     "target_update_rate": 0.1,
