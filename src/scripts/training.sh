@@ -12,7 +12,6 @@ dqn_config_file=$config_dir/dqn.json
 base_docker_command="docker run --runtime=nvidia --volume=$repo_dir:$repo_dir --volume=$training_folder_tmp:$reagent_dir/tmp --workdir=$reagent_dir --rm"
 docker_image="french_tarot:latest"
 docker_run="$base_docker_command $docker_image"
-docker_run_tensorboard="$base_docker_command -p 6006:6006 -d $docker_image"
 
 echo "Delete previous session tmp folder"
 rm -rf $training_folder_tmp
@@ -30,9 +29,5 @@ $docker_run /bin/bash -c "cp $timeline_filepath $reagent_dir && $preprocessing_c
 echo "Create normalization parameters"
 $docker_run /bin/bash -c "python ml/rl/workflow/create_normalization_metadata.py -p $dqn_config_file"
 
-tensorboard_pid=$($docker_run_tensorboard tensorboard --logdir tmp/)
-echo "Started tensorboard in docker container with PID $tensorboard_pid"
 echo "Train model"
 $docker_run /bin/bash -c "python ml/rl/workflow/dqn_workflow.py -p $dqn_config_file"
-tensorboard_pid=$(docker stop $tensorboard_pid)
-echo "Stopped docker image with PID $tensorboard_pid"
