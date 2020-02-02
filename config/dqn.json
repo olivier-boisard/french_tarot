@@ -119,6 +119,8 @@
     "activations": [
       "relu",
       "relu",
+      "relu",
+      "relu",
       "linear"
     ],
     "minibatch_size": 1024,
