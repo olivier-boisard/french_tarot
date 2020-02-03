@@ -1,8 +1,6 @@
 from typing import Dict, Union
 
 from french_tarot.agents.agent import Agent
-from french_tarot.agents.bid_phase_agent import BidPhaseAgent
-from french_tarot.agents.dog_phase_agent import DogPhaseAgent
 from french_tarot.agents.model_update import ModelUpdate
 from french_tarot.agents.neural_net_agent import NeuralNetAgent
 from french_tarot.agents.random_agent import RandomAgent
@@ -17,11 +15,11 @@ from french_tarot.environment.subenvironments.dog.dog_phase_observation import D
 class AllPhaseAgent(Agent):
     _agents: Dict[type, Agent]
 
-    def __init__(self, bid_phase_agent: BidPhaseAgent = None, dog_phase_agent: DogPhaseAgent = None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self):
+        super().__init__()
         self._agents: Dict[Observation, Union[NeuralNetAgent, Agent]] = {
-            BidPhaseObservation: RandomAgent() if bid_phase_agent is None else bid_phase_agent,
-            DogPhaseObservation: RandomAgent() if dog_phase_agent is None else dog_phase_agent,
+            BidPhaseObservation: RandomAgent(),
+            DogPhaseObservation: RandomAgent(),
             AnnouncementsPhaseObservation: RandomAgent(),
             CardPhaseObservation: RandomAgent()
         }
