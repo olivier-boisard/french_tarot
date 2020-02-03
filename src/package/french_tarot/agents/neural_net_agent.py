@@ -6,6 +6,7 @@ from torch import nn
 
 from french_tarot.agents.agent import Agent
 from french_tarot.agents.policy import Policy
+from french_tarot.environment.core.core import Observation
 
 
 class NeuralNetAgent(Agent, ABC):
@@ -27,11 +28,11 @@ class NeuralNetAgent(Agent, ABC):
         return action
 
     @abstractmethod
-    def max_return_action(self, observation):
+    def max_return_action(self, observation: Observation) -> int:
         pass
 
     @abstractmethod
-    def random_action(self, observation):
+    def random_action(self, observation: Observation) -> int:
         pass
 
     @property
