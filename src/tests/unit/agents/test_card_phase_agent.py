@@ -13,14 +13,20 @@ def agent():
     return CardPhaseAgent(module)
 
 
-def test_random_action(agent):
+@pytest.fixture
+def observation():
     player_data = PlayerData(0, [Card.SPADES_1, Card.CLOVER_1])
     played_cards_in_round = [Card.SPADES_2]
-    observation = CardPhaseObservation(player_data, played_cards_in_round)
+    return CardPhaseObservation(player_data, played_cards_in_round)
+
+
+def test_random_action(agent, observation):
     action_with_probability = agent.random_action(observation)
     assert action_with_probability.action == 0
     assert action_with_probability.probability == 1.
 
 
-def test_max_return_action():
-    raise NotImplementedError
+def test_max_return_action(agent, observation):
+    action_with_probability = agent.max_return_action(observation)
+    assert action_with_probability.action == 0
+    assert action_with_probability.probability == 1.

@@ -2,13 +2,17 @@ from typing import Dict
 
 import torch
 from numpy.random.mtrand import RandomState
-from torch import nn
+from torch import nn, tensor
 
 from french_tarot.agents.agent import Agent, ActionWithProbability
-from french_tarot.agents.card_phase_observation_encoder import retrieve_allowed_cards
+from french_tarot.agents.card_phase_observation_encoder import retrieve_allowed_cards, CardPhaseObservationEncoder
 from french_tarot.agents.policy import Policy
 from french_tarot.environment.core.core import CARDS
 from french_tarot.environment.subenvironments.card.card_phase_observation import CardPhaseObservation
+
+
+def retrieve_allowed_card_indices(observation):
+    return [CARDS.index(card) for card in retrieve_allowed_cards(observation)]
 
 
 class CardPhaseAgent(Agent):
@@ -16,6 +20,7 @@ class CardPhaseAgent(Agent):
         self.policy_net = policy_net
         self._initialize_internals()
         self._random_state = RandomState(seed=1988)
+        self._card_phase_observation_encoder = CardPhaseObservationEncoder()
 
     def update_policy_net(self, policy_net_state_dict: Dict):
         self.policy_net.load_state_dict(policy_net_state_dict)
@@ -31,13 +36,17 @@ class CardPhaseAgent(Agent):
         return action_with_probability
 
     def max_return_action(self, observation: CardPhaseObservation) -> ActionWithProbability:
-        pass
+        indices = retrieve_allowed_card_indices(observation)
+        encode = tensor(self._card_phase_observation_encoder.encode(observation)).float()
+        probabilities = torch.softmax(self.policy_net(encode)[indices], dim=0)
+        action = self._random_state.choice(indices, p=probabilities.detach().numpy())
+        return ActionWithProbability(action=action, probability=probabilities[action])
 
     def random_action(self, observation: CardPhaseObservation) -> ActionWithProbability:
-        allowed_cards = retrieve_allowed_cards(observation)
+        indices = retrieve_allowed_card_indices(observation)
         return ActionWithProbability(
-            action=CARDS.index(self._random_state.choice(allowed_cards)),
-            probability=1. / float(len(allowed_cards))
+            action=self._random_state.choice(indices),
+            probability=1. / float(len(indices))
         )
 
     @property
