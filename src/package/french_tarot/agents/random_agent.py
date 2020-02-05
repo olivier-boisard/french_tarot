@@ -1,10 +1,11 @@
 import numpy as np
 
-from french_tarot.agents.agent import Agent
+from french_tarot.agents.agent import Agent, ActionWithProbability
+from french_tarot.agents.card_phase_observation_encoder import retrieve_allowed_cards
 from french_tarot.environment.core.announcements.chelem_announcement import ChelemAnnouncement
 from french_tarot.environment.core.announcements.poignee.poignee_announcement import PoigneeAnnouncement
 from french_tarot.environment.core.bid import Bid
-from french_tarot.environment.core.core import CARDS, check_card_is_allowed, is_oudler, get_minimum_allowed_bid, BIDS
+from french_tarot.environment.core.core import is_oudler, get_minimum_allowed_bid, BIDS
 from french_tarot.environment.subenvironments.announcements.announcements_phase_observation import \
     AnnouncementsPhaseObservation
 from french_tarot.environment.subenvironments.bid.bid_phase_observation import BidPhaseObservation
@@ -25,21 +26,11 @@ class RandomAgent(Agent):
         raise FrenchTarotException("Unhandled game phase")
 
     @get_action.register
-    def _(self, observation: CardPhaseObservation):
-        card_list = np.array(CARDS)
-        allowed_cards = []
-        for card in card_list:
-            try:
-                check_card_is_allowed(card, observation.played_cards_in_round, observation.player.hand)
-                allowed_cards.append(True)
-            except FrenchTarotException:
-                allowed_cards.append(False)
-        assert 1 <= np.sum(allowed_cards) <= len(observation.player.hand)
-        action = self._random_state.choice(card_list[allowed_cards])
-        return action
+    def _(self, observation: CardPhaseObservation) -> ActionWithProbability:
+        return self._random_state.choice(retrieve_allowed_cards(observation))
 
     @get_action.register
-    def _(self, observation: AnnouncementsPhaseObservation):
+    def _(self, observation: AnnouncementsPhaseObservation) -> ActionWithProbability:
         announcements = []
         if self._announce_chelem(observation):
             announcements.append(ChelemAnnouncement())
@@ -59,11 +50,10 @@ class RandomAgent(Agent):
 
     @staticmethod
     def _player_is_taker(observation):
-        player_is_taker = observation.player.position_towards_taker == 0
-        return player_is_taker
+        return observation.player.position_towards_taker == 0
 
     @get_action.register
-    def _(self, observation: DogPhaseObservation):
+    def _(self, observation: DogPhaseObservation) -> ActionWithProbability:
         permuted_hand = self._random_state.permutation(observation.player.hand)
         trump_allowed = False
         action = []
@@ -79,7 +69,6 @@ class RandomAgent(Agent):
         return action
 
     @get_action.register
-    def _(self, observation: BidPhaseObservation):
+    def _(self, observation: BidPhaseObservation) -> ActionWithProbability:
         allowed_bids = list(range(get_minimum_allowed_bid(observation.bid_per_player), np.max(BIDS) + 1))
-        action = Bid(self._random_state.choice(allowed_bids + [0]))
-        return action
+        return Bid(self._random_state.choice(allowed_bids + [0]))
