@@ -1,4 +1,9 @@
+from torch.nn.modules.linear import Linear
+
+from french_tarot.agents.all_phase_agent import AllPhaseAgent
+from french_tarot.agents.card_phase_agent import CardPhaseAgent
 from french_tarot.agents.card_phase_observation_encoder import CardPhaseObservationEncoder
+from french_tarot.environment.core.core import CARDS
 from french_tarot.play import play_episode
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 from french_tarot.reagent.play_episodes import play_episodes
@@ -9,6 +14,18 @@ def test_play_episode():
     round_1_output = play_episode(encoder)
     encoder.episode_done()
     round_2_output = play_episode(encoder)
+
+    assert len(set(map(lambda entry: entry.mdp_id, round_1_output))) == 4
+    assert len(round_1_output) == 72
+    assert len(set(map(lambda entry: entry.mdp_id, round_1_output + round_2_output))) == 8
+
+
+def test_play_episode_card_phase_agent():
+    encoder = CardPhaseStateActionEncoder(CardPhaseObservationEncoder())
+    agent = AllPhaseAgent(card_phase_agent=CardPhaseAgent(Linear(len(CARDS), len(CARDS))))
+    round_1_output = play_episode(encoder, agent=agent)
+    encoder.episode_done()
+    round_2_output = play_episode(encoder, agent=agent)
 
     assert len(set(map(lambda entry: entry.mdp_id, round_1_output))) == 4
     assert len(round_1_output) == 72

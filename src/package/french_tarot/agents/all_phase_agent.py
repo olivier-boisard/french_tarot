@@ -15,13 +15,13 @@ from french_tarot.environment.subenvironments.dog.dog_phase_observation import D
 class AllPhaseAgent(Agent):
     _agents: Dict[type, Agent]
 
-    def __init__(self):
+    def __init__(self, card_phase_agent: CardPhaseAgent = None):
         super().__init__()
         self._agents: Dict[Observation, Union[Agent, CardPhaseAgent]] = {
             BidPhaseObservation: RandomAgent(),
             DogPhaseObservation: RandomAgent(),
             AnnouncementsPhaseObservation: RandomAgent(),
-            CardPhaseObservation: RandomAgent()
+            CardPhaseObservation: card_phase_agent if card_phase_agent is not None else RandomAgent()
         }
 
     def get_action(self, observation: Observation) -> ActionWithProbability:

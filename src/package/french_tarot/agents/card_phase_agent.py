@@ -40,7 +40,8 @@ class CardPhaseAgent(Agent):
         encode = tensor(self._card_phase_observation_encoder.encode(observation)).float()
         probabilities = torch.softmax(self.policy_net(encode)[indices], dim=0)
         action = self._random_state.choice(indices, p=probabilities.detach().numpy())
-        return ActionWithProbability(action=action, probability=probabilities[action])
+        action_probability = probabilities[indices.index(action)].detach().numpy().item()
+        return ActionWithProbability(action=action, probability=action_probability)
 
     def random_action(self, observation: CardPhaseObservation) -> ActionWithProbability:
         indices = retrieve_allowed_card_indices(observation)

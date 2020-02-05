@@ -4,8 +4,9 @@ from french_tarot.environment.subenvironments.card.card_phase_observation import
 from french_tarot.reagent.card_phase import CardPhaseStateActionEncoder
 
 
-def play_episode(encoder: CardPhaseStateActionEncoder):
-    player = AllPhaseAgent()
+def play_episode(encoder: CardPhaseStateActionEncoder, agent: AllPhaseAgent = None):
+    if agent is None:
+        agent = AllPhaseAgent()
     environment = FrenchTarotEnvironment()
     observation = environment.reset()
     done = False
@@ -14,7 +15,7 @@ def play_episode(encoder: CardPhaseStateActionEncoder):
     actions_in_round = []
     observations_in_round = []
     while not done:
-        action = player.get_action(observation)
+        action = agent.get_action(observation)
         new_observation, rewards, done, _ = environment.step(action)
         if isinstance(observation, CardPhaseObservation):
             actions_in_round.append(action)
