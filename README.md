@@ -1,3 +1,13 @@
+# Deprecation warning
+This repository is deprecated. After thorough thinking I came to the conclusion that Java would be a better suited language
+for this. Reasons are:
+* Java is enforced static typing. Python type hinting mechanism is nice, but the fact it's optional can hide issues in
+the code that would've been found directly at build time in Java
+* While Python offers much more possibilities than Java for Machine Learning, the whole Machine Learning part of this
+project is delegated to ReAgent.
+* The French Tarot Engine used as a basis for the environment will be much more easily reusable on Android devices if
+written in Java than in Python. This is important, since the ultimate goal of this project is to produce an app.
+
 This repository is about training an agent to play
 [French Tarot game](https://en.wikipedia.org/wiki/French_tarot]).
 The game rule where taken from the [Official French Tarot Rules](http://www.fftarot.fr/assets/documents/R-RO201206.pdf)
